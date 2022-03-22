@@ -1,0 +1,22 @@
+#!/bin/bash
+
+STYLE="file"
+CLANG_FORMAT_FILE="../.clang-format"
+
+if [ -f "${CLANG_FORMAT_FILE}" ] ; then # check if clang format file exists
+	STYLEARG="-style=${STYLE}"
+else
+	STYLEARG="-style=""" # use default style which LLVM
+fi
+
+format_file() {
+	file="${1}"
+	if [ -f $file ]; then
+		clang-format -i ${STYLEARG} ${1}
+		git add ${1}
+	fi
+}
+
+for file in `git diff-index --cached --name-only HEAD` ; do
+	format_file "${file}"
+done

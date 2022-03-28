@@ -2,10 +2,10 @@ image: ubuntu:20.04
 
 before_script: 
   - export DEBIAN_FRONTEND=noninteractive
-  - apt install software-properties-common
+  - apt-get update
+  - apt-get install -y software-properties-common apt-utils
   - add-apt-repository ppa:ettusresearch/uhd
-  - apt update
-  - apt install -y cmake build-essential libuhd-dev libuhd4.1.0 uhd-host
+  - apt-get install -y cmake build-essential libuhd-dev libuhd4.1.0 uhd-host
 
 stages:
   - build

@@ -1,0 +1,15 @@
+image: ubuntu:20.04
+
+before_script:
+  - apt update
+  - apt install -y cmake
+
+stages:
+  - build
+
+job:
+  stage: build
+  script:
+    - mkdir build && cd build
+    - cmake ..
+    - make

@@ -21,3 +21,7 @@ ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
     usrp_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
     return retCode;
 }
+
+ErrorCode Usrp::setTxConfig(const TxStreamingConfig& conf) {
+    mdTx_.time_spec = uhd::time_spec_t(conf.sendTimeOffset);
+}

@@ -6,7 +6,7 @@ typedef std::vector<sample> package;
 
 struct RfConfig {
     int txGain, rxGain;
-    int carrierFrequency;
+    int txCarrierFrequency, rxCarrierFrequency;
     int txAnalogFilterBw, rxAnalogFilterBw;
     int txSamplingRate, rxSamplingRate;
 };

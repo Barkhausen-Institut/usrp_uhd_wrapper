@@ -2,7 +2,7 @@ image: ubuntu:20.04
 
 before_script:
   - apt update
-  - apt install -y cmake
+  - apt install -y cmake build-essential
 
 stages:
   - build

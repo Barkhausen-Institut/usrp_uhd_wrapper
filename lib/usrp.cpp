@@ -1,5 +1,6 @@
 #include "usrp.hpp"
 
+namespace bi {
 void Usrp::setRfConfig(const RfConfig& conf) {
     // configure transmitter
     usrp_->set_tx_rate(conf.txSamplingRate);
@@ -48,3 +49,4 @@ uint64_t Usrp::getCurrentTime() {
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {
     return std::make_shared<Usrp>(ip);
 }
+}  // namespace bi

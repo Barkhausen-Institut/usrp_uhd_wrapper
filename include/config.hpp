@@ -2,6 +2,7 @@
 #include <complex>
 #include <vector>
 
+namespace bi {
 typedef std::complex<float> sample;
 typedef std::vector<sample> package;
 
@@ -21,3 +22,4 @@ struct RxStreamingConfig {
     unsigned int noSamples;
     float receiveTimeOffset;
 };
+}  // namespace bi

@@ -1,10 +1,9 @@
 #include "config.hpp"
-//#include "usrp.hpp"
 #include "usrp_interface.hpp"
 int main() {
     std::string usrpIp = "localhost";
-    std::shared_ptr<UsrpInterface> usrpPtr = createUsrp(usrpIp);
-    RfConfig rfConfig;
+    std::shared_ptr<bi::UsrpInterface> usrpPtr = bi::createUsrp(usrpIp);
+    bi::RfConfig rfConfig;
     rfConfig.txGain = 40;
     rfConfig.rxGain = 30;
     rfConfig.txCarrierFrequency = 2e9;

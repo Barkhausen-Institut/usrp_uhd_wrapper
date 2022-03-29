@@ -7,6 +7,7 @@
 #include "config.hpp"
 #include "usrp_interface.hpp"
 
+namespace bi {
 class Usrp : public UsrpInterface {
    public:
     Usrp(const std::string& ip) {
@@ -28,3 +29,4 @@ class Usrp : public UsrpInterface {
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
 };
+}  // namespace bi

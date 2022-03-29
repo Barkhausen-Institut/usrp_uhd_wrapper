@@ -2,6 +2,7 @@
 #include <memory>
 #include "config.hpp"
 
+namespace bi {
 class UsrpInterface {
    public:
     virtual void setRfConfig(const RfConfig&) = 0;
@@ -13,3 +14,4 @@ class UsrpInterface {
 };
 
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip);
+}  // namespace bi

@@ -1,4 +1,7 @@
 #pragma once
+#include <sys/time.h>
+#include <chrono>
+#include <ctime>
 #include "uhd/usrp/multi_usrp.hpp"
 
 #include "config.hpp"
@@ -14,7 +17,7 @@ class Usrp : public UsrpInterface {
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
     void setTimeToZeroNextPps();
-    void getCurrentTime(std::string&){};
+    uint64_t getCurrentTime();
     std::vector<package> execute(){};
 
    private:

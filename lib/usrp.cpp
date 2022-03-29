@@ -38,6 +38,13 @@ void Usrp::setTimeToZeroNextPps() {
     }
 }
 
+uint64_t Usrp::getCurrentTime() {
+    using namespace std::chrono;
+    uint64_t msSinceEpoch =
+        duration_cast<milliseconds>(system_clock::now().time_since_epoch())
+            .count();
+    return msSinceEpoch;
+}
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {
     return std::make_shared<Usrp>(ip);
 }

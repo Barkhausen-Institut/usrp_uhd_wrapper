@@ -12,7 +12,8 @@ class Usrp : public UsrpInterface {
    public:
     Usrp(const std::string& ip) {
         ip_ = ip;
-        usrp_ = uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
+        usrpDevice_ =
+            uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
     }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
@@ -23,7 +24,7 @@ class Usrp : public UsrpInterface {
 
    private:
     // variables
-    uhd::usrp::multi_usrp::sptr usrp_;
+    uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
     uhd::tx_streamer::sptr txStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;

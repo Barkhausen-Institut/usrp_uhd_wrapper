@@ -3,24 +3,24 @@
 namespace bi {
 void Usrp::setRfConfig(const RfConfig& conf) {
     // configure transmitter
-    usrp_->set_tx_rate(conf.txSamplingRate);
-    usrp_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+    usrpDevice_->set_tx_rate(conf.txSamplingRate);
+    usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency);
-    usrp_->set_tx_freq(txTuneRequest, 0);
-    usrp_->set_tx_gain(conf.txGain, 0);
-    usrp_->set_tx_bandwidth(conf.txAnalogFilterBw, 0);
+    usrpDevice_->set_tx_freq(txTuneRequest, 0);
+    usrpDevice_->set_tx_gain(conf.txGain, 0);
+    usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw, 0);
 
     // configure receiver
-    usrp_->set_rx_rate(conf.rxSamplingRate);
-    usrp_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+    usrpDevice_->set_rx_rate(conf.rxSamplingRate);
+    usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency);
-    usrp_->set_rx_freq(rxTuneRequest, 0);
-    usrp_->set_rx_gain(conf.rxGain, 0);
-    usrp_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
+    usrpDevice_->set_rx_freq(rxTuneRequest, 0);
+    usrpDevice_->set_rx_gain(conf.rxGain, 0);
+    usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
 
     uhd::stream_args_t txStreamArgs("fc32", "sc16");
     txStreamArgs.channels = std::vector<size_t>({0});
-    txStreamer_ = usrp_->get_tx_stream(txStreamArgs);
+    txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig& conf) {
@@ -32,10 +32,10 @@ void Usrp::setRxConfig(const RxStreamingConfig& conf) {
 }
 
 void Usrp::setTimeToZeroNextPps() {
-    usrp_->set_time_next_pps(uhd::time_spec_t(0.f));
+    usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
-    const uhd::time_spec_t lastPpsTime = usrp_->get_time_last_pps();
-    while (lastPpsTime == usrp_->get_time_last_pps()) {
+    const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
+    while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
 }
 

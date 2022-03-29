@@ -1,5 +1,6 @@
 #pragma once
 #include <complex>
+#include <vector>
 
 typedef std::complex<float> sample;
 typedef std::vector<sample> package;

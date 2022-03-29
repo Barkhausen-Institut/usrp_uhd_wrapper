@@ -15,7 +15,7 @@ struct RfConfig {
 };
 
 struct TxStreamingConfig {
-    samples_vec samples;
+    std::vector<samples_vec> samples;
     float sendTimeOffset;
 };
 

@@ -20,7 +20,7 @@ class Usrp : public UsrpInterface {
     void setRxConfig(const RxStreamingConfig& conf);
     void setTimeToZeroNextPps();
     uint64_t getCurrentTime();
-    std::vector<package> execute(){};
+    std::vector<samples_vec> execute(){};
 
    private:
     // variables
@@ -29,5 +29,8 @@ class Usrp : public UsrpInterface {
     uhd::tx_streamer::sptr txStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
+
+    // functions
+    void transmit();
 };
 }  // namespace bi

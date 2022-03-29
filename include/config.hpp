@@ -3,8 +3,9 @@
 #include <vector>
 
 namespace bi {
+const int SAMPLES_PER_BUFFER = 2000;
 typedef std::complex<float> sample;
-typedef std::vector<sample> package;
+typedef std::vector<sample> samples_vec;
 
 struct RfConfig {
     int txGain, rxGain;
@@ -14,7 +15,7 @@ struct RfConfig {
 };
 
 struct TxStreamingConfig {
-    package samples;
+    samples_vec samples;
     float sendTimeOffset;
 };
 

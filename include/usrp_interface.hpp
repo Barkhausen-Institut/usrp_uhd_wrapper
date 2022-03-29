@@ -10,7 +10,7 @@ class UsrpInterface {
     virtual void setRxConfig(const RxStreamingConfig& conf) = 0;
     virtual void setTimeToZeroNextPps() = 0;
     virtual uint64_t getCurrentTime() = 0;
-    virtual std::vector<package> execute() = 0;
+    virtual std::vector<samples_vec> execute() = 0;
 };
 
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip);

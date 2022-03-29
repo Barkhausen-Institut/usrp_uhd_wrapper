@@ -8,7 +8,7 @@ class Usrp : public UsrpInterface {
    public:
     Usrp(const std::string& ip) {
         ip_ = ip;
-        usrp_ = uhd::usrp::multi_usrp::make(uhd::device_addr_t(ip));
+        usrp_ = uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
 
         uhd::stream_args_t txStreamArgs("fc32", "sc16");
         txStreamArgs.channels = std::vector<size_t>({0});

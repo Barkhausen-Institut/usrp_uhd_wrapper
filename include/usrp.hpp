@@ -18,6 +18,8 @@ class Usrp : public UsrpInterface {
     ErrorCode setTxConfig(std::shared_ptr<TxStreamingConfig> conf);
     ErrorCode setRxConfig(std::shared_ptr<RxStreamingConfig> conf);
     ErrorCode setTimeToZeroNextPps();
+    ErrorCode getCurrentTime(std::string&){};
+    ErrorCode execute(){};
 
    private:
     // variables

@@ -22,12 +22,12 @@ ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
     return retCode;
 }
 
-ErrorCode Usrp::setTxConfig(std::shared_ptr<TxStreamingConfig> conf) {
+ErrorCode Usrp::setTxConfig(const TxStreamingConfig& conf) {
     txStreamingConfigs_.push_back(conf);
     // validate here?
 }
 
-ErrorCode Usrp::setRxConfig(std::shared_ptr<RxStreamingConfig> conf) {
+ErrorCode Usrp::setRxConfig(const RxStreamingConfig& conf) {
     rxStreamingConfigs_.push_back(conf);
     // balidate here?
 }
@@ -38,4 +38,8 @@ ErrorCode Usrp::setTimeToZeroNextPps() {
     const uhd::time_spec_t last_pps_time = usrp_->get_time_last_pps();
     while (last_pps_time == usrp_->get_time_last_pps()) {
     }
+}
+
+std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {
+    return std::make_shared<Usrp>(ip);
 }

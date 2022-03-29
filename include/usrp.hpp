@@ -15,8 +15,8 @@ class Usrp : public UsrpInterface {
         txStreamer_ = usrp_->get_tx_stream(txStreamArgs);
     }
     ErrorCode setRfConfig(const RfConfig& rfConfig);
-    ErrorCode setTxConfig(std::shared_ptr<TxStreamingConfig> conf);
-    ErrorCode setRxConfig(std::shared_ptr<RxStreamingConfig> conf);
+    ErrorCode setTxConfig(const TxStreamingConfig& conf);
+    ErrorCode setRxConfig(const RxStreamingConfig& conf);
     ErrorCode setTimeToZeroNextPps();
     ErrorCode getCurrentTime(std::string&){};
     ErrorCode execute(){};
@@ -26,6 +26,6 @@ class Usrp : public UsrpInterface {
     uhd::usrp::multi_usrp::sptr usrp_;
     std::string ip_;
     uhd::tx_streamer::sptr txStreamer_;
-    std::vector<std::shared_ptr<TxStreamingConfig>> txStreamingConfigs_;
-    std::vector<std::shared_ptr<RxStreamingConfig>> rxStreamingConfigs_;
+    std::vector<TxStreamingConfig> txStreamingConfigs_;
+    std::vector<RxStreamingConfig> rxStreamingConfigs_;
 };

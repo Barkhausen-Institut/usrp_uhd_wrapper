@@ -22,6 +22,10 @@ ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
     return retCode;
 }
 
-ErrorCode Usrp::setTxConfig(const TxStreamingConfig& conf) {
-    mdTx_.time_spec = uhd::time_spec_t(conf.sendTimeOffset);
+ErrorCode Usrp::setTxConfig(std::shared_ptr<TxStreamingConfig> conf) {
+    txStreamingConfigs_.push_back(conf);
+}
+
+ErrorCode Usrp::setRxConfig(std::shared_ptr<RxStreamingConfig> conf) {
+    rxStreamingConfigs_.push_back(conf);
 }

@@ -2,6 +2,8 @@
 #include <sys/time.h>
 #include <chrono>
 #include <ctime>
+#include <thread>
+
 #include "uhd/usrp/multi_usrp.hpp"
 
 #include "config.hpp"
@@ -20,7 +22,7 @@ class Usrp : public UsrpInterface {
     void setRxConfig(const RxStreamingConfig& conf);
     void setTimeToZeroNextPps();
     uint64_t getCurrentTime();
-    std::vector<samples_vec> execute(){};
+    std::vector<samples_vec> execute();
 
    private:
     // variables

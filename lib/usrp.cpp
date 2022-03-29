@@ -3,7 +3,6 @@
 ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
     // init usrp
     ErrorCode retCode = SUCCESS;
-
     // configure transmitter
     usrp_->set_tx_rate(conf.txSamplingRate);
     usrp_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
@@ -19,6 +18,10 @@ ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
     usrp_->set_rx_freq(rxTuneRequest, 0);
     usrp_->set_rx_gain(conf.rxGain, 0);
     usrp_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
+
+    uhd::stream_args_t txStreamArgs("fc32", "sc16");
+    txStreamArgs.channels = std::vector<size_t>({0});
+    txStreamer_ = usrp_->get_tx_stream(txStreamArgs);
     return retCode;
 }
 

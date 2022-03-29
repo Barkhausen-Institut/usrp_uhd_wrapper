@@ -9,10 +9,6 @@ class Usrp : public UsrpInterface {
     Usrp(const std::string& ip) {
         ip_ = ip;
         usrp_ = uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
-
-        uhd::stream_args_t txStreamArgs("fc32", "sc16");
-        txStreamArgs.channels = std::vector<size_t>({0});
-        txStreamer_ = usrp_->get_tx_stream(txStreamArgs);
     }
     ErrorCode setRfConfig(const RfConfig& rfConfig);
     ErrorCode setTxConfig(const TxStreamingConfig& conf);

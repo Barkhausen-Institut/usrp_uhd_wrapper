@@ -17,6 +17,7 @@ class Usrp : public UsrpInterface {
     ErrorCode setRfConfig(const RfConfig& rfConfig);
     ErrorCode setTxConfig(std::shared_ptr<TxStreamingConfig> conf);
     ErrorCode setRxConfig(std::shared_ptr<RxStreamingConfig> conf);
+    ErrorCode setTimeToZeroNextPps();
 
    private:
     // variables

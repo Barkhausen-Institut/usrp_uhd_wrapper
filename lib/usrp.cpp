@@ -24,8 +24,18 @@ ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
 
 ErrorCode Usrp::setTxConfig(std::shared_ptr<TxStreamingConfig> conf) {
     txStreamingConfigs_.push_back(conf);
+    // validate here?
 }
 
 ErrorCode Usrp::setRxConfig(std::shared_ptr<RxStreamingConfig> conf) {
     rxStreamingConfigs_.push_back(conf);
+    // balidate here?
+}
+
+ErrorCode Usrp::setTimeToZeroNextPps() {
+    usrp_->set_time_next_pps(uhd::time_spec_t(0.f));
+    // wait for next pps
+    const uhd::time_spec_t last_pps_time = usrp_->get_time_last_pps();
+    while (last_pps_time == usrp_->get_time_last_pps()) {
+    }
 }

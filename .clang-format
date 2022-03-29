@@ -1,0 +1,17 @@
+# check either here: http://clang.llvm.org/docs/ClangFormatStyleOptions.html or 
+# here: https://zed0.co.uk/clang-format-configurator/
+
+BasedOnStyle: Google
+
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 'false'
+AllowShortFunctionsOnASingleLine: All
+AlwaysBreakAfterDefinitionReturnType: None
+IndentWidth: '4'
+IndentWrappedFunctionNames: 'true'
+Language: Cpp
+PointerAlignment: Left
+SpaceAfterTemplateKeyword: 'false'
+SpaceInEmptyParentheses: 'false'
+TabWidth: '4'
+UseTab: Never

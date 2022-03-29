@@ -1,7 +1,7 @@
 #pragma once
 #include "config.hpp"
 
-enum ErrorCode { SUCCESS, FAILURE };
+enum ErrorCode { SUCCESS, FAILURE, MIMO_SPECIFICATION };
 class UsrpInterface {
    public:
     virtual ErrorCode setRfConfig(const RfConfig&) = 0;

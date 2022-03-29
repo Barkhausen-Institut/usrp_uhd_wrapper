@@ -10,12 +10,12 @@ class Usrp : public UsrpInterface {
         ip_ = ip;
         usrp_ = uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
     }
-    ErrorCode setRfConfig(const RfConfig& rfConfig);
-    ErrorCode setTxConfig(const TxStreamingConfig& conf);
-    ErrorCode setRxConfig(const RxStreamingConfig& conf);
-    ErrorCode setTimeToZeroNextPps();
-    ErrorCode getCurrentTime(std::string&){};
-    ErrorCode execute(){};
+    void setRfConfig(const RfConfig& rfConfig);
+    void setTxConfig(const TxStreamingConfig& conf);
+    void setRxConfig(const RxStreamingConfig& conf);
+    void setTimeToZeroNextPps();
+    void getCurrentTime(std::string&){};
+    std::vector<package> execute(){};
 
    private:
     // variables

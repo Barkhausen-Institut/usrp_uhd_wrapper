@@ -1,8 +1,6 @@
 #include "usrp.hpp"
 
-ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
-    // init usrp
-    ErrorCode retCode = SUCCESS;
+void Usrp::setRfConfig(const RfConfig& conf) {
     // configure transmitter
     usrp_->set_tx_rate(conf.txSamplingRate);
     usrp_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
@@ -22,20 +20,17 @@ ErrorCode Usrp::setRfConfig(const RfConfig& conf) {
     uhd::stream_args_t txStreamArgs("fc32", "sc16");
     txStreamArgs.channels = std::vector<size_t>({0});
     txStreamer_ = usrp_->get_tx_stream(txStreamArgs);
-    return retCode;
 }
 
-ErrorCode Usrp::setTxConfig(const TxStreamingConfig& conf) {
+void Usrp::setTxConfig(const TxStreamingConfig& conf) {
     txStreamingConfigs_.push_back(conf);
-    // validate here?
 }
 
-ErrorCode Usrp::setRxConfig(const RxStreamingConfig& conf) {
+void Usrp::setRxConfig(const RxStreamingConfig& conf) {
     rxStreamingConfigs_.push_back(conf);
-    // balidate here?
 }
 
-ErrorCode Usrp::setTimeToZeroNextPps() {
+void Usrp::setTimeToZeroNextPps() {
     usrp_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
     const uhd::time_spec_t last_pps_time = usrp_->get_time_last_pps();

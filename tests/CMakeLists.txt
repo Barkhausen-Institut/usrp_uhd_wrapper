@@ -1,4 +1,3 @@
-set(CMAKE_CXX_STANDARD 14) # required for trompeloeil
 
 # compile catch_main as a library once and link it to each test_executable
 # do not touch!

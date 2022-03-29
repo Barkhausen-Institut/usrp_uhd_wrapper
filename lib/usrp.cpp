@@ -34,8 +34,8 @@ void Usrp::setRxConfig(const RxStreamingConfig& conf) {
 void Usrp::setTimeToZeroNextPps() {
     usrp_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
-    const uhd::time_spec_t last_pps_time = usrp_->get_time_last_pps();
-    while (last_pps_time == usrp_->get_time_last_pps()) {
+    const uhd::time_spec_t lastPpsTime = usrp_->get_time_last_pps();
+    while (lastPpsTime == usrp_->get_time_last_pps()) {
     }
 }
 

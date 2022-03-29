@@ -1,4 +1,6 @@
-# USRP UHD Wrapper
+# Purpose
+ 
+# Installation
 
 This repo wraps the UHD for our X410. It is run on the USRP itself and offers an API via ZeroMQ.
 

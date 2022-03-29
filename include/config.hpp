@@ -8,9 +8,9 @@ typedef std::vector<sample> package;
 
 struct RfConfig {
     int txGain, rxGain;
-    int txCarrierFrequency, rxCarrierFrequency;
-    int txAnalogFilterBw, rxAnalogFilterBw;
-    int txSamplingRate, rxSamplingRate;
+    float txCarrierFrequency, rxCarrierFrequency;
+    float txAnalogFilterBw, rxAnalogFilterBw;
+    float txSamplingRate, rxSamplingRate;
 };
 
 struct TxStreamingConfig {

@@ -6,7 +6,7 @@
 
 #include "uhd/usrp/multi_usrp.hpp"
 
-//#include "config.hpp"
+#include "config.hpp"
 #include "usrp_interface.hpp"
 
 namespace bi {

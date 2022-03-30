@@ -1,4 +1,4 @@
-//#include "config.hpp"
+#include "config.hpp"
 #include "usrp_interface.hpp"
 
 std::vector<bi::samples_vec> createDummySamples() {

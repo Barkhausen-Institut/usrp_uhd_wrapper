@@ -7,11 +7,11 @@ void Usrp::transmit() {
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
     size_t noPackages =
         txStreamingConfig.samples[0].size() / SAMPLES_PER_BUFFER;
-    std::vector<samples_vec> channelBuffers(1, samples_vec(2000));
+    std::vector<samples_vec> channelBuffers(1, samples_vec(SAMPLES_PER_BUFFER));
     std::vector<sample*> channelBuffersPtrs = {&channelBuffers[0].front()};
 
-    std::vector<std::vector<samples_vec>> packets(
-        static_cast<size_t>(noPackages));
+    // std::vector<std::vector<samples_vec>> packets(
+    //    static_cast<size_t>(noPackages));
 
     uhd::tx_metadata_t mdTx;
     mdTx.start_of_burst = true;
@@ -19,7 +19,7 @@ void Usrp::transmit() {
     mdTx.has_time_spec = true;
 
     // prebuffer all the samples for speed purposes
-    int sampleIdx = 0;
+    /*int sampleIdx = 0;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         for (size_t bufferSample = 0; bufferSample < SAMPLES_PER_BUFFER;
              bufferSample++) {
@@ -30,12 +30,19 @@ void Usrp::transmit() {
             sampleIdx++;
         }
         packets[packageIdx] = channelBuffers;
-    }
+    }*/
 
     mdTx.time_spec = uhd::time_spec_t(txStreamingConfig.sendTimeOffset);
 
+    int sampleIdx = 0;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-        channelBuffersPtrs[0] = &packets[0][0].front();
+        // channelBuffersPtrs[0] = &packets[0][0].front();
+        for (size_t bufferSampleIdx = 0; bufferSampleIdx < SAMPLES_PER_BUFFER;
+             bufferSampleIdx++) {
+            channelBuffers[0][bufferSampleIdx] =
+                txStreamingConfig.samples[0][sampleIdx];
+            sampleIdx++;
+        }
         size_t numTxSamples = txStreamer_->send(channelBuffersPtrs,
                                                 SAMPLES_PER_BUFFER, mdTx, 0.1f);
         (void)numTxSamples;

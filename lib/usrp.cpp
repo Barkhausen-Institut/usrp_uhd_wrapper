@@ -88,6 +88,8 @@ void Usrp::setTimeToZeroNextPps() {
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
+
+    ppsSetToZero_ = true;
 }
 
 uint64_t Usrp::getCurrentTime() {
@@ -99,9 +101,12 @@ uint64_t Usrp::getCurrentTime() {
 }
 
 std::vector<samples_vec> Usrp::execute() {
-    std::thread transmitThread(&Usrp::transmit, this);
-    transmitThread.join();
-    return {{}};
+    std::vector<samples_vec> receivedSamples = {{}};
+    if (ppsSetToZero_) {
+        std::thread transmitThread(&Usrp::transmit, this);
+        transmitThread.join();
+    }
+    return receivedSamples;
 }
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {
     return std::make_shared<Usrp>(ip);

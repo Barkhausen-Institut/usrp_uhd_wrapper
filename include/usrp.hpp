@@ -16,6 +16,7 @@ class Usrp : public UsrpInterface {
         ip_ = ip;
         usrpDevice_ =
             uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
+        ppsSetToZero_ = false;
     }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
@@ -31,8 +32,10 @@ class Usrp : public UsrpInterface {
     uhd::tx_streamer::sptr txStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
+    bool ppsSetToZero_;
 
     // functions
     void transmit();
+    void zeroPadSignal(const size_t spb, TxStreamingConfig& conf);
 };
 }  // namespace bi

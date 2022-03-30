@@ -23,7 +23,7 @@ class Usrp : public UsrpInterface {
     void setRxConfig(const RxStreamingConfig& conf);
     void setTimeToZeroNextPps();
     uint64_t getCurrentTime();
-    std::vector<samples_vec> execute();
+    std::vector<samples_vec> execute(const float baseTime);
 
    private:
     // variables
@@ -35,6 +35,6 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_;
 
     // functions
-    void transmit();
+    void transmit(const float baseTime);
 };
 }  // namespace bi

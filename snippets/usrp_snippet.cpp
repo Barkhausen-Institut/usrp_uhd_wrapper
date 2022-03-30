@@ -25,5 +25,5 @@ int main() {
     txStreamingConfig.sendTimeOffset = 1.5f;
     usrpPtr->setRfConfig(rfConfig);
     usrpPtr->setTxConfig(txStreamingConfig);
-    std::vector<bi::samples_vec> samples = usrpPtr->execute();
+    std::vector<bi::samples_vec> samples = usrpPtr->execute(0.f);
 }

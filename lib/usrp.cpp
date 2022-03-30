@@ -3,7 +3,7 @@
 
 namespace bi {
 
-void Usrp::transmit() {
+void Usrp::transmit(const float baseTime) {
     // assume one txStreamConfig for the moment....
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
 
@@ -19,7 +19,8 @@ void Usrp::transmit() {
     mdTx.end_of_burst = false;
     mdTx.has_time_spec = true;
 
-    mdTx.time_spec = uhd::time_spec_t(txStreamingConfig.sendTimeOffset);
+    mdTx.time_spec =
+        uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
     int sampleIdx = 0;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
@@ -93,10 +94,10 @@ uint64_t Usrp::getCurrentTime() {
     return msSinceEpoch;
 }
 
-std::vector<samples_vec> Usrp::execute() {
+std::vector<samples_vec> Usrp::execute(const float baseTime) {
     std::vector<samples_vec> receivedSamples = {{}};
     if (ppsSetToZero_) {
-        std::thread transmitThread(&Usrp::transmit, this);
+        std::thread transmitThread(&Usrp::transmit, this, baseTime);
         transmitThread.join();
     }
     return receivedSamples;

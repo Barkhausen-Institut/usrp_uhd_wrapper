@@ -1,8 +1,7 @@
 image: ubuntu:20.04
 
 stages:
-  - build
-  - test
+  - build_test
 
 before_script:
   - export DEBIAN_FRONTEND=noninteractive
@@ -11,19 +10,10 @@ before_script:
   - add-apt-repository ppa:ettusresearch/uhd
   - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host
 
-build:
-  stage: build
+build_test:
+  stage: build_test
   script:
     - mkdir build && cd build
     - cmake ..
     - make
-
-  artifacts:
-    paths:
-      - build/*
-
-test:
-  stage: test
-  script:
-    - cd build
     - ctest -V

@@ -9,10 +9,23 @@ before_script:
 
 stages:
   - build
+  - test
 
-job:
+build:
   stage: build
   script:
     - mkdir build && cd build
     - cmake ..
     - make
+
+  artifacts:
+    paths:
+      - build/*
+
+test:
+  stage: test
+  dependencies:
+    - build_project
+  script:
+    - cd build
+    - ctest -V

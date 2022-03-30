@@ -41,8 +41,8 @@ void Usrp::transmit() {
     // been sent since the buffering is non-blocking inside the thread. If we
     // close the the outer scope before the samples are actually sent, they will
     // not be sent any more out of the FPGA.
-    std::this_thread::sleep_for(std::chrono::seconds(
-        static_cast<int>(txStreamingConfigs_[0].sendTimeOffset) + 1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(
+        static_cast<int>(1000 * txStreamingConfigs_[0].sendTimeOffset) + 300));
 }
 
 void Usrp::setRfConfig(const RfConfig& conf) {

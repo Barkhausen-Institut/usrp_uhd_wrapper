@@ -5,10 +5,6 @@
 namespace bi {
 class UsrpException : public std::runtime_error {
    public:
-    UsrpException(const char*) throw();
-    const char* what() const throw();
-
-   private:
-    const char* errorMessage_;
+    using std::runtime_error::runtime_error;
 };
 }  // namespace bi

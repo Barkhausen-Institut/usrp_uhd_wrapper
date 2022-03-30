@@ -11,10 +11,10 @@ int main() {
     std::string usrpIp = "localhost";
     std::shared_ptr<bi::UsrpInterface> usrpPtr = bi::createUsrp(usrpIp);
     bi::RfConfig rfConfig;
-    rfConfig.txGain = 50;
-    rfConfig.rxGain = 30;
-    rfConfig.txCarrierFrequency = 2e9;
-    rfConfig.rxCarrierFrequency = 2e9;
+    rfConfig.txGain = {50};
+    rfConfig.rxGain = {30};
+    rfConfig.txCarrierFrequency = {2e9};
+    rfConfig.rxCarrierFrequency = {2e9};
     rfConfig.txAnalogFilterBw = 400e6;
     rfConfig.rxAnalogFilterBw = 400e6;
     rfConfig.txSamplingRate = 10e6;

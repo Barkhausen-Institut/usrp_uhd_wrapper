@@ -48,17 +48,17 @@ void Usrp::setRfConfig(const RfConfig& conf) {
     // configure transmitter
     usrpDevice_->set_tx_rate(conf.txSamplingRate);
     usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
-    uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency);
+    uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
     usrpDevice_->set_tx_freq(txTuneRequest, 0);
-    usrpDevice_->set_tx_gain(conf.txGain, 0);
+    usrpDevice_->set_tx_gain(conf.txGain[0], 0);
     usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw, 0);
 
     // configure receiver
     usrpDevice_->set_rx_rate(conf.rxSamplingRate);
     usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
-    uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency);
+    uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency[0]);
     usrpDevice_->set_rx_freq(rxTuneRequest, 0);
-    usrpDevice_->set_rx_gain(conf.rxGain, 0);
+    usrpDevice_->set_rx_gain(conf.rxGain[0], 0);
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
 
     uhd::stream_args_t txStreamArgs("fc32", "sc16");

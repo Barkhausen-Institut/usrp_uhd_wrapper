@@ -8,8 +8,8 @@ typedef std::complex<float> sample;
 typedef std::vector<sample> samples_vec;
 
 struct RfConfig {
-    int txGain, rxGain;
-    float txCarrierFrequency, rxCarrierFrequency;
+    std::vector<float> txGain, rxGain;
+    std::vector<float> txCarrierFrequency, rxCarrierFrequency;
     float txAnalogFilterBw, rxAnalogFilterBw;
     float txSamplingRate, rxSamplingRate;
 };

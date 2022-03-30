@@ -1,3 +1,4 @@
+#include <math.h>
 #include "usrp.hpp"
 
 namespace bi {
@@ -8,7 +9,8 @@ void Usrp::transmit() {
 
     // create buffers etc
     size_t noPackages =
-        txStreamingConfig.samples[0].size() / SAMPLES_PER_BUFFER;
+        std::ceil(txStreamingConfig.samples[0].size() / SAMPLES_PER_BUFFER);
+    zeroPadSignal(SAMPLES_PER_BUFFER, txStreamingConfig);
     std::vector<samples_vec> channelBuffers(1, samples_vec(SAMPLES_PER_BUFFER));
     std::vector<sample*> channelBuffersPtrs = {&channelBuffers[0].front()};
 
@@ -36,6 +38,12 @@ void Usrp::transmit() {
     }
     mdTx.end_of_burst = true;
     txStreamer_->send("", 0, mdTx);
+}
+
+void Usrp::zeroPadSignal(const size_t spb, TxStreamingConfig& conf) {
+    size_t noZeroPadding = conf.samples[0].size() % spb;
+    size_t noSamples = noZeroPadding + conf.samples[0].size();
+    conf.samples[0].resize(noSamples, sample(0, 0));
 }
 
 void Usrp::setRfConfig(const RfConfig& conf) {

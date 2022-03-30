@@ -8,10 +8,11 @@ void Usrp::transmit(const float baseTime) {
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
 
     // create buffers etc
-    size_t noPackages =
-        std::ceil(txStreamingConfig.samples[0].size() / SAMPLES_PER_BUFFER);
-    std::vector<samples_vec> channelBuffers(1, samples_vec(SAMPLES_PER_BUFFER));
-    std::vector<sample*> channelBuffersPtrs = {&channelBuffers[0].front()};
+    size_t noSamples = txStreamingConfig.samples[0].size();
+    size_t noPackages = noSamples / SAMPLES_PER_BUFFER;
+    /*std::vector<samples_vec> channelBuffers(1,
+    samples_vec(SAMPLES_PER_BUFFER));
+    std::vector<sample*> channelBuffersPtrs = {&channelBuffers[0].front()};*/
 
     // specifiy on specifications of how to stream the command
     uhd::tx_metadata_t mdTx;
@@ -22,17 +23,24 @@ void Usrp::transmit(const float baseTime) {
     mdTx.time_spec =
         uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
-    int sampleIdx = 0;
+    size_t noSamplesLastBuffer = noSamples % SAMPLES_PER_BUFFER;
+    if (noSamplesLastBuffer == 0) noSamplesLastBuffer = SAMPLES_PER_BUFFER;
+
+    // int sampleIdx = 0;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         // buffer
-        for (size_t bufferSampleIdx = 0; bufferSampleIdx < SAMPLES_PER_BUFFER;
+        /*for (size_t bufferSampleIdx = 0; bufferSampleIdx < SAMPLES_PER_BUFFER;
              bufferSampleIdx++) {
             channelBuffers[0][bufferSampleIdx] =
                 txStreamingConfig.samples[0][sampleIdx];
             sampleIdx++;
-        }
-        size_t numTxSamples = txStreamer_->send(channelBuffersPtrs,
-                                                SAMPLES_PER_BUFFER, mdTx, 0.1f);
+        }*/
+        size_t numTxSamples = txStreamer_->send(
+            {txStreamingConfig.samples[0].data() +
+             packageIdx * SAMPLES_PER_BUFFER},
+            packageIdx == (noPackages - 1) ? noSamplesLastBuffer
+                                           : SAMPLES_PER_BUFFER,
+            mdTx, 0.1f);
         (void)numTxSamples;  // avoid error on unused variable
         mdTx.start_of_burst = false;
     }

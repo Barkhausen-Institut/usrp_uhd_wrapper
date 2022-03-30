@@ -5,11 +5,14 @@ namespace bi {
 void Usrp::transmit() {
     // assume one txStreamConfig for the moment....
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
+
+    // create buffers etc
     size_t noPackages =
         txStreamingConfig.samples[0].size() / SAMPLES_PER_BUFFER;
     std::vector<samples_vec> channelBuffers(1, samples_vec(SAMPLES_PER_BUFFER));
     std::vector<sample*> channelBuffersPtrs = {&channelBuffers[0].front()};
 
+    // specifiy on specifications of how to stream the command
     uhd::tx_metadata_t mdTx;
     mdTx.start_of_burst = true;
     mdTx.end_of_burst = false;
@@ -19,6 +22,7 @@ void Usrp::transmit() {
 
     int sampleIdx = 0;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+        // buffer
         for (size_t bufferSampleIdx = 0; bufferSampleIdx < SAMPLES_PER_BUFFER;
              bufferSampleIdx++) {
             channelBuffers[0][bufferSampleIdx] =
@@ -27,7 +31,7 @@ void Usrp::transmit() {
         }
         size_t numTxSamples = txStreamer_->send(channelBuffersPtrs,
                                                 SAMPLES_PER_BUFFER, mdTx, 0.1f);
-        (void)numTxSamples;
+        (void)numTxSamples;  // avoid error on unused variable
         mdTx.start_of_burst = false;
     }
     mdTx.end_of_burst = true;

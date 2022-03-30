@@ -15,7 +15,7 @@ void Usrp::transmit(const float baseTime) {
     if (noSamplesLastBuffer == 0)
         noSamplesLastBuffer = SAMPLES_PER_BUFFER;
     else
-        noSamplesLastBuffer++;
+        noPackages++;
 
     // specifiy on specifications of how to stream the command
     uhd::tx_metadata_t mdTx;
@@ -27,13 +27,11 @@ void Usrp::transmit(const float baseTime) {
         uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-        size_t numTxSamples = txStreamer_->send(
-            {txStreamingConfig.samples[0].data() +
-             packageIdx * SAMPLES_PER_BUFFER},
-            packageIdx == (noPackages - 1) ? noSamplesLastBuffer
-                                           : SAMPLES_PER_BUFFER,
-            mdTx, 0.1f);
-        (void)numTxSamples;  // avoid error on unused variable
+        txStreamer_->send({txStreamingConfig.samples[0].data() +
+                           packageIdx * SAMPLES_PER_BUFFER},
+                          packageIdx == (noPackages - 1) ? noSamplesLastBuffer
+                                                         : SAMPLES_PER_BUFFER,
+                          mdTx, 0.1f);
         mdTx.start_of_burst = false;
     }
     mdTx.end_of_burst = true;

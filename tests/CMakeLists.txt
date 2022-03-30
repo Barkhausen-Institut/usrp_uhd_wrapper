@@ -6,7 +6,7 @@ target_include_directories(CatchMain PUBLIC ${PROJECT_3RD_PARTY_DIR})
 
 # #############################
 # add your tests here
-
+include(CTest)
 add_executable(unittests test_config.cpp ) # put other test_*.cpp files here
 target_link_libraries(unittests CatchMain) # no need to touch this
 target_include_directories(unittests PRIVATE ../include/)

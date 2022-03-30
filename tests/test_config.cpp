@@ -8,9 +8,4 @@
 #include "catch/catch.hpp"
 #include "config.hpp"
 
-TEST_CASE("full first package and ten samples in second package",
-          "[ZeroPadding]") {
-    const size_t SAMPLES_PER_BUFFER = 30;
-    bi::samples_vec samples =
-        bi::samples_vec(SAMPLES_PER_BUFFER + 10, bi::sample(1, 1));
-}
+TEST_CASE("dummy", "[Dummy]") { REQUIRE(1 == 1); }

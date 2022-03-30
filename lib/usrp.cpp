@@ -38,6 +38,12 @@ void Usrp::transmit() {
     }
     mdTx.end_of_burst = true;
     txStreamer_->send("", 0, mdTx);
+    // we need to introduce this sleep to ensure that the samples have already
+    // been sent since the buffering is non-blocking inside the thread. If we
+    // close the the outer scope before the samples are actually sent, they will
+    // not be sent any more out of the FPGA.
+    std::this_thread::sleep_for(std::chrono::seconds(
+        static_cast<int>(txStreamingConfigs_[0].sendTimeOffset) + 1));
 }
 
 void Usrp::zeroPadSignal(const size_t spb, TxStreamingConfig& conf) {
@@ -95,13 +101,6 @@ uint64_t Usrp::getCurrentTime() {
 std::vector<samples_vec> Usrp::execute() {
     std::thread transmitThread(&Usrp::transmit, this);
     transmitThread.join();
-
-    // we need to introduce this sleep to ensure that the samples have already
-    // been sent since the buffering is non-blocking inside the thread. If we
-    // close the the outer scope before the samples are actually sent, they will
-    // not be sent any more out of the FPGA.
-    std::this_thread::sleep_for(std::chrono::seconds(
-        static_cast<int>(txStreamingConfigs_[0].sendTimeOffset) + 1));
     return {{}};
 }
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {

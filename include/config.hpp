@@ -23,4 +23,11 @@ struct RxStreamingConfig {
     unsigned int noSamples;
     float receiveTimeOffset;
 };
+
+void zeroPadSignal(const size_t spb, samples_vec& samples) {
+    size_t noZeroPadding = samples.size() % spb;
+    size_t noSamples = noZeroPadding + samples.size();
+    samples.resize(noSamples, sample(0, 0));
+}
+
 }  // namespace bi

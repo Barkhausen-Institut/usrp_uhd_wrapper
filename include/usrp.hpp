@@ -6,7 +6,7 @@
 
 #include "uhd/usrp/multi_usrp.hpp"
 
-#include "config.hpp"
+//#include "config.hpp"
 #include "usrp_interface.hpp"
 
 namespace bi {
@@ -36,6 +36,5 @@ class Usrp : public UsrpInterface {
 
     // functions
     void transmit();
-    void zeroPadSignal(const size_t spb, TxStreamingConfig& conf);
 };
 }  // namespace bi

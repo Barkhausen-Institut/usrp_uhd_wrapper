@@ -10,7 +10,6 @@ void Usrp::transmit() {
     // create buffers etc
     size_t noPackages =
         std::ceil(txStreamingConfig.samples[0].size() / SAMPLES_PER_BUFFER);
-    zeroPadSignal(SAMPLES_PER_BUFFER, txStreamingConfig);
     std::vector<samples_vec> channelBuffers(1, samples_vec(SAMPLES_PER_BUFFER));
     std::vector<sample*> channelBuffersPtrs = {&channelBuffers[0].front()};
 
@@ -44,12 +43,6 @@ void Usrp::transmit() {
     // not be sent any more out of the FPGA.
     std::this_thread::sleep_for(std::chrono::seconds(
         static_cast<int>(txStreamingConfigs_[0].sendTimeOffset) + 1));
-}
-
-void Usrp::zeroPadSignal(const size_t spb, TxStreamingConfig& conf) {
-    size_t noZeroPadding = conf.samples[0].size() % spb;
-    size_t noSamples = noZeroPadding + conf.samples[0].size();
-    conf.samples[0].resize(noSamples, sample(0, 0));
 }
 
 void Usrp::setRfConfig(const RfConfig& conf) {

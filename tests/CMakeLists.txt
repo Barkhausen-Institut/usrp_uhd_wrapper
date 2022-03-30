@@ -7,6 +7,7 @@ target_include_directories(CatchMain PUBLIC ${PROJECT_3RD_PARTY_DIR})
 # #############################
 # add your tests here
 
-add_executable(unittests test_skeleton.cpp ) # put other test_*.cpp files here
+add_executable(unittests test_config.cpp ) # put other test_*.cpp files here
 target_link_libraries(unittests CatchMain) # no need to touch this
+target_include_directories(unittests PRIVATE ../include/)
 add_test(NAME unittests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/unittests) # don't touch this either

@@ -12,7 +12,10 @@ void Usrp::transmit(const float baseTime) {
     size_t noPackages = noSamples / SAMPLES_PER_BUFFER;
 
     size_t noSamplesLastBuffer = noSamples % SAMPLES_PER_BUFFER;
-    if (noSamplesLastBuffer == 0) noSamplesLastBuffer = SAMPLES_PER_BUFFER;
+    if (noSamplesLastBuffer == 0)
+        noSamplesLastBuffer = SAMPLES_PER_BUFFER;
+    else
+        noSamplesLastBuffer++;
 
     // specifiy on specifications of how to stream the command
     uhd::tx_metadata_t mdTx;

@@ -4,14 +4,16 @@ stages:
   - build
   - test
 
+before_script:
+  - export DEBIAN_FRONTEND=noninteractive
+  - apt-get update
+  - apt-get install -y software-properties-common apt-utils
+  - add-apt-repository ppa:ettusresearch/uhd
+  - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host
+
 build:
   stage: build
   script:
-    - export DEBIAN_FRONTEND=noninteractive
-    - apt-get update
-    - apt-get install -y software-properties-common apt-utils
-    - add-apt-repository ppa:ettusresearch/uhd
-    - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host
     - mkdir build && cd build
     - cmake ..
     - make

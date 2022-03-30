@@ -7,12 +7,12 @@ void Usrp::transmit(const float baseTime) {
     // assume one txStreamConfig for the moment....
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
 
-    // create buffers etc
+    // add helpers
     size_t noSamples = txStreamingConfig.samples[0].size();
     size_t noPackages = noSamples / SAMPLES_PER_BUFFER;
-    /*std::vector<samples_vec> channelBuffers(1,
-    samples_vec(SAMPLES_PER_BUFFER));
-    std::vector<sample*> channelBuffersPtrs = {&channelBuffers[0].front()};*/
+
+    size_t noSamplesLastBuffer = noSamples % SAMPLES_PER_BUFFER;
+    if (noSamplesLastBuffer == 0) noSamplesLastBuffer = SAMPLES_PER_BUFFER;
 
     // specifiy on specifications of how to stream the command
     uhd::tx_metadata_t mdTx;
@@ -23,18 +23,7 @@ void Usrp::transmit(const float baseTime) {
     mdTx.time_spec =
         uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
-    size_t noSamplesLastBuffer = noSamples % SAMPLES_PER_BUFFER;
-    if (noSamplesLastBuffer == 0) noSamplesLastBuffer = SAMPLES_PER_BUFFER;
-
-    // int sampleIdx = 0;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-        // buffer
-        /*for (size_t bufferSampleIdx = 0; bufferSampleIdx < SAMPLES_PER_BUFFER;
-             bufferSampleIdx++) {
-            channelBuffers[0][bufferSampleIdx] =
-                txStreamingConfig.samples[0][sampleIdx];
-            sampleIdx++;
-        }*/
         size_t numTxSamples = txStreamer_->send(
             {txStreamingConfig.samples[0].data() +
              packageIdx * SAMPLES_PER_BUFFER},

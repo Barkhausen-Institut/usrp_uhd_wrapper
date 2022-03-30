@@ -3,7 +3,7 @@
 
 std::vector<bi::samples_vec> createDummySamples() {
     std::vector<bi::samples_vec> samples;
-    bi::samples_vec frameAnt1 = bi::samples_vec(4000, bi::sample(3, 3));
+    bi::samples_vec frameAnt1 = bi::samples_vec(63.5e3, bi::sample(3, 3));
     samples.push_back(frameAnt1);
     return samples;
 }

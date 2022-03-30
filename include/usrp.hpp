@@ -7,9 +7,11 @@
 #include "uhd/usrp/multi_usrp.hpp"
 
 #include "config.hpp"
+#include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
 
 namespace bi {
+
 class Usrp : public UsrpInterface {
    public:
     Usrp(const std::string& ip) {

@@ -93,7 +93,9 @@ uint64_t Usrp::getCurrentTime() {
 
 std::vector<samples_vec> Usrp::execute(const float baseTime) {
     std::vector<samples_vec> receivedSamples = {{}};
-    if (ppsSetToZero_) {
+    if (!ppsSetToZero_) {
+        throw UsrpException("Synchronization must happen before execution.");
+    } else {
         std::thread transmitThread(&Usrp::transmit, this, baseTime);
         transmitThread.join();
     }

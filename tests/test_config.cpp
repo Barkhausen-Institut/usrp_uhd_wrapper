@@ -10,25 +10,17 @@
 
 namespace bi {
 TEST_CASE("[SamplesDoNotFitEvenlyIntoBuffer]") {
-    int noSamples = 0;
-    int spb = 0;
     SECTION("No samples in last package") {
-        noSamples = 4000;
-        spb = 2000;
-        REQUIRE(calcNoPackages(noSamples, spb) == 2);
-        REQUIRE(calcNoSamplesLastBuffer(noSamples, spb) == 2000);
+        REQUIRE(calcNoPackages(4000, 2000) == 2);
+        REQUIRE(calcNoSamplesLastBuffer(4000, 2000) == 2000);
     }
     SECTION("Ten samples in last package") {
-        noSamples = 4010;
-        spb = 2000;
-        REQUIRE(calcNoPackages(noSamples, spb) == 3);
-        REQUIRE(calcNoSamplesLastBuffer(noSamples, spb) == 10);
+        REQUIRE(calcNoPackages(4010, 2000) == 3);
+        REQUIRE(calcNoSamplesLastBuffer(4010, 2000) == 10);
     }
     SECTION("one package not entirely filled") {
-        noSamples = 999;
-        spb = 2000;
-        REQUIRE(calcNoPackages(noSamples, spb) == 1);
-        REQUIRE(calcNoSamplesLastBuffer(noSamples, spb) == noSamples);
+        REQUIRE(calcNoPackages(999, 2000) == 1);
+        REQUIRE(calcNoSamplesLastBuffer(999, 2000) == 999);
     }
 }
 }  // namespace bi

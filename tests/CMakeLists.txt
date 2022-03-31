@@ -3,6 +3,7 @@
 # do not touch!
 add_library(CatchMain catch_main.cpp)
 target_include_directories(CatchMain PUBLIC ${PROJECT_3RD_PARTY_DIR})
+target_link_libraries(CatchMain PUBLIC config)
 
 # #############################
 # add your tests here

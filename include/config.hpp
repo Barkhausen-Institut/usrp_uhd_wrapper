@@ -1,4 +1,5 @@
 #pragma once
+#include <math.h>
 #include <complex>
 #include <vector>
 
@@ -23,5 +24,8 @@ struct RxStreamingConfig {
     unsigned int noSamples;
     float receiveTimeOffset;
 };
+
+size_t calcNoPackages(const size_t noSamples, const size_t spb);
+size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb);
 
 }  // namespace bi

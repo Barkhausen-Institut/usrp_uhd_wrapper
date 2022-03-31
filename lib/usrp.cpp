@@ -4,8 +4,8 @@ namespace bi {
 
 void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                    std::exception_ptr &exceptionPtr) {
-    // prepare buffer for received samples and metadata
     try {
+        if (rxStreamingConfigs_.size() == 0) return;
         RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
 
         size_t noPackages =
@@ -40,6 +40,8 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
 
 void Usrp::transmit(const float baseTime) {
     // assume one txStreamConfig for the moment....
+
+    if (txStreamingConfigs_.size() == 0) return;
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
 
     // add helpers
@@ -134,22 +136,18 @@ double Usrp::getCurrentFpgaTime() {
 
 std::vector<samples_vec> Usrp::execute(const float baseTime) {
     std::vector<samples_vec> receivedSamples = {
-        samples_vec(rxStreamingConfigs_[0].noSamples)};
+        samples_vec(rxStreamingConfigs_[0].noSamples, sample(0, 0))};
     std::exception_ptr receiveThreadException = nullptr;
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
-        std::thread transmitThread;
-        std::thread receiveThread;
-        if (txStreamingConfigs_.size() >= 1)
-            transmitThread = std::thread(&Usrp::transmit, this, baseTime);
-        if (rxStreamingConfigs_.size() >= 1)
-            receiveThread = std::thread(&Usrp::receive, this, baseTime,
-                                        std::ref(receivedSamples),
-                                        std::ref(receiveThreadException));
+        std::thread transmitThread(&Usrp::transmit, this, baseTime);
+        std::thread receiveThread(&Usrp::receive, this, baseTime,
+                                  std::ref(receivedSamples),
+                                  std::ref(receiveThreadException));
 
-        if (txStreamingConfigs_.size() >= 1) transmitThread.join();
-        if (rxStreamingConfigs_.size() >= 1) receiveThread.join();
+        transmitThread.join();
+        receiveThread.join();
     }
 
     if (receiveThreadException) std::rethrow_exception(receiveThreadException);

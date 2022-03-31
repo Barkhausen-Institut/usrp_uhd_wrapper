@@ -7,8 +7,8 @@ size_t calcNoPackages(const size_t noSamples, const size_t spb) {
     return (noSamples + spb - 1) / spb;
 }
 size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb) {
-    size_t noSamplesLastBuffer = noSamples % SAMPLES_PER_BUFFER;
-    if (noSamplesLastBuffer == 0) noSamplesLastBuffer = SAMPLES_PER_BUFFER;
+    size_t noSamplesLastBuffer = noSamples % spb;
+    if (noSamplesLastBuffer == 0) noSamplesLastBuffer = spb;
     return noSamplesLastBuffer;
 }
 }  // namespace bi

@@ -28,11 +28,11 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                 packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                                : SAMPLES_PER_BUFFER,
                 mdRx, 0.1f);
+            if (mdRx.error_code ==
+                uhd::rx_metadata_t::error_code_t::ERROR_CODE_OVERFLOW)
+                throw UsrpException("Overflow occurred on the receiver side.");
         }
 
-        if (mdRx.error_code ==
-            uhd::rx_metadata_t::error_code_t::ERROR_CODE_OVERFLOW)
-            throw UsrpException("Overflow occurred on the receiver side.");
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }
@@ -152,13 +152,7 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
         if (rxStreamingConfigs_.size() >= 1) receiveThread.join();
     }
 
-    if (receiveThreadException) {
-        try {
-            std::rethrow_exception(receiveThreadException);
-        } catch (const UsrpException &ex) {
-            std::cerr << ex.what() << std::endl;
-        }
-    }
+    if (receiveThreadException) std::rethrow_exception(receiveThreadException);
     return receivedSamples;
 }
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {

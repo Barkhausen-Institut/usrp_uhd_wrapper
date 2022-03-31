@@ -23,12 +23,16 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
         rxStreamer_->issue_stream_cmd(streamCmd);
 
         uhd::rx_metadata_t mdRx;
+        double timeout = (baseTime + rxStreamingConfig.receiveTimeOffset) -
+                         getCurrentFpgaTime();
         for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
             rxStreamer_->recv(
                 {buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
                 packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                                : SAMPLES_PER_BUFFER,
-                mdRx, 0.1f);
+                mdRx, timeout);
+
+            timeout = 0.1f;
             if (mdRx.error_code !=
                 uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
                 throw UsrpException("error occurred on the receiver: " +

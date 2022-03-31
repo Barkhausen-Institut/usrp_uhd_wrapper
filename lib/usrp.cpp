@@ -129,11 +129,16 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
-        std::thread transmitThread(&Usrp::transmit, this, baseTime);
-        std::thread receiveThread(&Usrp::receive, this, baseTime,
-                                  std::ref(receivedSamples));
-        transmitThread.join();
-        receiveThread.join();
+        std::thread transmitThread;
+        std::thread receiveThread;
+        if (txStreamingConfigs_.size() >= 1)
+            transmitThread = std::thread(&Usrp::transmit, this, baseTime);
+        if (rxStreamingConfigs_.size() >= 1)
+            receiveThread = std::thread(&Usrp::receive, this, baseTime,
+                                        std::ref(receivedSamples));
+
+        if (txStreamingConfigs_.size() >= 1) transmitThread.join();
+        if (rxStreamingConfigs_.size() >= 1) receiveThread.join();
     }
     return receivedSamples;
 }

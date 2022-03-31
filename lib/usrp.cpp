@@ -5,36 +5,38 @@ namespace bi {
 void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                    std::exception_ptr &exceptionPtr) {
     // prepare buffer for received samples and metadata
-    RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
-
-    size_t noPackages =
-        calcNoPackages(rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
-    size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
-        rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
-
-    uhd::stream_cmd_t streamCmd =
-        uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
-    streamCmd.time_spec =
-        uhd::time_spec_t(baseTime + rxStreamingConfig.receiveTimeOffset);
-    streamCmd.num_samps = rxStreamingConfig.noSamples;
-    streamCmd.stream_now = false;
-    rxStreamer_->issue_stream_cmd(streamCmd);
-
-    uhd::rx_metadata_t mdRx;
-    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-        rxStreamer_->recv({buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
-                          packageIdx == (noPackages - 1) ? noSamplesLastBuffer
-                                                         : SAMPLES_PER_BUFFER,
-                          mdRx, 0.1f);
-    }
     try {
+        RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
+
+        size_t noPackages =
+            calcNoPackages(rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
+        size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
+            rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
+
+        uhd::stream_cmd_t streamCmd =
+            uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
+        streamCmd.time_spec =
+            uhd::time_spec_t(baseTime + rxStreamingConfig.receiveTimeOffset);
+        streamCmd.num_samps = rxStreamingConfig.noSamples;
+        streamCmd.stream_now = false;
+        rxStreamer_->issue_stream_cmd(streamCmd);
+
+        uhd::rx_metadata_t mdRx;
+        for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+            rxStreamer_->recv(
+                {buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
+                packageIdx == (noPackages - 1) ? noSamplesLastBuffer
+                                               : SAMPLES_PER_BUFFER,
+                mdRx, 0.1f);
+        }
+
         if (mdRx.error_code ==
             uhd::rx_metadata_t::error_code_t::ERROR_CODE_OVERFLOW)
             throw UsrpException("Overflow occurred on the receiver side.");
-    } catch (const UsrpException &ex) {
+    } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }
-}
+}  // namespace bi
 
 void Usrp::transmit(const float baseTime) {
     // assume one txStreamConfig for the moment....

@@ -24,7 +24,8 @@ class Usrp : public UsrpInterface {
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
     void setTimeToZeroNextPps();
-    uint64_t getCurrentTime();
+    uint64_t getCurrentSystemTime();
+    double getCurrentFpgaTime();
     std::vector<samples_vec> execute(const float baseTime);
 
    private:

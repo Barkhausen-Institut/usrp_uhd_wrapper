@@ -86,12 +86,16 @@ void Usrp::setTimeToZeroNextPps() {
     ppsSetToZero_ = true;
 }
 
-uint64_t Usrp::getCurrentTime() {
+uint64_t Usrp::getCurrentSystemTime() {
     using namespace std::chrono;
     uint64_t msSinceEpoch =
         duration_cast<milliseconds>(system_clock::now().time_since_epoch())
             .count();
     return msSinceEpoch;
+}
+
+double Usrp::getCurrentFpgaTime() {
+    return usrpDevice_->get_time_now().get_real_secs();
 }
 
 std::vector<samples_vec> Usrp::execute(const float baseTime) {

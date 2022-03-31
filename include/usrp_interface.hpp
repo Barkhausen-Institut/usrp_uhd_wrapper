@@ -9,7 +9,8 @@ class UsrpInterface {
     virtual void setTxConfig(const TxStreamingConfig& conf) = 0;
     virtual void setRxConfig(const RxStreamingConfig& conf) = 0;
     virtual void setTimeToZeroNextPps() = 0;
-    virtual uint64_t getCurrentTime() = 0;
+    virtual uint64_t getCurrentSystemTime() = 0;
+    virtual double getCurrentFpgaTime() = 0;
     virtual std::vector<samples_vec> execute(const float baseTime) = 0;
 };
 

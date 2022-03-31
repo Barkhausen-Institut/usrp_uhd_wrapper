@@ -33,6 +33,9 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                 throw UsrpException("Overflow occurred on the receiver side.");
         }
 
+        if (!mdRx.end_of_burst)
+            throw UsrpException("I did not receive an end_of_burst.");
+
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }

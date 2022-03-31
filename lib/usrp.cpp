@@ -7,13 +7,10 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer) {
     // prepare buffer for received samples and metadata
     RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
 
-    size_t noPackages = rxStreamingConfig.noSamples / SAMPLES_PER_BUFFER;
-    size_t noSamplesLastBuffer =
-        rxStreamingConfig.noSamples % SAMPLES_PER_BUFFER;
-    if (noSamplesLastBuffer == 0)
-        noSamplesLastBuffer = SAMPLES_PER_BUFFER;
-    else
-        noPackages++;
+    size_t noPackages =
+        calcNoPackages(rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
+    size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
+        rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
 
     uhd::stream_cmd_t streamCmd =
         uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
@@ -37,14 +34,10 @@ void Usrp::transmit(const float baseTime) {
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
 
     // add helpers
-    size_t noSamples = txStreamingConfig.samples[0].size();
-    size_t noPackages = noSamples / SAMPLES_PER_BUFFER;
-
-    size_t noSamplesLastBuffer = noSamples % SAMPLES_PER_BUFFER;
-    if (noSamplesLastBuffer == 0)
-        noSamplesLastBuffer = SAMPLES_PER_BUFFER;
-    else
-        noPackages++;
+    size_t noPackages =
+        calcNoPackages(txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
+    size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
+        txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
 
     // specifiy on specifications of how to stream the command
     uhd::tx_metadata_t mdTx;

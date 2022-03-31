@@ -14,22 +14,6 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer) {
         noSamplesLastBuffer = SAMPLES_PER_BUFFER;
     else
         noPackages++;
-    /*std::vector<std::vector<std::vector<std::complex<float>>>>
-        stored_channel_samples = {size_t(conf.no_packets()),
-                                  {std::vector<std::complex<float>>(conf.spb)}};
-
-    std::vector<std::vector<std::complex<float> *>> channel_buff_ptrs = {
-        size_t(conf.no_packets()), {nullptr}};
-
-    for (int packet_idx = 0; packet_idx < conf.no_packets(); packet_idx++) {
-        channel_buff_ptrs[packet_idx][0] =
-            &stored_channel_samples[packet_idx][0].front();
-    }
-
-    std::vector<uhd::ref_vector<void *>> channel_buff_ptrs2;
-    for (int i = 0; i < conf.no_packets(); i++) {
-        channel_buff_ptrs2.push_back(channel_buff_ptrs[i]);
-    }*/
 
     uhd::stream_cmd_t streamCmd =
         uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
@@ -45,14 +29,6 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer) {
                           packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                                          : SAMPLES_PER_BUFFER,
                           mdRx, 0.1f);
-
-        /*if (num_rx_samps == 0)
-            std::cerr << "I did not receive any samples." << std::endl;
-        if (md.error_code !=
-            uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
-            std::cout << md.strerror() << std::endl;*/
-
-        // packet_idx++;
     }
 }
 

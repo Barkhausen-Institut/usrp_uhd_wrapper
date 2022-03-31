@@ -23,6 +23,7 @@ void Usrp::transmit(const float baseTime) {
     mdTx.end_of_burst = false;
     mdTx.has_time_spec = true;
 
+    double ppsTimeBeforeSending = usrpDevice_->get_time_now().get_real_secs();
     mdTx.time_spec =
         uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
@@ -41,7 +42,8 @@ void Usrp::transmit(const float baseTime) {
     // close the the outer scope before the samples are actually sent, they will
     // not be sent any more out of the FPGA.
     std::this_thread::sleep_for(std::chrono::milliseconds(
-        static_cast<int>(1000 * txStreamingConfigs_[0].sendTimeOffset) + 300));
+        static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
+                                 baseTime - ppsTimeBeforeSending))));
 }
 
 void Usrp::setRfConfig(const RfConfig& conf) {

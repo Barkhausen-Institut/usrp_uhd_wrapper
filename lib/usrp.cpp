@@ -41,45 +41,50 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
     }
 }  // namespace bi
 
-void Usrp::transmit(const float baseTime) {
+void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
     // assume one txStreamConfig for the moment....
+    try {
+        if (txStreamingConfigs_.size() == 0) return;
+        TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
 
-    if (txStreamingConfigs_.size() == 0) return;
-    TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
+        // add helpers
+        size_t noPackages = calcNoPackages(txStreamingConfig.samples[0].size(),
+                                           SAMPLES_PER_BUFFER);
+        size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
+            txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
 
-    // add helpers
-    size_t noPackages =
-        calcNoPackages(txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
-    size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
-        txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
+        // specifiy on specifications of how to stream the command
+        uhd::tx_metadata_t mdTx;
+        mdTx.start_of_burst = true;
+        mdTx.end_of_burst = false;
+        mdTx.has_time_spec = true;
 
-    // specifiy on specifications of how to stream the command
-    uhd::tx_metadata_t mdTx;
-    mdTx.start_of_burst = true;
-    mdTx.end_of_burst = false;
-    mdTx.has_time_spec = true;
+        double ppsTimeBeforeSending =
+            usrpDevice_->get_time_now().get_real_secs();
+        mdTx.time_spec =
+            uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
-    double ppsTimeBeforeSending = usrpDevice_->get_time_now().get_real_secs();
-    mdTx.time_spec =
-        uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
-
-    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-        txStreamer_->send({txStreamingConfig.samples[0].data() +
-                           packageIdx * SAMPLES_PER_BUFFER},
-                          packageIdx == (noPackages - 1) ? noSamplesLastBuffer
-                                                         : SAMPLES_PER_BUFFER,
-                          mdTx, 0.1f);
-        mdTx.start_of_burst = false;
+        for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+            txStreamer_->send({txStreamingConfig.samples[0].data() +
+                               packageIdx * SAMPLES_PER_BUFFER},
+                              packageIdx == (noPackages - 1)
+                                  ? noSamplesLastBuffer
+                                  : SAMPLES_PER_BUFFER,
+                              mdTx, 0.1f);
+            mdTx.start_of_burst = false;
+        }
+        mdTx.end_of_burst = true;
+        txStreamer_->send("", 0, mdTx);
+        // we need to introduce this sleep to ensure that the samples have
+        // already been sent since the buffering is non-blocking inside the
+        // thread. If we close the the outer scope before the samples are
+        // actually sent, they will not be sent any more out of the FPGA.
+        std::this_thread::sleep_for(std::chrono::milliseconds(
+            static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
+                                     baseTime - ppsTimeBeforeSending))));
+    } catch (const std::exception &ex) {
+        exceptionPtr = std::current_exception();
     }
-    mdTx.end_of_burst = true;
-    txStreamer_->send("", 0, mdTx);
-    // we need to introduce this sleep to ensure that the samples have already
-    // been sent since the buffering is non-blocking inside the thread. If we
-    // close the the outer scope before the samples are actually sent, they will
-    // not be sent any more out of the FPGA.
-    std::this_thread::sleep_for(std::chrono::milliseconds(
-        static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
-                                 baseTime - ppsTimeBeforeSending))));
 }
 
 void Usrp::setRfConfig(const RfConfig &conf) {
@@ -141,10 +146,12 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
     std::vector<samples_vec> receivedSamples = {
         samples_vec(rxStreamingConfigs_[0].noSamples, sample(0, 0))};
     std::exception_ptr receiveThreadException = nullptr;
+    std::exception_ptr transmitThreadException = nullptr;
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
-        std::thread transmitThread(&Usrp::transmit, this, baseTime);
+        std::thread transmitThread(&Usrp::transmit, this, baseTime,
+                                   std::ref(transmitThreadException));
         std::thread receiveThread(&Usrp::receive, this, baseTime,
                                   std::ref(receivedSamples),
                                   std::ref(receiveThreadException));
@@ -154,6 +161,8 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
     }
 
     if (receiveThreadException) std::rethrow_exception(receiveThreadException);
+    if (transmitThreadException)
+        std::rethrow_exception(transmitThreadException);
     return receivedSamples;
 }
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {

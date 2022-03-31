@@ -39,7 +39,7 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_;
 
     // functions
-    void transmit(const float baseTime);
+    void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
     void receive(const float baseTime, std::vector<samples_vec>& buffer,
                  std::exception_ptr& exceptionPtr);
 };

@@ -29,9 +29,9 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                 packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                                : SAMPLES_PER_BUFFER,
                 mdRx, 0.1f);
-            if (mdRx.error_code ==
-                uhd::rx_metadata_t::error_code_t::ERROR_CODE_OVERFLOW)
-                throw UsrpException("Overflow occurred on the receiver side.");
+            if (mdRx.error_code !=
+                uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
+                throw UsrpException("error occurred on the receiver side.");
         }
 
         if (!mdRx.end_of_burst)

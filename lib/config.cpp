@@ -1,4 +1,3 @@
-#include <cmath>
 #include "config.hpp"
 namespace bi {
 size_t calcNoPackages(const size_t noSamples, const size_t spb) {

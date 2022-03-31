@@ -2,7 +2,8 @@
 
 namespace bi {
 
-void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer) {
+void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
+                   std::exception_ptr &exceptionPtr) {
     // prepare buffer for received samples and metadata
     RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
 
@@ -25,6 +26,13 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer) {
                           packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                                          : SAMPLES_PER_BUFFER,
                           mdRx, 0.1f);
+    }
+    try {
+        if (mdRx.error_code ==
+            uhd::rx_metadata_t::error_code_t::ERROR_CODE_OVERFLOW)
+            throw UsrpException("Overflow occurred on the receiver side.");
+    } catch (const UsrpException &ex) {
+        exceptionPtr = std::current_exception();
     }
 }
 
@@ -125,6 +133,7 @@ double Usrp::getCurrentFpgaTime() {
 std::vector<samples_vec> Usrp::execute(const float baseTime) {
     std::vector<samples_vec> receivedSamples = {
         samples_vec(rxStreamingConfigs_[0].noSamples)};
+    std::exception_ptr receiveThreadException = nullptr;
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
@@ -134,10 +143,19 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
             transmitThread = std::thread(&Usrp::transmit, this, baseTime);
         if (rxStreamingConfigs_.size() >= 1)
             receiveThread = std::thread(&Usrp::receive, this, baseTime,
-                                        std::ref(receivedSamples));
+                                        std::ref(receivedSamples),
+                                        std::ref(receiveThreadException));
 
         if (txStreamingConfigs_.size() >= 1) transmitThread.join();
         if (rxStreamingConfigs_.size() >= 1) receiveThread.join();
+    }
+
+    if (receiveThreadException) {
+        try {
+            std::rethrow_exception(receiveThreadException);
+        } catch (const UsrpException &ex) {
+            std::cerr << ex.what() << std::endl;
+        }
     }
     return receivedSamples;
 }

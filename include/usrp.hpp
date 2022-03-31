@@ -40,6 +40,7 @@ class Usrp : public UsrpInterface {
 
     // functions
     void transmit(const float baseTime);
-    void receive(const float baseTime, std::vector<samples_vec>& buffer);
+    void receive(const float baseTime, std::vector<samples_vec>& buffer,
+                 std::exception_ptr& exceptionPtr);
 };
 }  // namespace bi

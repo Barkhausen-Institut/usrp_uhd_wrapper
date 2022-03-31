@@ -3,6 +3,59 @@
 
 namespace bi {
 
+void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer) {
+    // prepare buffer for received samples and metadata
+    RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
+
+    size_t noPackages = rxStreamingConfig.noSamples / SAMPLES_PER_BUFFER;
+    size_t noSamplesLastBuffer =
+        rxStreamingConfig.noSamples % SAMPLES_PER_BUFFER;
+    if (noSamplesLastBuffer == 0)
+        noSamplesLastBuffer = SAMPLES_PER_BUFFER;
+    else
+        noPackages++;
+    /*std::vector<std::vector<std::vector<std::complex<float>>>>
+        stored_channel_samples = {size_t(conf.no_packets()),
+                                  {std::vector<std::complex<float>>(conf.spb)}};
+
+    std::vector<std::vector<std::complex<float> *>> channel_buff_ptrs = {
+        size_t(conf.no_packets()), {nullptr}};
+
+    for (int packet_idx = 0; packet_idx < conf.no_packets(); packet_idx++) {
+        channel_buff_ptrs[packet_idx][0] =
+            &stored_channel_samples[packet_idx][0].front();
+    }
+
+    std::vector<uhd::ref_vector<void *>> channel_buff_ptrs2;
+    for (int i = 0; i < conf.no_packets(); i++) {
+        channel_buff_ptrs2.push_back(channel_buff_ptrs[i]);
+    }*/
+
+    uhd::stream_cmd_t streamCmd =
+        uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
+    streamCmd.time_spec =
+        uhd::time_spec_t(baseTime + rxStreamingConfig.receiveTimeOffset);
+    streamCmd.num_samps = rxStreamingConfig.noSamples;
+    streamCmd.stream_now = false;
+    rxStreamer_->issue_stream_cmd(streamCmd);
+
+    uhd::rx_metadata_t mdRx;
+    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+        rxStreamer_->recv({buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
+                          packageIdx == (noPackages - 1) ? noSamplesLastBuffer
+                                                         : SAMPLES_PER_BUFFER,
+                          mdRx, 0.1f);
+
+        /*if (num_rx_samps == 0)
+            std::cerr << "I did not receive any samples." << std::endl;
+        if (md.error_code !=
+            uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
+            std::cout << md.strerror() << std::endl;*/
+
+        // packet_idx++;
+    }
+}
+
 void Usrp::transmit(const float baseTime) {
     // assume one txStreamConfig for the moment....
     TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
@@ -46,7 +99,7 @@ void Usrp::transmit(const float baseTime) {
                                  baseTime - ppsTimeBeforeSending))));
 }
 
-void Usrp::setRfConfig(const RfConfig& conf) {
+void Usrp::setRfConfig(const RfConfig &conf) {
     // configure transmitter
     usrpDevice_->set_tx_rate(conf.txSamplingRate);
     usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
@@ -66,13 +119,16 @@ void Usrp::setRfConfig(const RfConfig& conf) {
     uhd::stream_args_t txStreamArgs("fc32", "sc16");
     txStreamArgs.channels = std::vector<size_t>({0});
     txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
+    uhd::stream_args_t rxStreamArgs("fc32", "sc16");
+    rxStreamArgs.channels = std::vector<size_t>({0});
+    rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
 }
 
-void Usrp::setTxConfig(const TxStreamingConfig& conf) {
+void Usrp::setTxConfig(const TxStreamingConfig &conf) {
     txStreamingConfigs_.push_back(conf);
 }
 
-void Usrp::setRxConfig(const RxStreamingConfig& conf) {
+void Usrp::setRxConfig(const RxStreamingConfig &conf) {
     rxStreamingConfigs_.push_back(conf);
 }
 
@@ -99,11 +155,14 @@ double Usrp::getCurrentFpgaTime() {
 }
 
 std::vector<samples_vec> Usrp::execute(const float baseTime) {
-    std::vector<samples_vec> receivedSamples = {{}};
+    std::vector<samples_vec> receivedSamples = {
+        samples_vec(rxStreamingConfigs_[0].noSamples)};
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
         std::thread transmitThread(&Usrp::transmit, this, baseTime);
+        std::thread receiveThread(&Usrp::receive, this, baseTime,
+                                  std::ref(receivedSamples));
         transmitThread.join();
     }
     return receivedSamples;

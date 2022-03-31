@@ -1,8 +1,13 @@
 cmake_minimum_required(VERSION 3.15)
 project(usrp-uhd-wrapper)
 set(CMAKE_CXX_STANDARD 14) # required for trompeloeil
+set(PROJECT_3RD_PARTY_DIR ${CMAKE_SOURCE_DIR}/3rdparty)
+add_compile_options(-Wall -Werror)
 
 find_package(UHD REQUIRED)
 
 add_subdirectory(lib)
 add_subdirectory(snippets)
+add_subdirectory(tests)
+
+enable_testing()

@@ -6,8 +6,6 @@
  **/
 
 #include "catch/catch.hpp"
+#include "config.hpp"
 
-TEST_CASE("TestSkeleton", "[TestSkeleton]") {
-  REQUIRE(1 == 1);
-  REQUIRE(2 == 2);
-}
+TEST_CASE("dummy", "[Dummy]") { REQUIRE(1 == 1); }

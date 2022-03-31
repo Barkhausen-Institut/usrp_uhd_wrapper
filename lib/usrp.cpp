@@ -1,21 +1,66 @@
+#include <math.h>
 #include "usrp.hpp"
 
 namespace bi {
+
+void Usrp::transmit(const float baseTime) {
+    // assume one txStreamConfig for the moment....
+    TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
+
+    // add helpers
+    size_t noSamples = txStreamingConfig.samples[0].size();
+    size_t noPackages = noSamples / SAMPLES_PER_BUFFER;
+
+    size_t noSamplesLastBuffer = noSamples % SAMPLES_PER_BUFFER;
+    if (noSamplesLastBuffer == 0)
+        noSamplesLastBuffer = SAMPLES_PER_BUFFER;
+    else
+        noPackages++;
+
+    // specifiy on specifications of how to stream the command
+    uhd::tx_metadata_t mdTx;
+    mdTx.start_of_burst = true;
+    mdTx.end_of_burst = false;
+    mdTx.has_time_spec = true;
+
+    double ppsTimeBeforeSending = usrpDevice_->get_time_now().get_real_secs();
+    mdTx.time_spec =
+        uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
+
+    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+        txStreamer_->send({txStreamingConfig.samples[0].data() +
+                           packageIdx * SAMPLES_PER_BUFFER},
+                          packageIdx == (noPackages - 1) ? noSamplesLastBuffer
+                                                         : SAMPLES_PER_BUFFER,
+                          mdTx, 0.1f);
+        mdTx.start_of_burst = false;
+    }
+    mdTx.end_of_burst = true;
+    txStreamer_->send("", 0, mdTx);
+    // we need to introduce this sleep to ensure that the samples have already
+    // been sent since the buffering is non-blocking inside the thread. If we
+    // close the the outer scope before the samples are actually sent, they will
+    // not be sent any more out of the FPGA.
+    std::this_thread::sleep_for(std::chrono::milliseconds(
+        static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
+                                 baseTime - ppsTimeBeforeSending))));
+}
+
 void Usrp::setRfConfig(const RfConfig& conf) {
     // configure transmitter
     usrpDevice_->set_tx_rate(conf.txSamplingRate);
     usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
-    uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency);
+    uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
     usrpDevice_->set_tx_freq(txTuneRequest, 0);
-    usrpDevice_->set_tx_gain(conf.txGain, 0);
+    usrpDevice_->set_tx_gain(conf.txGain[0], 0);
     usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw, 0);
 
     // configure receiver
     usrpDevice_->set_rx_rate(conf.rxSamplingRate);
     usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
-    uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency);
+    uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency[0]);
     usrpDevice_->set_rx_freq(rxTuneRequest, 0);
-    usrpDevice_->set_rx_gain(conf.rxGain, 0);
+    usrpDevice_->set_rx_gain(conf.rxGain[0], 0);
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
 
     uhd::stream_args_t txStreamArgs("fc32", "sc16");
@@ -37,6 +82,8 @@ void Usrp::setTimeToZeroNextPps() {
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
+
+    ppsSetToZero_ = true;
 }
 
 uint64_t Usrp::getCurrentTime() {
@@ -45,6 +92,17 @@ uint64_t Usrp::getCurrentTime() {
         duration_cast<milliseconds>(system_clock::now().time_since_epoch())
             .count();
     return msSinceEpoch;
+}
+
+std::vector<samples_vec> Usrp::execute(const float baseTime) {
+    std::vector<samples_vec> receivedSamples = {{}};
+    if (!ppsSetToZero_) {
+        throw UsrpException("Synchronization must happen before execution.");
+    } else {
+        std::thread transmitThread(&Usrp::transmit, this, baseTime);
+        transmitThread.join();
+    }
+    return receivedSamples;
 }
 std::shared_ptr<UsrpInterface> createUsrp(std::string ip) {
     return std::make_shared<Usrp>(ip);

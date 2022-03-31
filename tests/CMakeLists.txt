@@ -3,12 +3,11 @@
 # do not touch!
 add_library(CatchMain catch_main.cpp)
 target_include_directories(CatchMain PUBLIC ${PROJECT_3RD_PARTY_DIR})
-target_link_libraries(CatchMain PUBLIC config)
 
 # #############################
 # add your tests here
 include(CTest)
 add_executable(unittests test_config.cpp ) # put other test_*.cpp files here
-target_link_libraries(unittests CatchMain) # no need to touch this
+target_link_libraries(unittests CatchMain usrp) # no need to touch this
 target_include_directories(unittests PRIVATE ../include/)
 add_test(NAME unittests COMMAND ${CMAKE_CURRENT_BINARY_DIR}/unittests) # don't touch this either

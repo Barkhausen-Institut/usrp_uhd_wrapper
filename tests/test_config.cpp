@@ -24,5 +24,11 @@ TEST_CASE("[SamplesDoNotFitEvenlyIntoBuffer]") {
         REQUIRE(calcNoPackages(noSamples, spb) == 3);
         REQUIRE(calcNoSamplesLastBuffer(noSamples, spb) == 10);
     }
+    SECTION("one package not entirely filled") {
+        noSamples = 999;
+        spb = 2000;
+        REQUIRE(calcNoPackages(noSamples, spb) == 1);
+        REQUIRE(calcNoSamplesLastBuffer(noSamples, spb) == noSamples);
+    }
 }
 }  // namespace bi

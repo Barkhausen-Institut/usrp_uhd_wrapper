@@ -31,7 +31,8 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                 mdRx, 0.1f);
             if (mdRx.error_code !=
                 uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
-                throw UsrpException("error occurred on the receiver side.");
+                throw UsrpException("error occurred on the receiver: " +
+                                    mdRx.strerror());
         }
 
         if (!mdRx.end_of_burst)

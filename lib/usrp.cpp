@@ -133,6 +133,7 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
         std::thread receiveThread(&Usrp::receive, this, baseTime,
                                   std::ref(receivedSamples));
         transmitThread.join();
+        receiveThread.join();
     }
     return receivedSamples;
 }

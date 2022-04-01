@@ -8,6 +8,18 @@
 namespace py = pybind11;
 
 namespace bi {
+
+std::vector<py::array_t<bi::sample>> returnVectorOfArrays(
+    const std::vector<bi::samples_vec>& samplesIn) {
+    std::vector<py::array_t<sample>> samplesOut;
+    for (auto& v : samplesIn) {
+        samplesOut.push_back(
+            py::array_t<sample>({(py::ssize_t)v.size()}, v.data()));
+    }
+
+    return samplesOut;
+}
+
 std::shared_ptr<std::vector<samples_vec>> takeVectorOfArrays(
     const std::vector<py::array_t<sample>>& signals) {
     auto vectorOfSamplesVec = std::make_shared<std::vector<samples_vec>>();
@@ -21,7 +33,8 @@ std::shared_ptr<std::vector<samples_vec>> takeVectorOfArrays(
 
 PYBIND11_MODULE(pymod, m) {
     // factory function
-    m.def("createUsrp", &bi::createUsrp, return_value_policy::take_ownership);
+    m.def("createUsrp", &bi::createUsrp,
+          py::return_value_policy::take_ownership);
 
     // wrap object
     py::class_<bi::RfConfig>(m, "RfConfig")
@@ -35,17 +48,18 @@ PYBIND11_MODULE(pymod, m) {
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency);
 
-    py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig") {
+    py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
-            .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
-            .def_readwrite("receiveTimeOffset",
-                           &bi::RxStreamingConfig::receiveTimeOffset);
-    }
+        .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
+        .def_readwrite("receiveTimeOffset",
+                       &bi::RxStreamingConfig::receiveTimeOffset);
     py::class_<bi::UsrpInterface>(m, "Usrp")
         .def("setRfConfig", &bi::UsrpInterface::setRfConfig)
         .def("setRxConfig", &bi::UsrpInterface::setRxConfig)
         .def("setTimeToZeroNextPps", &bi::UsrpInterface::setTimeToZeroNextPps)
         .def("getCurrentSystemTime", &bi::UsrpInterface::getCurrentSystemTime)
         .def("getCurrentFpgaTime", &bi::UsrpInterface::getCurrentFpgaTime)
-        .def("execute", &bi::UsrpInterface::execute);
+        .def("execute", [](bi::UsrpInterface& u, const double& baseTime) {
+            return bi::returnVectorOfArrays(u.execute(baseTime));
+        });
 }

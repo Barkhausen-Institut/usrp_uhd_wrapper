@@ -1,4 +1,3 @@
-find_package(Boost COMPONENTS system thread program_options REQUIRED)
 pybind11_add_module(pymod pybinding/usrp.cpp)
 target_link_libraries(pymod PRIVATE usrp)
 target_include_directories(pymod PRIVATE ../include/)

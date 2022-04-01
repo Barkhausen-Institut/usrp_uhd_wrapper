@@ -1,11 +1,24 @@
-#include <pybind11/complex.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "pybinding/usrp.hpp"
 #include "usrp_interface.hpp"
 
 namespace py = pybind11;
+
+namespace bi {
+std::shared_ptr<std::vector<samples_vec>> takeVectorOfArrays(
+    const std::vector<py::array_t<sample>>& signals) {
+    auto vectorOfSamplesVec = std::make_shared<std::vector<samples_vec>>();
+
+    for (auto& s : signals) {
+        vectorOfSamplesVec->emplace_back(s.data(), s.data() + s.shape(0));
+    }
+    return vectorOfSamplesVec;
+}
+}  // namespace bi
+
 PYBIND11_MODULE(pymod, m) {
     // factory function
     m.def("createUsrp", &bi::createUsrp, "Creates a USRP with dedicated IP.");
@@ -21,6 +34,7 @@ PYBIND11_MODULE(pymod, m) {
         .def_readwrite("rxGain", &bi::RfConfig::rxGain)
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency);
+
     py::class_<bi::UsrpInterface>(m, "Usrp").def(
         "setRfConfig", &bi::UsrpInterface::setRfConfig);
 }

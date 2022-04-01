@@ -33,11 +33,14 @@ class Usrp : public UsrpInterface {
     uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
     uhd::tx_streamer::sptr txStreamer_;
+    uhd::rx_streamer::sptr rxStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_;
 
     // functions
-    void transmit(const float baseTime);
+    void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
+    void receive(const float baseTime, std::vector<samples_vec>& buffer,
+                 std::exception_ptr& exceptionPtr);
 };
 }  // namespace bi

@@ -24,4 +24,7 @@ struct RxStreamingConfig {
     float receiveTimeOffset;
 };
 
+size_t calcNoPackages(const size_t noSamples, const size_t spb);
+size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb);
+
 }  // namespace bi

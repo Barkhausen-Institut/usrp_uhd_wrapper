@@ -1,3 +1,4 @@
 import pymod
 
-usrp = pymod.createUsrp()
+ip = "localhost"
+usrp = pymod.createUsrp(ip)

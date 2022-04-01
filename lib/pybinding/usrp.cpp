@@ -35,6 +35,12 @@ PYBIND11_MODULE(pymod, m) {
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency);
 
+    py::class_<bi::RxStreamingConfig>(r, "RxStreamingConfig") {
+        .def(py::init())
+            .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
+            .def_readwrite("receiveTimeOffset",
+                           &bi::RxStreamingConfig::receiveTimeOffset);
+    }
     py::class_<bi::UsrpInterface>(m, "Usrp").def(
         "setRfConfig", &bi::UsrpInterface::setRfConfig);
 }

@@ -8,4 +8,7 @@
 PYBIND11_MODULE(pymod, m) {
     // factory function
     m.def("createUsrp", &bi::createUsrp, "Creates a USRP with dedicated IP.");
+
+    // wrap object
+    pybind11::class_<bi::UsrpInterface>(m, "Usrp");
 }

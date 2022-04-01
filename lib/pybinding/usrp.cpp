@@ -21,7 +21,7 @@ std::shared_ptr<std::vector<samples_vec>> takeVectorOfArrays(
 
 PYBIND11_MODULE(pymod, m) {
     // factory function
-    m.def("createUsrp", &bi::createUsrp, "Creates a USRP with dedicated IP.");
+    m.def("createUsrp", &bi::createUsrp, return_value_policy::take_ownership);
 
     // wrap object
     py::class_<bi::RfConfig>(m, "RfConfig")
@@ -35,12 +35,17 @@ PYBIND11_MODULE(pymod, m) {
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency);
 
-    py::class_<bi::RxStreamingConfig>(r, "RxStreamingConfig") {
+    py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig") {
         .def(py::init())
             .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
             .def_readwrite("receiveTimeOffset",
                            &bi::RxStreamingConfig::receiveTimeOffset);
     }
-    py::class_<bi::UsrpInterface>(m, "Usrp").def(
-        "setRfConfig", &bi::UsrpInterface::setRfConfig);
+    py::class_<bi::UsrpInterface>(m, "Usrp")
+        .def("setRfConfig", &bi::UsrpInterface::setRfConfig)
+        .def("setRxConfig", &bi::UsrpInterface::setRxConfig)
+        .def("setTimeToZeroNextPps", &bi::UsrpInterface::setTimeToZeroNextPps)
+        .def("getCurrentSystemTime", &bi::UsrpInterface::getCurrentSystemTime)
+        .def("getCurrentFpgaTime", &bi::UsrpInterface::getCurrentFpgaTime)
+        .def("execute", &bi::UsrpInterface::execute);
 }

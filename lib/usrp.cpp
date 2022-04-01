@@ -168,7 +168,7 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
         std::rethrow_exception(transmitThreadException);
     return receivedSamples;
 }
-std::shared_ptr<UsrpInterface> createUsrp(const std::string &ip) {
-    return std::make_shared<Usrp>(ip);
+std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
+    return std::make_unique<Usrp>(ip);
 }
 }  // namespace bi

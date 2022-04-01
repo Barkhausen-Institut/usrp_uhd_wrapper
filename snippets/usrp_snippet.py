@@ -10,17 +10,22 @@ rfConfig.txCarrierFrequency = [2e9];
 rfConfig.rxCarrierFrequency = [2e9];
 rfConfig.txAnalogFilterBw = 400e6;
 rfConfig.rxAnalogFilterBw = 400e6;
-rfConfig.txSamplingRate = 10e6;
-rfConfig.rxSamplingRate = 10e6;
+rfConfig.txSamplingRate = 50e6;
+rfConfig.rxSamplingRate = 50e6;
 
 rxStreamingConfig = pymod.RxStreamingConfig()
-rxStreamingConfig.noSamples = int(60e3);
-rxStreamingConfig.receiveTimeOffset = 2.0;
+rxStreamingConfig.noSamples = int(60e3)
+rxStreamingConfig.receiveTimeOffset = 2.0
+
+txStreamingConfig = pymod.TxStreamingConfig()
+txStreamingConfig.samples = [3*np.ones(int(60e3), dtype=complex)]
+txStreamingConfig.sendTimeOffset = 2.0
 
 ip = "localhost"
 usrp = pymod.createUsrp(ip)
 usrp.setRfConfig(rfConfig)
 usrp.setRxConfig(rxStreamingConfig)
+usrp.setTxConfig(txStreamingConfig)
 usrp.setTimeToZeroNextPps()
 samples = usrp.execute(0.0)
 breakpoint()

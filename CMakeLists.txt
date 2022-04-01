@@ -6,7 +6,7 @@ add_compile_options(-Wall -Werror)
 
 find_package(UHD REQUIRED)
 
-add_subdirectory(pybind11)
+add_subdirectory(3rdparty)
 add_subdirectory(lib)
 add_subdirectory(snippets)
 add_subdirectory(tests)

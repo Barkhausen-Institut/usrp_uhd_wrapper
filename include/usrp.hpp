@@ -19,7 +19,9 @@ class Usrp : public UsrpInterface {
         usrpDevice_ =
             uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
         ppsSetToZero_ = false;
+        usrpDevice_->set_sync_source("external", "external");
     }
+    ~Usrp() { usrpDevice_->set_sync_source("internal", "internal"); }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);

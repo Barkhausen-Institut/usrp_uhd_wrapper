@@ -13,6 +13,7 @@ class UsrpInterface {
     virtual uint64_t getCurrentSystemTime() = 0;
     virtual double getCurrentFpgaTime() = 0;
     virtual std::vector<samples_vec> execute(const float baseTime) = 0;
+    virtual void reset() = 0;
 };
 
 std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);

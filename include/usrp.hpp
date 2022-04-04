@@ -21,7 +21,6 @@ class Usrp : public UsrpInterface {
         ppsSetToZero_ = false;
         usrpDevice_->set_sync_source("external", "external");
     }
-    ~Usrp() { usrpDevice_->set_sync_source("internal", "internal"); }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
@@ -29,6 +28,7 @@ class Usrp : public UsrpInterface {
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
     std::vector<samples_vec> execute(const float baseTime);
+    void reset();
 
    private:
     // variables

@@ -175,4 +175,6 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
 std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
     return std::make_unique<Usrp>(ip);
 }
+
+void Usrp::reset() { usrpDevice_->set_sync_source("internal", "internal"); }
 }  // namespace bi

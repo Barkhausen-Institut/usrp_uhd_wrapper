@@ -20,12 +20,12 @@ std::vector<py::array_t<bi::sample>> returnVectorOfArrays(
     return samplesOut;
 }
 
-std::shared_ptr<std::vector<samples_vec>> takeVectorOfArrays(
+std::vector<samples_vec> takeVectorOfArrays(
     const std::vector<py::array_t<sample>>& signals) {
-    auto vectorOfSamplesVec = std::make_shared<std::vector<samples_vec>>();
+    std::vector<samples_vec> vectorOfSamplesVec;
 
     for (auto& s : signals) {
-        vectorOfSamplesVec->emplace_back(s.data(), s.data() + s.shape(0));
+        vectorOfSamplesVec.emplace_back(s.data(), s.data() + s.shape(0));
     }
     return vectorOfSamplesVec;
 }

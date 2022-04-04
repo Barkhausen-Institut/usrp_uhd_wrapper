@@ -39,9 +39,11 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_;
 
     // functions
-    void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
+    void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
+                  const double fpgaTimeThreadStart);
     void receive(const float baseTime, std::vector<samples_vec>& buffer,
-                 std::exception_ptr& exceptionPtr);
+                 std::exception_ptr& exceptionPtr,
+                 const double fpgaTimeThreadStart);
 };
 
 }  // namespace bi

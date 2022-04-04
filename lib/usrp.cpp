@@ -3,7 +3,8 @@
 namespace bi {
 
 void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
-                   std::exception_ptr &exceptionPtr) {
+                   std::exception_ptr &exceptionPtr,
+                   const double fpgaTimeThreadStart) {
     try {
         if (rxStreamingConfigs_.size() == 0) return;
         RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
@@ -24,7 +25,7 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
 
         uhd::rx_metadata_t mdRx;
         double timeout = (baseTime + rxStreamingConfig.receiveTimeOffset) -
-                         getCurrentFpgaTime();
+                         fpgaTimeThreadStart;
         for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
             rxStreamer_->recv(
                 {buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
@@ -47,7 +48,8 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
     }
 }  // namespace bi
 
-void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
+void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
+                    const double fpgaTimeThreadStart) {
     // assume one txStreamConfig for the moment....
     try {
         if (txStreamingConfigs_.size() == 0) return;
@@ -64,7 +66,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
         mdTx.end_of_burst = false;
         mdTx.has_time_spec = true;
 
-        double fpgaTimeBeforeSending = getCurrentFpgaTime();
+        // double fpgaTimeBeforeSending = getCurrentFpgaTime();
         mdTx.time_spec =
             uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
@@ -85,7 +87,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
         // actually sent, they will not be sent any more out of the FPGA.
         std::this_thread::sleep_for(std::chrono::milliseconds(
             static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
-                                     baseTime - fpgaTimeBeforeSending))));
+                                     baseTime - fpgaTimeThreadStart))));
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }
@@ -153,11 +155,13 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
+        const double fpgaTimeThreadStart = getCurrentFpgaTime();
         std::thread transmitThread(&Usrp::transmit, this, baseTime,
-                                   std::ref(transmitThreadException));
-        std::thread receiveThread(&Usrp::receive, this, baseTime,
-                                  std::ref(receivedSamples),
-                                  std::ref(receiveThreadException));
+                                   std::ref(transmitThreadException),
+                                   fpgaTimeThreadStart);
+        std::thread receiveThread(
+            &Usrp::receive, this, baseTime, std::ref(receivedSamples),
+            std::ref(receiveThreadException), fpgaTimeThreadStart);
 
         transmitThread.join();
         receiveThread.join();

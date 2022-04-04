@@ -13,7 +13,7 @@ std::vector<py::array_t<bi::sample>> returnVectorOfArrays(
     const std::vector<bi::samples_vec>& samplesIn) {
     std::vector<py::array_t<sample>> samplesOut;
     for (auto& v : samplesIn) {
-        samplesOut.push_back(
+        samplesOut.emplace_back(
             py::array_t<sample>({(py::ssize_t)v.size()}, v.data()));
     }
 

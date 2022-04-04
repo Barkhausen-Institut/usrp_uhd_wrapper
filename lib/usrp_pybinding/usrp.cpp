@@ -2,7 +2,6 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
-#include "pybinding/usrp.hpp"
 #include "usrp_interface.hpp"
 
 namespace py = pybind11;

@@ -3,7 +3,7 @@ sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
 import numpy as np
 
-def createZadoffChuChirp(N: int):
+def createZadoffChuChirp(N: int) -> np.array:
     M = N+1
     if (N % 2 == 0):
         x = np.array([np.exp(1j*np.pi*M*k**2/N) for k in range(N)])
@@ -11,12 +11,17 @@ def createZadoffChuChirp(N: int):
         x = np.array([np.exp(1j*np.pi*M*k*(k+1)/N) for k in range(N)])
     return x
 
-def getSignalStartSample(correlation: np.array, signalLength: int) -> int:
-    maxPeakInd = np.argsort(correlation)[-1] - signalLength // 2
-    return maxPeakInd
+def getSignalLength(correlation: np.array) -> int:
+    ind1 = abs(np.argsort(correlation)[-1])
+    ind2 = abs(np.argsort(correlation)[-2])
+    
+    signalEnd = ind1 if ind1 > ind2 else ind1
+    signalStart = ind1 if ind1 < ind2 else ind2
+    return signalEnd - signalStart
 
-NO_SAMPLES = int(60e3)
-txSignal = createZadoffChuChirp(NO_SAMPLES)
+NO_TX_SAMPLES = int(2e3)
+NO_RX_SAMPLES = int(60e3)
+txSignal = createZadoffChuChirp(NO_TX_SAMPLES)
 
 rfConfig = usrp_pybinding.RfConfig()
 rfConfig.txGain = [50];
@@ -29,7 +34,7 @@ rfConfig.txSamplingRate = 50e6;
 rfConfig.rxSamplingRate = 50e6;
 
 rxStreamingConfig = usrp_pybinding.RxStreamingConfig()
-rxStreamingConfig.noSamples = NO_SAMPLES
+rxStreamingConfig.noSamples = NO_RX_SAMPLES
 rxStreamingConfig.receiveTimeOffset = 2.0
 
 txStreamingConfig = usrp_pybinding.TxStreamingConfig()
@@ -47,6 +52,6 @@ usrp.reset()
 
 # post-process
 xcorr = np.abs(np.correlate(samples[0], txSignal))
-signalStartSample = getSignalStartSample(xcorr, txSignal.size)
+signalStartSample = getSignalLength(xcorr)
 print(f"The siganl starts at sample {signalStartSample}")
 breakpoint()

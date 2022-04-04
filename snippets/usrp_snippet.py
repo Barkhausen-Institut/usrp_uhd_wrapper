@@ -1,9 +1,9 @@
 import sys
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
-import pymod
+import usrp_pybinding
 import numpy as np
 
-rfConfig = pymod.RfConfig()    
+rfConfig = usrp_pybinding.RfConfig()    
 rfConfig.txGain = [50];
 rfConfig.rxGain = [30];
 rfConfig.txCarrierFrequency = [2e9];
@@ -13,16 +13,16 @@ rfConfig.rxAnalogFilterBw = 400e6;
 rfConfig.txSamplingRate = 50e6;
 rfConfig.rxSamplingRate = 50e6;
 
-rxStreamingConfig = pymod.RxStreamingConfig()
+rxStreamingConfig = usrp_pybinding.RxStreamingConfig()
 rxStreamingConfig.noSamples = int(60e3)
 rxStreamingConfig.receiveTimeOffset = 2.0
 
-txStreamingConfig = pymod.TxStreamingConfig()
+txStreamingConfig = usrp_pybinding.TxStreamingConfig()
 txStreamingConfig.samples = [3*np.ones(int(60e3), dtype=complex)]
 txStreamingConfig.sendTimeOffset = 2.0
 
 ip = "localhost"
-usrp = pymod.createUsrp(ip)
+usrp = usrp_pybinding.createUsrp(ip)
 usrp.setRfConfig(rfConfig)
 usrp.setRxConfig(rxStreamingConfig)
 usrp.setTxConfig(txStreamingConfig)

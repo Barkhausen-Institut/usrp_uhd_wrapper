@@ -1,4 +1,5 @@
 #pragma once
+
 #include <memory>
 #include "config.hpp"
 
@@ -14,5 +15,5 @@ class UsrpInterface {
     virtual std::vector<samples_vec> execute(const float baseTime) = 0;
 };
 
-std::shared_ptr<UsrpInterface> createUsrp(std::string ip);
+std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);
 }  // namespace bi

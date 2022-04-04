@@ -46,7 +46,7 @@ samples = usrp.execute(0.0)
 usrp.reset()
 
 # post-process
-xcorr = np.abs(np.correlate(samples, txSignal[0]))
-signalStartSample = getSignalStartSample(xcorr, txSignal[0].size)
+xcorr = np.abs(np.correlate(samples[0], txSignal))
+signalStartSample = getSignalStartSample(xcorr, txSignal.size)
 print(f"The siganl starts at sample {signalStartSample}")
 breakpoint()

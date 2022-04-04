@@ -72,7 +72,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("setTimeToZeroNextPps", &bi::UsrpInterface::setTimeToZeroNextPps)
         .def("getCurrentSystemTime", &bi::UsrpInterface::getCurrentSystemTime)
         .def("getCurrentFpgaTime", &bi::UsrpInterface::getCurrentFpgaTime)
-        .def("execute", [](bi::UsrpInterface& u, const double& baseTime) {
+        .def("execute", [](bi::UsrpInterface& u, const float baseTime) {
             return bi::returnVectorOfArrays(u.execute(baseTime));
         });
 }

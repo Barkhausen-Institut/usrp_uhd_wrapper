@@ -60,7 +60,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
                       },
                       [](bi::TxStreamingConfig& c,
                          const std::vector<py::array_t<bi::sample>>& samples) {
-                          c.samples = *bi::takeVectorOfArrays(samples);
+                          c.samples = bi::takeVectorOfArrays(samples);
                       })
         .def_readwrite("sendTimeOffset",
                        &bi::TxStreamingConfig::sendTimeOffset);

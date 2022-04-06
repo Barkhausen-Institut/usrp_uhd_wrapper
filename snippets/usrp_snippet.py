@@ -10,8 +10,8 @@ rfConfig.txCarrierFrequency = [2e9];
 rfConfig.rxCarrierFrequency = [2e9];
 rfConfig.txAnalogFilterBw = 400e6;
 rfConfig.rxAnalogFilterBw = 400e6;
-rfConfig.txSamplingRate = 50e6;
-rfConfig.rxSamplingRate = 50e6;
+rfConfig.txSamplingRate = 10e6;
+rfConfig.rxSamplingRate = 10e6;
 
 rxStreamingConfig = usrp_pybinding.RxStreamingConfig()
 rxStreamingConfig.noSamples = int(60e3)
@@ -25,7 +25,6 @@ ip = "localhost"
 usrp = usrp_pybinding.createUsrp(ip)
 usrp.setRfConfig(rfConfig)
 usrp.setRxConfig(rxStreamingConfig)
-usrp.setTxConfig(txStreamingConfig)
 usrp.setTimeToZeroNextPps()
 samples = usrp.execute(0.0)
 usrp.reset()

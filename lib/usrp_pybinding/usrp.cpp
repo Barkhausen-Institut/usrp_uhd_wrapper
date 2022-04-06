@@ -54,20 +54,20 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
-        .def_property("samples",
-                      [](bi::TxStreamingConfig& c) {
-                          return bi::returnVectorOfArrays(c.samples);
-                      },
-                      [](bi::TxStreamingConfig& c,
-                         const std::vector<py::array_t<bi::sample>>& samples) {
-                          c.samples = bi::takeVectorOfArrays(samples);
-                      })
+        .def_property(
+            "samples",
+            [](bi::TxStreamingConfig& c) {
+                return bi::returnVectorOfArrays(c.samples);
+            },
+            [](bi::TxStreamingConfig& c,
+               const std::vector<py::array_t<bi::sample>>& samples) {
+                c.samples = bi::takeVectorOfArrays(samples);
+            })
         .def_readwrite("sendTimeOffset",
                        &bi::TxStreamingConfig::sendTimeOffset);
     py::class_<bi::UsrpInterface>(m, "Usrp")
         .def("setRfConfig", &bi::UsrpInterface::setRfConfig)
         .def("setRxConfig", &bi::UsrpInterface::setRxConfig)
-        .def("setTxConfig", &bi::UsrpInterface::setTxConfig)
         .def("setTimeToZeroNextPps", &bi::UsrpInterface::setTimeToZeroNextPps)
         .def("getCurrentSystemTime", &bi::UsrpInterface::getCurrentSystemTime)
         .def("getCurrentFpgaTime", &bi::UsrpInterface::getCurrentFpgaTime)

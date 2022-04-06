@@ -9,5 +9,6 @@ find_package(UHD REQUIRED)
 add_subdirectory(3rdparty)
 add_subdirectory(lib)
 add_subdirectory(tests)
+add_subdirectory(snippets)
 
 enable_testing()

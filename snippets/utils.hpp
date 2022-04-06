@@ -33,3 +33,17 @@ std::ofstream createCsv(const std::string &filename, const size_t noChannels) {
     csv_stream << std::endl;
     return csv_stream;
 }
+
+bi::samples_vec zadoffChu(unsigned int N) {
+    bi::samples_vec samples(N);
+    unsigned int cF = N % 2;
+    unsigned int q = 0;
+    std::complex<float> j(0, 1);
+    float pi = std::acos(-1.0);
+
+    for (unsigned int k = 0; k < N; k++) {
+        samples[k] = std::exp(-j * pi * static_cast<float>(k * (k + cF + q)) /
+                              static_cast<float>(N));
+    }
+    return samples;
+}

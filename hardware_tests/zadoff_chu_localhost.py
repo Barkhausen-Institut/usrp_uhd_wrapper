@@ -2,12 +2,12 @@ import sys
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
 import numpy as np
-from utils import (createZadoffChuChirp, getFirstSampleOfSignal)
+from utils import (createZadoffChuChirp, getFirstSampleOfSignal, dumpSamples)
 
 
-NO_TX_SAMPLES = int(2e3)
+NO_TX_SAMPLES = int(20e3)
 NO_RX_SAMPLES = int(60e3)
-txSignal = createZadoffChuChirp(NO_TX_SAMPLES)
+txSignal = createZadoffChuChirp(NO_TX_SAMPLES, 2.0)
 
 rfConfig = usrp_pybinding.RfConfig()
 rfConfig.txGain = [50]
@@ -37,7 +37,8 @@ samples = usrp.execute(0.0)
 usrp.reset()
 
 # post-process
-xcorr = np.abs(np.correlate(samples[0], txSignal))
-signalStartSample = getFirstSampleOfSignal(xcorr)
+signalStartSample = getFirstSampleOfSignal(samples[0], txSignal)
 print(f"The siganl starts at sample {signalStartSample}")
-breakpoint()
+
+# save to file for debugging purposes
+dumpSamples("rxSamples.csv", samples[0])

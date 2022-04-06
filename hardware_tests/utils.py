@@ -1,4 +1,5 @@
 import numpy as np
+import csv
 
 def createZadoffChuChirp(N: int) -> np.array:
     M = 1
@@ -10,3 +11,9 @@ def createZadoffChuChirp(N: int) -> np.array:
 def getFirstSampleOfSignal(frame: np.array, signal: np.array) -> int:
     correlation = np.abs(np.correlate(frame, signal))
     return np.argsort(correlation)[-1]
+
+def dumpSamples(csvName: str, samples: np.array) -> None:
+    with open(csvName, 'w') as f:
+        csvWriter = csv.writer(f)
+        for sample in samples.tolist():
+            csvWriter.writerow([sample])

@@ -68,6 +68,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
     py::class_<bi::UsrpInterface>(m, "Usrp")
         .def("setRfConfig", &bi::UsrpInterface::setRfConfig)
         .def("setRxConfig", &bi::UsrpInterface::setRxConfig)
+        .def("setTxConfig", &bi::UsrpInterface::setTxConfig)
         .def("setTimeToZeroNextPps", &bi::UsrpInterface::setTimeToZeroNextPps)
         .def("getCurrentSystemTime", &bi::UsrpInterface::getCurrentSystemTime)
         .def("getCurrentFpgaTime", &bi::UsrpInterface::getCurrentFpgaTime)

@@ -9,17 +9,18 @@ from utils import (FrequencyZOH, dumpSamples, findFirstSampleInFrameOfSignal)
 
 NO_TX_SAMPLES = int(60e3)
 NO_RX_SAMPLES = int(60e3)
-txSignal = FrequencyZOH(10, 10e6, 20e6, 50e6)
+fSampling = 50e6
+txSignal = FrequencyZOH(noSignals=10, fStart=10e6, fStop=fSampling//2, fSampling=fSampling)
 txSignal.create(NO_TX_SAMPLES, 1)
 rfConfig = usrp_pybinding.RfConfig()
-rfConfig.txGain = [40]
-rfConfig.rxGain = [40]
+rfConfig.txGain = [35]
+rfConfig.rxGain = [35]
 rfConfig.txCarrierFrequency = [2e9]
 rfConfig.rxCarrierFrequency = [2e9]
 rfConfig.txAnalogFilterBw = 400e6
 rfConfig.rxAnalogFilterBw = 400e6
-rfConfig.txSamplingRate = 50e6
-rfConfig.rxSamplingRate = 50e6
+rfConfig.txSamplingRate = fSampling
+rfConfig.rxSamplingRate = fSampling
 
 rxStreamingConfig = usrp_pybinding.RxStreamingConfig()
 rxStreamingConfig.noSamples = NO_RX_SAMPLES

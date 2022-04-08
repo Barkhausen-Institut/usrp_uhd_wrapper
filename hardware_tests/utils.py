@@ -22,7 +22,7 @@ class RectSignal(Signal):
 
 class RandomSignal(Signal):
     def create(self, noSamples: int, ampltitude: float) -> None:
-        self.samples = ampltitude*(2 * (np.random.sample((noSamples,)) + 1j * np.random.sample((N,))) - (
+        self.samples = ampltitude*(2 * (np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,))) - (
             1 + 1j
         ))
 

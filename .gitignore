@@ -1,3 +1,8 @@
 *build/
 *.swp
 *~
+__pycache__/
+*.pyc
+.vscode/
+.mypy*/
+*.csv

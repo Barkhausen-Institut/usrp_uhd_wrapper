@@ -1,16 +1,15 @@
 import sys
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
-import numpy as np
 from copy import deepcopy
-from utils import (FrequencyZOH, dumpSamples, findFirstSampleInFrameOfSignal)
+from utils import (RandomSignal, findFirstSampleInFrameOfSignal)
 
 
 
-NO_TX_SAMPLES = int(60e3)
+NO_TX_SAMPLES = int(10e3)
 NO_RX_SAMPLES = int(60e3)
 fSampling = 50e6
-txSignal = FrequencyZOH(noSignals=10, fStart=10e6, fStop=fSampling//2, fSampling=fSampling)
+txSignal = RandomSignal()
 txSignal.create(NO_TX_SAMPLES, 1)
 rfConfig = usrp_pybinding.RfConfig()
 rfConfig.txGain = [35]
@@ -42,7 +41,3 @@ usrp.reset()
 # post-process
 signalStartSample = findFirstSampleInFrameOfSignal(samples[0], txSignal.samples)
 print(f"The siganl starts at sample {signalStartSample}")
-
-# save to file for debugging purposes
-dumpSamples("rxSamples.csv", samples[0])
-dumpSamples("txSamples.csv", txSignal.samples)

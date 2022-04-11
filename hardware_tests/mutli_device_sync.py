@@ -1,9 +1,6 @@
-from json import dumps
 import sys
-from hardware_tests.send_signal_localhost import NO_RX_SAMPLES, NO_TX_SAMPLES
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
-import numpy as np
 from utils import RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples
 
 NO_TX_SAMPLES = 10e3

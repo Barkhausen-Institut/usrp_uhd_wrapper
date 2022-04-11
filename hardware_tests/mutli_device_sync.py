@@ -30,6 +30,7 @@ txStreamingConfig.sendTimeOffset = 2.0
 ip = "localhost"
 usrp = usrp_pybinding.createUsrp(ip)
 usrp.setRfConfig(rfConfig)
+usrp.setTxConfig(txStreamingConfig)
 usrp.setRxConfig(rxStreamingConfig)
 _ = input("Press enter to synchronize devices and to continue")
 usrp.setTimeToZeroNextPps()

@@ -3,8 +3,8 @@ sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
 from utils import RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples
 
-NO_TX_SAMPLES = 10e3
-NO_RX_SAMPLES = 60e3
+NO_TX_SAMPLES = int(10e3)
+NO_RX_SAMPLES = int(60e3)
 
 txSignal = RandomSignal()
 txSignal.create(NO_TX_SAMPLES, 1)

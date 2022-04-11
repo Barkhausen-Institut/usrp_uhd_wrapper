@@ -11,13 +11,13 @@ txSignal.create(NO_TX_SAMPLES, 1)
 
 rfConfig = usrp_pybinding.RfConfig()    
 rfConfig.txGain = [50]
-rfConfig.rxGain = [30]
+rfConfig.rxGain = [40]
 rfConfig.txCarrierFrequency = [2e9]
 rfConfig.rxCarrierFrequency = [2e9]
 rfConfig.txAnalogFilterBw = 400e6
 rfConfig.rxAnalogFilterBw = 400e6
-rfConfig.txSamplingRate = 10e6
-rfConfig.rxSamplingRate = 10e6
+rfConfig.txSamplingRate = 50e6
+rfConfig.rxSamplingRate = 50e6
 
 rxStreamingConfig = usrp_pybinding.RxStreamingConfig()
 rxStreamingConfig.noSamples = NO_RX_SAMPLES

@@ -1,3 +1,5 @@
 zerorpc==0.6.3
 pyzmq==22.3.0
 pytest==7.1.1
+pytest-mypy==0.9.1
+pytest-flake8==1.1.1

@@ -13,8 +13,10 @@ before_script:
 build_test:
   stage: build_test
   script:
+    - pip install -r requirements.txt
     - mkdir build && cd build
     - cmake ..
     - make
     - ctest -V
+    - cd ..
     - python -m pytest tests/python/

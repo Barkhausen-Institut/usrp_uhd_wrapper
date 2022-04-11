@@ -1,5 +1,14 @@
 import unittest
 
-class TestRpcServer(unittest.TestCase):
-    def test_dummyTest(self):
-        self.assertTrue(True)
+import numpy as np
+
+from rpcserver.rpc_server import serializeComplexArray
+
+
+class TestSerializationCustomObjects(unittest.TestCase):
+    def test_oneDimensionalArray_complexValues(self) -> None:
+        oneDimensionalArr = np.ones(3, dtype=np.complex64)
+        real, imag = serializeComplexArray(oneDimensionalArr)
+
+        self.assertListEqual(imag, np.imag(oneDimensionalArr).tolist())
+        self.assertListEqual(real, np.real(oneDimensionalArr).tolist())

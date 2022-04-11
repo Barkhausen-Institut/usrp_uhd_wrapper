@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 import unittest
 
 import numpy as np
@@ -19,3 +20,7 @@ class TestSerializationCustomObjects(unittest.TestCase):
 
         self.assertListEqual(imag, np.imag(arr).tolist())
         self.assertListEqual(real, np.real(arr).tolist())
+
+    def test_ndArrayShouldNotBeSupported(self) -> None:
+        arr = np.ones((2, 3))
+        self.assertRaises(ValueError, lambda: serializeComplexArray(arr))

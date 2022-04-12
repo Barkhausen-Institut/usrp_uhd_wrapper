@@ -40,3 +40,7 @@ Afterwards, synchronize the panes via `Ctrl B` and then `:setw synchronize-panes
 # For Developers
 
 In the `snippets` directory, snippets can be found. As the testing capabilities for the hardware are strongly limited, the snippets are meant for evaluating the hardware. Feel free to play around with it!
+
+We also have a **debug** folder that contains some files to be used for debugging:
+
+- tx_stream: streams white noise (mean 0, std 2) that may be analysed with the specci. **note**: undeflow occurs, i.e. samples are not buffered fast enough into the fpga. No clue how this can be fixed. however, we hope that the results are still valid...

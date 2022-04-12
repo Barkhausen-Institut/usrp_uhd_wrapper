@@ -8,19 +8,13 @@ static bool stopSignal = false;
 void sig_int_handler(int) { stopSignal = true; }
 
 const size_t SPB = 2000;
-bi::samples_vec createNoise(const double mean, const double std) {
-    // Define random generator with Gaussian distribution
-    std::default_random_engine generator;
-    std::normal_distribution<double> dist(mean, std);
-
-    bi::samples_vec noise(SPB, bi::sample(0, 0));
+void createNoise(bi::samples_vec &noise, std::normal_distribution<double> &dist,
+                 std::default_random_engine &generator) {
     // Add Gaussian noises
     for (bi::sample &x : noise) {
         x.real(dist(generator));
         x.imag(dist(generator));
     }
-
-    return noise;
 }
 void transmit(const float timeOffset, uhd::tx_streamer::sptr txStreamer) {
     // assume one txStreamConfig for the moment....
@@ -35,11 +29,17 @@ void transmit(const float timeOffset, uhd::tx_streamer::sptr txStreamer) {
     // double fpgaTimeBeforeSending = getCurrentFpgaTime();
     mdTx.time_spec = uhd::time_spec_t(timeOffset);
 
-    bi::samples_vec signal;
+    bi::samples_vec signal(SPB, bi::sample(0, 0));
+    // Define random generator with Gaussian distribution
+    std::default_random_engine generator;
+    std::normal_distribution<double> dist(0, 2);
+    createNoise(signal, dist, generator);
+
+    uhd::ref_vector<const void *> samplesRefVector = {signal.data()};
     while (not stopSignal) {
-        signal = createNoise(0, 2);
-        txStreamer->send({signal.data()}, SPB, mdTx, 0.1f);
+        txStreamer->send(samplesRefVector, SPB, mdTx, 0.3f);
         mdTx.start_of_burst = false;
+        mdTx.has_time_spec = false;
     }
     mdTx.end_of_burst = true;
     txStreamer->send("", 0, mdTx);
@@ -59,10 +59,10 @@ int main() {
     std::signal(SIGINT, &sig_int_handler);
 
     bi::RfConfig rfConfig;
-    rfConfig.txGain = {70};
+    rfConfig.txGain = {30};
     rfConfig.txCarrierFrequency = {2e9};
     rfConfig.txAnalogFilterBw = 400e6;
-    rfConfig.txSamplingRate = 10e6;
+    rfConfig.txSamplingRate = 50e6;
     uhd::usrp::multi_usrp::sptr usrpDevice =
         uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=localhost"));
 
@@ -70,8 +70,8 @@ int main() {
     uhd::stream_args_t txStreamArgs("fc32", "sc16");
     txStreamArgs.channels = std::vector<size_t>({0});
     uhd::tx_streamer::sptr txStreamer = usrpDevice->get_tx_stream(txStreamArgs);
-
-    std::thread transmitThread(transmit, 2.0, txStreamer);
+    usrpDevice->set_time_next_pps(0.f);
+    std::thread transmitThread(transmit, 3.0, txStreamer);
     transmitThread.join();
     stopSignal = true;
     return 0;

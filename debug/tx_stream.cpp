@@ -43,12 +43,6 @@ void transmit(const float timeOffset, uhd::tx_streamer::sptr txStreamer) {
     }
     mdTx.end_of_burst = true;
     txStreamer->send("", 0, mdTx);
-    // we need to introduce this sleep to ensure that the samples have
-    // already been sent since the buffering is non-blocking inside the
-    // thread. If we close the the outer scope before the samples are
-    // actually sent, they will not be sent any more out of the FPGA.
-    std::this_thread::sleep_for(
-        std::chrono::milliseconds(static_cast<int>(1000 * timeOffset)));
 }
 
 void setRfConfig(const bi::RfConfig &conf,
@@ -65,7 +59,7 @@ int main() {
     std::signal(SIGINT, &sig_int_handler);
 
     bi::RfConfig rfConfig;
-    rfConfig.txGain = {50};
+    rfConfig.txGain = {70};
     rfConfig.txCarrierFrequency = {2e9};
     rfConfig.txAnalogFilterBw = 400e6;
     rfConfig.txSamplingRate = 10e6;
@@ -78,6 +72,7 @@ int main() {
     uhd::tx_streamer::sptr txStreamer = usrpDevice->get_tx_stream(txStreamArgs);
 
     std::thread transmitThread(transmit, 2.0, txStreamer);
-    stopSignal = true;
     transmitThread.join();
+    stopSignal = true;
+    return 0;
 }

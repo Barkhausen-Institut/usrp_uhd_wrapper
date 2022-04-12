@@ -1,7 +1,13 @@
 import sys
+import argparse
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
 from utils import RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--tx-time-offset", type=float)
+parser.add_argument("--rx-time-offset", type=float)
+args = parser.parse_args()
 
 NO_TX_SAMPLES = int(10e3)
 NO_RX_SAMPLES = int(60e3)
@@ -21,11 +27,11 @@ rfConfig.rxSamplingRate = 50e6
 
 rxStreamingConfig = usrp_pybinding.RxStreamingConfig()
 rxStreamingConfig.noSamples = NO_RX_SAMPLES
-rxStreamingConfig.receiveTimeOffset = 2.0
+rxStreamingConfig.receiveTimeOffset = args.rx_time_offset
 
 txStreamingConfig = usrp_pybinding.TxStreamingConfig()
 txStreamingConfig.samples = [txSignal.samples]
-txStreamingConfig.sendTimeOffset = 2.0
+txStreamingConfig.sendTimeOffset = args.tx_time_offset
 
 ip = "localhost"
 usrp = usrp_pybinding.createUsrp(ip)

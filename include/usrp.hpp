@@ -18,13 +18,7 @@ class Usrp : public UsrpInterface {
         ip_ = ip;
         usrpDevice_ =
             uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
-        ppsSetToZero_ = false;
         usrpDevice_->set_sync_source("external", "external");
-
-        transmitThreadException_ = nullptr;
-        receiveThreadException_ = nullptr;
-
-        receivedSamples_ = {{}};
         masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
     void setRfConfig(const RfConfig& rfConfig);
@@ -47,14 +41,14 @@ class Usrp : public UsrpInterface {
     uhd::rx_streamer::sptr rxStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
-    bool ppsSetToZero_;
+    bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
-    std::exception_ptr transmitThreadException_;
-    std::exception_ptr receiveThreadException_;
+    std::exception_ptr transmitThreadException_ = nullptr;
+    std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
 
-    std::vector<samples_vec> receivedSamples_;
+    std::vector<samples_vec> receivedSamples_ = {{}};
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);

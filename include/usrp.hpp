@@ -52,7 +52,6 @@ class Usrp : public UsrpInterface {
     void receive(const float baseTime, std::vector<samples_vec>& buffer,
                  std::exception_ptr& exceptionPtr,
                  const double fpgaTimeThreadStart);
-    void assertSamplingRate(const double actualSamplingRate);
 };
 
 }  // namespace bi

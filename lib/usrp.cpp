@@ -182,17 +182,12 @@ void Usrp::reset() { usrpDevice_->set_sync_source("internal", "internal"); }
 void Usrp::setTxSamplingRate(const double samplingRate) {
     usrpDevice_->set_tx_rate(samplingRate);
     double actualSamplingRate = usrpDevice_->get_tx_rate();
-    assertSamplingRate(actualSamplingRate);
+    assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
 void Usrp::setRxSamplingRate(const double samplingRate) {
     usrpDevice_->set_rx_rate(samplingRate);
     double actualSamplingRate = usrpDevice_->get_rx_rate();
-    assertSamplingRate(actualSamplingRate);
+    assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
-void Usrp::assertSamplingRate(const double actualSamplingRate) {
-    // avoid floating inprecision issues
-    if (std::fmod(masterClockRate_ / actualSamplingRate, 2.0) > 0.01)
-        throw UsrpException("Sampling rate must be an even fraction of " +
-                            std::to_string(masterClockRate_));
-}
+
 }  // namespace bi

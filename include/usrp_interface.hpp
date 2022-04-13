@@ -15,10 +15,6 @@ class UsrpInterface {
     virtual std::vector<samples_vec> execute(const float baseTime) = 0;
     virtual void reset() = 0;
     virtual double getMasterClockRate() const = 0;
-
-   protected:
-    virtual void setTxSamplingRate(const double samplingRate) = 0;
-    virtual void setRxSamplingRate(const double samplingRate) = 0;
 };
 
 std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);

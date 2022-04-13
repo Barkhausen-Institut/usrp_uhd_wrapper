@@ -33,10 +33,6 @@ class Usrp : public UsrpInterface {
     double getMasterClockRate() const { return masterClockRate_; }
     void reset();
 
-   protected:
-    void setTxSamplingRate(const double samplingRate);
-    void setRxSamplingRate(const double samplingRate);
-
    private:
     // variables
     uhd::usrp::multi_usrp::sptr usrpDevice_;
@@ -49,6 +45,8 @@ class Usrp : public UsrpInterface {
     double masterClockRate_;
 
     // functions
+    void setTxSamplingRate(const double samplingRate);
+    void setRxSamplingRate(const double samplingRate);
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
                   const double fpgaTimeThreadStart);
     void receive(const float baseTime, std::vector<samples_vec>& buffer,

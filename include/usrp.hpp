@@ -30,7 +30,7 @@ class Usrp : public UsrpInterface {
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
     void execute(const float baseTime);
-    std::vector<samples_vec> collect() { return {{}}; }
+    std::vector<samples_vec> collect();
     void reset();
 
    private:

@@ -181,12 +181,12 @@ std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
 void Usrp::reset() { usrpDevice_->set_sync_source("internal", "internal"); }
 void Usrp::setTxSamplingRate(const double samplingRate) {
     usrpDevice_->set_tx_rate(samplingRate);
-    double actualSamplingRate = usrpDevice_->get_tx_rate(samplingRate);
+    double actualSamplingRate = usrpDevice_->get_tx_rate();
     assertSamplingRate(actualSamplingRate);
 }
 void Usrp::setRxSamplingRate(const double samplingRate) {
     usrpDevice_->set_rx_rate(samplingRate);
-    double actualSamplingRate = usrpDevice_->get_rx_rate(samplingRate);
+    double actualSamplingRate = usrpDevice_->get_rx_rate();
     assertSamplingRate(actualSamplingRate);
 }
 void Usrp::assertSamplingRate(const double actualSamplingRate) {

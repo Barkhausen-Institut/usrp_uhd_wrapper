@@ -12,7 +12,8 @@ class UsrpInterface {
     virtual void setTimeToZeroNextPps() = 0;
     virtual uint64_t getCurrentSystemTime() = 0;
     virtual double getCurrentFpgaTime() = 0;
-    virtual std::vector<samples_vec> execute(const float baseTime) = 0;
+    virtual void execute(const float baseTime) = 0;
+    virtual std::vector<samples_vec> collect() = 0;
     virtual void reset() = 0;
     virtual double getMasterClockRate() const = 0;
 };

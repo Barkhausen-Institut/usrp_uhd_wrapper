@@ -160,21 +160,6 @@ void Usrp::execute(const float baseTime) {
             &Usrp::receive, this, baseTime, std::ref(receivedSamples_),
             std::ref(receiveThreadException_), fpgaTimeThreadStart);
     }
-    /*std::vector<samples_vec> receivedSamples = {{}};
-    std::exception_ptr receiveThreadException = nullptr;
-        std::thread transmitThread(&Usrp::transmit, this, baseTime,
-                                   std::ref(transmitThreadException),
-                                   fpgaTimeThreadStart);
-
-        transmitThread.join();
-        receiveThread.join();
-    }
-
-    if (receiveThreadException)
-    std::rethrow_exception(receiveThreadException); if
-    (transmitThreadException)
-        std::rethrow_exception(transmitThreadException);
-    return receivedSamples;*/
 }
 
 std::vector<samples_vec> Usrp::collect() {

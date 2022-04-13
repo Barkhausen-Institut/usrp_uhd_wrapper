@@ -2,6 +2,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
 
 namespace py = pybind11;
@@ -47,6 +48,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency);
 
+    py::class_<bi::UsrpException>(m, "UsrpException");
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
         .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)

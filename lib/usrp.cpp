@@ -192,6 +192,7 @@ void Usrp::setRxSamplingRate(const double samplingRate) {
 void Usrp::assertSamplingRate(const double actualSamplingRate) {
     // avoid floating inprecision issues
     if (std::fmod(masterClockRate_ / actualSamplingRate, 2.0) > 0.01)
-        throw UsrpException("Sampling rate must be an even fraction of ");
+        throw UsrpException("Sampling rate must be an even fraction of " +
+                            std::to_string(masterClockRate_));
 }
 }  // namespace bi

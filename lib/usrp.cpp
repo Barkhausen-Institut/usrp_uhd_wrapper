@@ -182,6 +182,8 @@ std::vector<samples_vec> Usrp::collect() {
     receiveThread_.join();
     if (transmitThreadException_)
         std::rethrow_exception(transmitThreadException_);
+    if (receiveThreadException_)
+        std::rethrow_exception(receiveThreadException_);
     return {{}};
 }
 std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {

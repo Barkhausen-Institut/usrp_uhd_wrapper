@@ -37,6 +37,28 @@ PYBIND11_MODULE(usrp_pybinding, m) {
     // wrap object
     py::class_<bi::RfConfig>(m, "RfConfig")
         .def(py::init())
+        .def(py::init(
+                 [](const std::vector<float>& txGain,
+                    const std::vector<float>& rxGain,
+                    const std::vector<float>& txCarrierFrequency,
+                    const std::vector<float>& rxCarrierFrequency,
+                    const float txAnalogFilterBw, const float rxAnalogFilterBw,
+                    const float txSamplingRate, const float rxSamplingRate) {
+                     auto c = std::make_unique<bi::RfConfig>();
+                     c->txGain = txGain;
+                     c->rxGain = rxGain;
+                     c->txCarrierFrequency = txCarrierFrequency;
+                     c->rxCarrierFrequency = rxCarrierFrequency;
+                     c->txAnalogFilterBw = txAnalogFilterBw;
+                     c->rxAnalogFilterBw = rxAnalogFilterBw;
+                     c->txSamplingRate = txSamplingRate;
+                     c->rxSamplingRate = rxSamplingRate;
+                     return c;
+                 }),
+             py::arg("txGain"), py::arg("rxGain"),
+             py::arg("rxCarrierFrequency"), py::arg("txCarrierFrequency"),
+             py::arg("txAnalogFilterBw"), py::arg("rxAnalogFilterBw"),
+             py::arg("txSamplingRate"), py::arg("rxSamplingRate"))
         .def_readwrite("txSamplingRate", &bi::RfConfig::txSamplingRate)
         .def_readwrite("rxSamplingRate", &bi::RfConfig::rxSamplingRate)
         .def_readwrite("txAnalogFilterBw", &bi::RfConfig::txAnalogFilterBw)
@@ -48,19 +70,27 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
+        .def(py::init([](const unsigned int noSamples,
+                         const float receiveTimeOffset) {
+                 auto c = std::make_unique<bi::RxStreamingConfig>();
+                 c->noSamples = noSamples;
+                 c->receiveTimeOffset = receiveTimeOffset;
+                 return c;
+             }),
+             py::arg("noSamples"), py::arg("receiveTimeOffset"))
         .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
         .def_readwrite("receiveTimeOffset",
                        &bi::RxStreamingConfig::receiveTimeOffset);
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
-        .def(py::init(
-                 [](std::vector<py::array_t<bi::sample>>& s, const float o) {
-                     auto c = std::make_unique<bi::TxStreamingConfig>();
-                     c->samples = bi::takeVectorOfArrays(s);
-                     c->sendTimeOffset = o;
-                     return c;
-                 }),
+        .def(py::init([](const std::vector<py::array_t<bi::sample>>& s,
+                         const float o) {
+                 auto c = std::make_unique<bi::TxStreamingConfig>();
+                 c->samples = bi::takeVectorOfArrays(s);
+                 c->sendTimeOffset = o;
+                 return c;
+             }),
              py::arg("samples"), py::arg("sendTimeOffset"))
 
         .def_property(

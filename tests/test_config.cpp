@@ -7,6 +7,7 @@
 
 #include "catch/catch.hpp"
 #include "config.hpp"
+#include "usrp_exception.hpp"
 
 namespace bi {
 TEST_CASE("[SamplesDoNotFitEvenlyIntoBuffer]") {
@@ -21,6 +22,16 @@ TEST_CASE("[SamplesDoNotFitEvenlyIntoBuffer]") {
     SECTION("one package not entirely filled") {
         REQUIRE(calcNoPackages(999, 2000) == 1);
         REQUIRE(calcNoSamplesLastBuffer(999, 2000) == 999);
+    }
+}
+
+TEST_CASE("[SamplingRateSupported]") {
+    SECTION("Uneven decimation rate throws exception") {
+        REQUIRE_THROWS_AS(assertSamplingRate(250e6 / 3, 250e6), UsrpException);
+    }
+
+    SECTION("Even decimation rate throws no exception") {
+        REQUIRE_NOTHROW(assertSamplingRate(250e6 / 4, 250e6));
     }
 }
 }  // namespace bi

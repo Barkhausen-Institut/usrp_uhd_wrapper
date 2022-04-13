@@ -1,5 +1,6 @@
 #pragma once
 #include <memory>
+
 #include "config.hpp"
 
 namespace bi {
@@ -13,6 +14,7 @@ class UsrpInterface {
     virtual double getCurrentFpgaTime() = 0;
     virtual std::vector<samples_vec> execute(const float baseTime) = 0;
     virtual void reset() = 0;
+    virtual double getMasterClockRate() const = 0;
 };
 
 std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);

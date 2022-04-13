@@ -33,6 +33,7 @@ std::vector<samples_vec> takeVectorOfArrays(
 PYBIND11_MODULE(usrp_pybinding, m) {
     // factory function
     m.def("createUsrp", &bi::createUsrp);
+    m.def("assertSamplingRate", &bi::assertSamplingRate);
 
     // wrap object
     py::class_<bi::RfConfig>(m, "RfConfig")
@@ -76,5 +77,6 @@ PYBIND11_MODULE(usrp_pybinding, m) {
              [](bi::UsrpInterface& u, const float baseTime) {
                  return bi::returnVectorOfArrays(u.execute(baseTime));
              })
-        .def("reset", &bi::UsrpInterface::reset);
+        .def("reset", &bi::UsrpInterface::reset)
+        .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate);
 }

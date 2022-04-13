@@ -25,6 +25,7 @@ class Usrp : public UsrpInterface {
         receiveThreadException_ = nullptr;
 
         receivedSamples_ = {{}};
+        masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
@@ -34,6 +35,8 @@ class Usrp : public UsrpInterface {
     double getCurrentFpgaTime();
     void execute(const float baseTime);
     std::vector<samples_vec> collect();
+
+    double getMasterClockRate() const { return masterClockRate_; }
     void reset();
 
    private:
@@ -49,9 +52,12 @@ class Usrp : public UsrpInterface {
     std::thread receiveThread_;
     std::exception_ptr transmitThreadException_;
     std::exception_ptr receiveThreadException_;
+    double masterClockRate_;
 
     std::vector<samples_vec> receivedSamples_;
     // functions
+    void setTxSamplingRate(const double samplingRate);
+    void setRxSamplingRate(const double samplingRate);
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
                   const double fpgaTimeThreadStart);
     void receive(const float baseTime, std::vector<samples_vec>& buffer,

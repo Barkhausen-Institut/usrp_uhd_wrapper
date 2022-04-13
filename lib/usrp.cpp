@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "usrp.hpp"
 
 namespace bi {
@@ -95,7 +97,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
 
 void Usrp::setRfConfig(const RfConfig &conf) {
     // configure transmitter
-    usrpDevice_->set_tx_rate(conf.txSamplingRate);
+    setTxSamplingRate(conf.txSamplingRate);
     usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
     usrpDevice_->set_tx_freq(txTuneRequest, 0);
@@ -103,7 +105,7 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw, 0);
 
     // configure receiver
-    usrpDevice_->set_rx_rate(conf.rxSamplingRate);
+    setRxSamplingRate(conf.rxSamplingRate);
     usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency[0]);
     usrpDevice_->set_rx_freq(rxTuneRequest, 0);
@@ -176,4 +178,15 @@ std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
 }
 
 void Usrp::reset() { usrpDevice_->set_sync_source("internal", "internal"); }
+void Usrp::setTxSamplingRate(const double samplingRate) {
+    usrpDevice_->set_tx_rate(samplingRate);
+    double actualSamplingRate = usrpDevice_->get_tx_rate();
+    assertSamplingRate(actualSamplingRate, masterClockRate_);
+}
+void Usrp::setRxSamplingRate(const double samplingRate) {
+    usrpDevice_->set_rx_rate(samplingRate);
+    double actualSamplingRate = usrpDevice_->get_rx_rate();
+    assertSamplingRate(actualSamplingRate, masterClockRate_);
+}
+
 }  // namespace bi

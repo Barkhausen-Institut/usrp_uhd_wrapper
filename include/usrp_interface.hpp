@@ -15,6 +15,7 @@ class UsrpInterface {
     virtual void execute(const float baseTime) = 0;
     virtual std::vector<samples_vec> collect() = 0;
     virtual void reset() = 0;
+    virtual double getMasterClockRate() const = 0;
 };
 
 std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);

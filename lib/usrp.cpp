@@ -149,13 +149,17 @@ double Usrp::getCurrentFpgaTime() {
 }
 
 void Usrp::execute(const float baseTime) {
-    /*std::vector<samples_vec> receivedSamples = {{}};
-    std::exception_ptr receiveThreadException = nullptr;
     std::exception_ptr transmitThreadException = nullptr;
+    const double fpgaTimeThreadStart = getCurrentFpgaTime();
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
-        const double fpgaTimeThreadStart = getCurrentFpgaTime();
+        transmitThread_ =
+            std::thread(&Usrp::transmit, this, baseTime,
+                        std::ref(transmitThreadException), fpgaTimeThreadStart);
+    }
+    /*std::vector<samples_vec> receivedSamples = {{}};
+    std::exception_ptr receiveThreadException = nullptr;
         std::thread transmitThread(&Usrp::transmit, this, baseTime,
                                    std::ref(transmitThreadException),
                                    fpgaTimeThreadStart);
@@ -167,8 +171,9 @@ void Usrp::execute(const float baseTime) {
         receiveThread.join();
     }
 
-    if (receiveThreadException) std::rethrow_exception(receiveThreadException);
-    if (transmitThreadException)
+    if (receiveThreadException)
+    std::rethrow_exception(receiveThreadException); if
+    (transmitThreadException)
         std::rethrow_exception(transmitThreadException);
     return receivedSamples;*/
 }

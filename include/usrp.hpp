@@ -1,12 +1,12 @@
 #pragma once
 #include <sys/time.h>
+
 #include <chrono>
 #include <ctime>
 #include <thread>
 
-#include "uhd/usrp/multi_usrp.hpp"
-
 #include "config.hpp"
+#include "uhd/usrp/multi_usrp.hpp"
 #include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
 
@@ -20,6 +20,7 @@ class Usrp : public UsrpInterface {
             uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
         ppsSetToZero_ = false;
         usrpDevice_->set_sync_source("external", "external");
+        masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
@@ -28,7 +29,13 @@ class Usrp : public UsrpInterface {
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
     std::vector<samples_vec> execute(const float baseTime);
+
+    double getMasterClockRate() const { return masterClockRate_; }
     void reset();
+
+   protected:
+    void setTxSamplingRate(const double samplingRate);
+    void setRxSamplingRate(const double samplingRate);
 
    private:
     // variables
@@ -39,6 +46,7 @@ class Usrp : public UsrpInterface {
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_;
+    double masterClockRate_;
 
     // functions
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
@@ -46,6 +54,7 @@ class Usrp : public UsrpInterface {
     void receive(const float baseTime, std::vector<samples_vec>& buffer,
                  std::exception_ptr& exceptionPtr,
                  const double fpgaTimeThreadStart);
+    void assertSamplingRate(const double actualSamplingRate);
 };
 
 }  // namespace bi

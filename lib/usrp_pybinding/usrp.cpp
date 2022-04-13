@@ -54,6 +54,13 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
+        .def(py::init([](std::vector<py::array_t<bi::sample>>& s,
+                         const float o) {
+                 return std::unique_ptr<bi::TxStreamingConfig>(
+                     new bi::TxStreamingConfig(bi::takeVectorOfArrays(s), o));
+             }),
+             py::arg("samples"), py::arg("sendTimeOffset"))
+
         .def_property(
             "samples",
             [](bi::TxStreamingConfig& c) {

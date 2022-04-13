@@ -22,6 +22,9 @@ class Usrp : public UsrpInterface {
         usrpDevice_->set_sync_source("external", "external");
 
         transmitThreadException_ = nullptr;
+        receiveThreadException_ = nullptr;
+
+        receivedSamples_ = {{}};
     }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
@@ -43,7 +46,11 @@ class Usrp : public UsrpInterface {
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_;
     std::thread transmitThread_;
+    std::thread receiveThread_;
     std::exception_ptr transmitThreadException_;
+    std::exception_ptr receiveThreadException_;
+
+    std::vector<samples_vec> receivedSamples_;
     // functions
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
                   const double fpgaTimeThreadStart);

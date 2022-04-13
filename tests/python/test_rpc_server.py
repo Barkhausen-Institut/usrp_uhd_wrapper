@@ -1,9 +1,19 @@
 import unittest
+from unittest.mock import Mock
+import sys
+import os
+
+sys.path.extend([os.path.join("build", "lib"), os.path.join("release_build", "lib")])
 
 import numpy as np
 import numpy.testing as npt
 
-from rpcserver.rpc_server import serializeComplexArray, deserializeComplexArray
+from rpcserver.rpc_server import (
+    UsrpServer,
+    serializeComplexArray,
+    deserializeComplexArray,
+)
+from usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -39,4 +49,28 @@ class TestDeserializationComplexArr(unittest.TestCase):
         imagList = [0]
         realList = [1, 2]
 
-        self.assertRaises(ValueError, lambda: deserializeComplexArray((realList, imagList)))
+        self.assertRaises(
+            ValueError, lambda: deserializeComplexArray((realList, imagList))
+        )
+
+
+class TestUsrpServer(unittest.TestCase):
+    def test_configureTxCalledWithCorrectArguments(self) -> None:
+        TIME_OFFSET = 2.0
+        REAL_LIST = [2, 3]
+        IMAG_LIST = [0, 1]
+
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        usrpServer.configureTx(
+            timeOffset=TIME_OFFSET,
+            buffers=[(REAL_LIST, IMAG_LIST)],
+        )
+
+        self.assertAlmostEqual(
+            usrpMock.setTxConfig.call_args[0][0].sendTimeOffset, TIME_OFFSET
+        )
+        np.testing.assert_array_almost_equal(
+            usrpMock.setTxConfig.call_args[0][0].samples[0],
+            np.array(REAL_LIST) + 1j * np.array(IMAG_LIST),
+        )

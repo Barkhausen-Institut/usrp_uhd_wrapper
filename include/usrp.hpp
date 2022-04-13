@@ -1,12 +1,12 @@
 #pragma once
 #include <sys/time.h>
+
 #include <chrono>
 #include <ctime>
 #include <thread>
 
-#include "uhd/usrp/multi_usrp.hpp"
-
 #include "config.hpp"
+#include "uhd/usrp/multi_usrp.hpp"
 #include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
 
@@ -27,7 +27,8 @@ class Usrp : public UsrpInterface {
     void setTimeToZeroNextPps();
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
-    std::vector<samples_vec> execute(const float baseTime);
+    void execute(const float baseTime);
+    std::vector<samples_vec> collect() { return {{}}; }
     void reset();
 
    private:
@@ -39,7 +40,7 @@ class Usrp : public UsrpInterface {
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_;
-
+    std::thread transmitThread_;
     // functions
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
                   const double fpgaTimeThreadStart);

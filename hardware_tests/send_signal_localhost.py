@@ -35,7 +35,8 @@ usrp.setRfConfig(rfConfig)
 usrp.setRxConfig(rxStreamingConfig)
 usrp.setTxConfig(txStreamingConfig)
 usrp.setTimeToZeroNextPps()
-samples = usrp.execute(0.0)
+usrp.execute(0.0)
+samples = usrp.collect()
 usrp.reset()
 
 # post-process

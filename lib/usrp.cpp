@@ -148,8 +148,8 @@ double Usrp::getCurrentFpgaTime() {
     return usrpDevice_->get_time_now().get_real_secs();
 }
 
-std::vector<samples_vec> Usrp::execute(const float baseTime) {
-    std::vector<samples_vec> receivedSamples = {{}};
+void Usrp::execute(const float baseTime) {
+    /*std::vector<samples_vec> receivedSamples = {{}};
     std::exception_ptr receiveThreadException = nullptr;
     std::exception_ptr transmitThreadException = nullptr;
     if (!ppsSetToZero_) {
@@ -170,7 +170,7 @@ std::vector<samples_vec> Usrp::execute(const float baseTime) {
     if (receiveThreadException) std::rethrow_exception(receiveThreadException);
     if (transmitThreadException)
         std::rethrow_exception(transmitThreadException);
-    return receivedSamples;
+    return receivedSamples;*/
 }
 std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
     return std::make_unique<Usrp>(ip);

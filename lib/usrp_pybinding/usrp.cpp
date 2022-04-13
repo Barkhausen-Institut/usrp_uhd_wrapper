@@ -76,5 +76,6 @@ PYBIND11_MODULE(usrp_pybinding, m) {
              [](bi::UsrpInterface& u, const float baseTime) {
                  return bi::returnVectorOfArrays(u.execute(baseTime));
              })
-        .def("reset", &bi::UsrpInterface::reset);
+        .def("reset", &bi::UsrpInterface::reset)
+        .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate);
 }

@@ -20,6 +20,8 @@ class Usrp : public UsrpInterface {
             uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
         ppsSetToZero_ = false;
         usrpDevice_->set_sync_source("external", "external");
+
+        transmitThreadException_ = nullptr;
     }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
@@ -41,6 +43,7 @@ class Usrp : public UsrpInterface {
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_;
     std::thread transmitThread_;
+    std::exception_ptr transmitThreadException_;
     // functions
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
                   const double fpgaTimeThreadStart);

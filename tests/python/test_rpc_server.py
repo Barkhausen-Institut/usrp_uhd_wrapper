@@ -168,10 +168,10 @@ class TestUsrpServer(unittest.TestCase):
         TIME = 10
         self.usrpMock.getCurrentFpgaTime.return_value = TIME
         time = self.usrpServer.getCurrentFpgaTime()
-        self.assertAlmostEqual(time, TIME)
+        self.assertEqual(time, TIME)
 
     def test_getCurrentSystemTime_functionGetsCalled(self) -> None:
         TIME = 10
         self.usrpMock.getCurrentSystemTime.return_value = TIME
         time = self.usrpServer.getCurrentSystemTime()
-        self.assertAlmostEqual(time, TIME)
+        self.assertEqual(time, TIME)

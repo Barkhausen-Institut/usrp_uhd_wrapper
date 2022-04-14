@@ -141,7 +141,6 @@ class TestUsrpServer(unittest.TestCase):
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0
 
-        self.usrpMock.execute = Mock(spec=["baseTime"])
         self.usrpServer.execute(BASE_TIME)
         self.usrpMock.execute.assert_called_once_with(BASE_TIME)
 

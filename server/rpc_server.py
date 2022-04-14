@@ -30,6 +30,9 @@ class UsrpServer:
     def __init__(self, usrp: Usrp) -> None:
         self.__usrp = usrp
 
+    def __del__(self) -> None:
+        self.__usrp.reset()
+
     def configureTx(
         self, sendTimeOffset: float, samples: List[Tuple[List, List]]
     ) -> None:

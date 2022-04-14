@@ -168,3 +168,9 @@ class TestUsrpServer(unittest.TestCase):
             )
         ]
         self.assertListEqual(serializedSamples, usrpServer.collect())
+
+    def test_usrpIsResetAtDestruction(self) -> None:
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        del usrpServer
+        usrpMock.reset.assert_called_once()

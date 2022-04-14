@@ -75,6 +75,6 @@ class UsrpServer:
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
 
-    def collect(self) -> np.ndarray:
-        _ = self.__usrp.collect()
-        return np.array([])
+    def collect(self) -> List[Tuple[List, List]]:
+        samplesInFpga = self.__usrp.collect()
+        return [serializeComplexArray(frame) for frame in samplesInFpga]

@@ -151,5 +151,20 @@ class TestUsrpServer(unittest.TestCase):
     def test_collectGetsCalled(self) -> None:
         usrpMock = Mock()
         usrpServer = UsrpServer(usrpMock)
+        usrpMock.collect = Mock(return_value=[np.arange(10)])
         _ = usrpServer.collect()
         usrpMock.collect.assert_called_once()
+
+    def test_collectReturnsSerializedVersion(self) -> None:
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        receivedSamplesInFpga = [np.arange(10)]
+        usrpMock.collect = Mock(return_value=receivedSamplesInFpga)
+
+        serializedSamples = [
+            (
+                [i for i in receivedSamplesInFpga[0]],
+                [0 for _ in range(receivedSamplesInFpga[0].size)],
+            )
+        ]
+        self.assertListEqual(serializedSamples, usrpServer.collect())

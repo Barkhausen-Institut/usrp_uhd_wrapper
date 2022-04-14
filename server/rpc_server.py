@@ -81,3 +81,6 @@ class UsrpServer:
     def collect(self) -> List[Tuple[List, List]]:
         samplesInFpga = self.__usrp.collect()
         return [serializeComplexArray(frame) for frame in samplesInFpga]
+
+    def getCurrentFpgaTime(self) -> float:
+        return self.__usrp.getCurrentFpgaTime()

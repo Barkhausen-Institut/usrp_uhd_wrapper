@@ -149,13 +149,13 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.setTimeToZeroNextPps.assert_called_once()
 
     def test_collectGetsCalled(self) -> None:
-        self.usrpMock.collect = Mock(return_value=[np.arange(10)])
+        self.usrpMock.collect.return_value = [np.arange(10)]
         _ = self.usrpServer.collect()
         self.usrpMock.collect.assert_called_once()
 
     def test_collectReturnsSerializedVersion(self) -> None:
         receivedSamplesInFpga = [np.arange(10)]
-        self.usrpMock.collect = Mock(return_value=receivedSamplesInFpga)
+        self.usrpMock.collect.return_value = receivedSamplesInFpga
 
         serializedSamples = [
             (
@@ -171,12 +171,12 @@ class TestUsrpServer(unittest.TestCase):
 
     def test_getCurrentFpgaTime_functionGetsCalled(self) -> None:
         TIME = 10
-        self.usrpMock.getCurrentFpgaTime = Mock(return_value=TIME)
+        self.usrpMock.getCurrentFpgaTime.return_value = TIME
         time = self.usrpServer.getCurrentFpgaTime()
         self.assertAlmostEqual(time, TIME)
 
     def test_getCurrentSystemTime_functionGetsCalled(self) -> None:
         TIME = 10
-        self.usrpMock.getCurrentSystemTime = Mock(return_value=TIME)
+        self.usrpMock.getCurrentSystemTime.return_value = TIME
         time = self.usrpServer.getCurrentSystemTime()
         self.assertAlmostEqual(time, TIME)

@@ -150,29 +150,28 @@ double Usrp::getCurrentFpgaTime() {
     return usrpDevice_->get_time_now().get_real_secs();
 }
 
-std::vector<samples_vec> Usrp::execute(const float baseTime) {
-    std::vector<samples_vec> receivedSamples = {{}};
-    std::exception_ptr receiveThreadException = nullptr;
-    std::exception_ptr transmitThreadException = nullptr;
+void Usrp::execute(const float baseTime) {
+    const double fpgaTimeThreadStart = getCurrentFpgaTime();
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
-        const double fpgaTimeThreadStart = getCurrentFpgaTime();
-        std::thread transmitThread(&Usrp::transmit, this, baseTime,
-                                   std::ref(transmitThreadException),
-                                   fpgaTimeThreadStart);
-        std::thread receiveThread(
-            &Usrp::receive, this, baseTime, std::ref(receivedSamples),
-            std::ref(receiveThreadException), fpgaTimeThreadStart);
-
-        transmitThread.join();
-        receiveThread.join();
+        transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
+                                      std::ref(transmitThreadException_),
+                                      fpgaTimeThreadStart);
+        receiveThread_ = std::thread(
+            &Usrp::receive, this, baseTime, std::ref(receivedSamples_),
+            std::ref(receiveThreadException_), fpgaTimeThreadStart);
     }
+}
 
-    if (receiveThreadException) std::rethrow_exception(receiveThreadException);
-    if (transmitThreadException)
-        std::rethrow_exception(transmitThreadException);
-    return receivedSamples;
+std::vector<samples_vec> Usrp::collect() {
+    transmitThread_.join();
+    receiveThread_.join();
+    if (transmitThreadException_)
+        std::rethrow_exception(transmitThreadException_);
+    if (receiveThreadException_)
+        std::rethrow_exception(receiveThreadException_);
+    return receivedSamples_;
 }
 std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
     return std::make_unique<Usrp>(ip);

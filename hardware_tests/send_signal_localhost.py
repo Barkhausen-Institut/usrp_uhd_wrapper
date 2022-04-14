@@ -2,13 +2,16 @@ import sys
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
 from copy import deepcopy
-from utils import (RandomSignal, findFirstSampleInFrameOfSignal)
+from utils import (RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples)
 
 
 
 NO_TX_SAMPLES = int(10e3)
 NO_RX_SAMPLES = int(60e3)
-fSampling = 50e6
+ip = "localhost"
+usrp = usrp_pybinding.createUsrp(ip)
+fSampling = usrp.getMasterClockRate() / 4
+
 txSignal = RandomSignal()
 txSignal.create(NO_TX_SAMPLES, 1)
 rfConfig = usrp_pybinding.RfConfig()
@@ -29,15 +32,16 @@ txStreamingConfig = usrp_pybinding.TxStreamingConfig()
 txStreamingConfig.samples = [deepcopy(txSignal.samples)]
 txStreamingConfig.sendTimeOffset = 2.0
 
-ip = "localhost"
-usrp = usrp_pybinding.createUsrp(ip)
 usrp.setRfConfig(rfConfig)
 usrp.setRxConfig(rxStreamingConfig)
 usrp.setTxConfig(txStreamingConfig)
 usrp.setTimeToZeroNextPps()
-samples = usrp.execute(0.0)
+usrp.execute(0.0)
+samples = usrp.collect()
 usrp.reset()
 
 # post-process
 signalStartSample = findFirstSampleInFrameOfSignal(samples[0], txSignal.samples)
 print(f"The siganl starts at sample {signalStartSample}")
+dumpSamples("rxSamples.csv", samples[0])
+dumpSamples("txSamples.csv", txSignal.samples)

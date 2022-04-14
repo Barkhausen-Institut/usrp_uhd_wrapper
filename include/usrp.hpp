@@ -18,7 +18,6 @@ class Usrp : public UsrpInterface {
         ip_ = ip;
         usrpDevice_ =
             uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
-        ppsSetToZero_ = false;
         usrpDevice_->set_sync_source("external", "external");
         masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
@@ -28,7 +27,8 @@ class Usrp : public UsrpInterface {
     void setTimeToZeroNextPps();
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
-    std::vector<samples_vec> execute(const float baseTime);
+    void execute(const float baseTime);
+    std::vector<samples_vec> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
     void reset();
@@ -41,9 +41,14 @@ class Usrp : public UsrpInterface {
     uhd::rx_streamer::sptr rxStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
-    bool ppsSetToZero_;
+    bool ppsSetToZero_ = false;
+    std::thread transmitThread_;
+    std::thread receiveThread_;
+    std::exception_ptr transmitThreadException_ = nullptr;
+    std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
 
+    std::vector<samples_vec> receivedSamples_ = {{}};
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);

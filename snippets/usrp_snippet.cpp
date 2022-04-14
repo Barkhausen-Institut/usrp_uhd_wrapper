@@ -4,7 +4,6 @@
 #include "usrp_interface.hpp"
 #include "utils.hpp"
 
-
 std::vector<bi::samples_vec> createDummySamples(unsigned int noSamples) {
     std::vector<bi::samples_vec> samples;
     samples.emplace_back(zadoffChu(noSamples));
@@ -39,7 +38,8 @@ int main() {
     usrpPtr->setTxConfig(txStreamingConfig);
     usrpPtr->setRxConfig(rxStreamingConfig);
     usrpPtr->setTimeToZeroNextPps();
-    std::vector<bi::samples_vec> samples = usrpPtr->execute(0.f);
+    usrpPtr->execute(0.f);
+    std::vector<bi::samples_vec> samples = usrpPtr->collect();
     std::ofstream csvFile = createCsv("rxSamples.csv", 1);
     dumpSamples(samples, csvFile);
     return 0;

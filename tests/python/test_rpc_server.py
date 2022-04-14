@@ -13,7 +13,7 @@ from server.rpc_server import (
     serializeComplexArray,
     deserializeComplexArray,
 )
-from usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
+from usrp_pybinding import Usrp
 
 
 class TestSerializationComplexArr(unittest.TestCase):

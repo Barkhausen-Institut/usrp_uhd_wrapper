@@ -84,3 +84,6 @@ class UsrpServer:
 
     def getCurrentFpgaTime(self) -> float:
         return self.__usrp.getCurrentFpgaTime()
+
+    def getCurrentSystemTime(self) -> float:
+        return self.__usrp.getCurrentSystemTime()

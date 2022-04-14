@@ -55,23 +55,25 @@ class TestDeserializationComplexArr(unittest.TestCase):
 
 
 class TestUsrpServer(unittest.TestCase):
+    def setUp(self) -> None:
+        self.usrpMock = Mock()
+        self.usrpServer = UsrpServer(self.usrpMock)
+
     def test_configureTxCalledWithCorrectArguments(self) -> None:
         TIME_OFFSET = 2.0
         REAL_LIST = [2, 3]
         IMAG_LIST = [0, 1]
 
-        usrpMock = Mock()
-        usrpServer = UsrpServer(usrpMock)
-        usrpServer.configureTx(
+        self.usrpServer.configureTx(
             sendTimeOffset=TIME_OFFSET,
             samples=[(REAL_LIST, IMAG_LIST)],
         )
 
         self.assertAlmostEqual(
-            usrpMock.setTxConfig.call_args[0][0].sendTimeOffset, TIME_OFFSET
+            self.usrpMock.setTxConfig.call_args[0][0].sendTimeOffset, TIME_OFFSET
         )
         np.testing.assert_array_almost_equal(
-            usrpMock.setTxConfig.call_args[0][0].samples[0],
+            self.usrpMock.setTxConfig.call_args[0][0].samples[0],
             np.array(REAL_LIST) + 1j * np.array(IMAG_LIST),
         )
 
@@ -79,15 +81,13 @@ class TestUsrpServer(unittest.TestCase):
         NO_SAMPLES = int(1e3)
         TIME_OFFSET = 2.0
 
-        usrpMock = Mock()
-        usrpServer = UsrpServer(usrpMock)
-        usrpServer.configureRx(receiveTimeOffset=TIME_OFFSET, noSamples=NO_SAMPLES)
+        self.usrpServer.configureRx(receiveTimeOffset=TIME_OFFSET, noSamples=NO_SAMPLES)
 
         self.assertAlmostEqual(
-            usrpMock.setRxConfig.call_args[0][0].receiveTimeOffset, TIME_OFFSET
+            self.usrpMock.setRxConfig.call_args[0][0].receiveTimeOffset, TIME_OFFSET
         )
         self.assertAlmostEqual(
-            usrpMock.setRxConfig.call_args[0][0].noSamples, NO_SAMPLES
+            self.usrpMock.setRxConfig.call_args[0][0].noSamples, NO_SAMPLES
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:
@@ -100,9 +100,7 @@ class TestUsrpServer(unittest.TestCase):
         txSamplingRate = 10e6
         rxSamplingRate = 10e6
 
-        usrpMock = Mock()
-        usrpServer = UsrpServer(usrpMock)
-        usrpServer.configureRfConfig(
+        self.usrpServer.configureRfConfig(
             txGain=txGain,
             rxGain=rxGain,
             txCarrierFrequency=txCarrierFrequency,
@@ -113,53 +111,48 @@ class TestUsrpServer(unittest.TestCase):
             rxSamplingRate=rxSamplingRate,
         )
 
-        self.assertListEqual(usrpMock.setRfConfig.call_args[0][0].txGain, txGain)
-        self.assertListEqual(usrpMock.setRfConfig.call_args[0][0].rxGain, rxGain)
+        self.assertListEqual(self.usrpMock.setRfConfig.call_args[0][0].txGain, txGain)
+        self.assertListEqual(self.usrpMock.setRfConfig.call_args[0][0].rxGain, rxGain)
         self.assertListEqual(
-            usrpMock.setRfConfig.call_args[0][0].txCarrierFrequency, txCarrierFrequency
+            self.usrpMock.setRfConfig.call_args[0][0].txCarrierFrequency,
+            txCarrierFrequency,
         )
         self.assertListEqual(
-            usrpMock.setRfConfig.call_args[0][0].rxCarrierFrequency, rxCarrierFrequency
+            self.usrpMock.setRfConfig.call_args[0][0].rxCarrierFrequency,
+            rxCarrierFrequency,
         )
         self.assertAlmostEqual(
-            usrpMock.setRfConfig.call_args[0][0].txAnalogFilterBw, txAnalogFilterBw
+            self.usrpMock.setRfConfig.call_args[0][0].txAnalogFilterBw, txAnalogFilterBw
         )
         self.assertAlmostEqual(
-            usrpMock.setRfConfig.call_args[0][0].rxAnalogFilterBw, rxAnalogFilterBw
+            self.usrpMock.setRfConfig.call_args[0][0].rxAnalogFilterBw, rxAnalogFilterBw
         )
         self.assertAlmostEqual(
-            usrpMock.setRfConfig.call_args[0][0].txSamplingRate, txSamplingRate
+            self.usrpMock.setRfConfig.call_args[0][0].txSamplingRate, txSamplingRate
         )
         self.assertAlmostEqual(
-            usrpMock.setRfConfig.call_args[0][0].rxSamplingRate, rxSamplingRate
+            self.usrpMock.setRfConfig.call_args[0][0].rxSamplingRate, rxSamplingRate
         )
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0
-        usrpMock = Mock()
-        usrpMock.execute = Mock(spec=["baseTime"])
-        usrpServer = UsrpServer(usrpMock)
-        usrpServer.execute(BASE_TIME)
-        usrpMock.execute.assert_called_once_with(BASE_TIME)
+
+        self.usrpMock.execute = Mock(spec=["baseTime"])
+        self.usrpServer.execute(BASE_TIME)
+        self.usrpMock.execute.assert_called_once_with(BASE_TIME)
 
     def test_settingTimeToZeroNextPps_getsCalled(self) -> None:
-        usrpMock = Mock()
-        usrpServer = UsrpServer(usrpMock)
-        usrpServer.setTimeToZeroNextPps()
-        usrpMock.setTimeToZeroNextPps.assert_called_once()
+        self.usrpServer.setTimeToZeroNextPps()
+        self.usrpMock.setTimeToZeroNextPps.assert_called_once()
 
     def test_collectGetsCalled(self) -> None:
-        usrpMock = Mock()
-        usrpServer = UsrpServer(usrpMock)
-        usrpMock.collect = Mock(return_value=[np.arange(10)])
-        _ = usrpServer.collect()
-        usrpMock.collect.assert_called_once()
+        self.usrpMock.collect = Mock(return_value=[np.arange(10)])
+        _ = self.usrpServer.collect()
+        self.usrpMock.collect.assert_called_once()
 
     def test_collectReturnsSerializedVersion(self) -> None:
-        usrpMock = Mock()
-        usrpServer = UsrpServer(usrpMock)
         receivedSamplesInFpga = [np.arange(10)]
-        usrpMock.collect = Mock(return_value=receivedSamplesInFpga)
+        self.usrpMock.collect = Mock(return_value=receivedSamplesInFpga)
 
         serializedSamples = [
             (
@@ -167,10 +160,8 @@ class TestUsrpServer(unittest.TestCase):
                 [0 for _ in range(receivedSamplesInFpga[0].size)],
             )
         ]
-        self.assertListEqual(serializedSamples, usrpServer.collect())
+        self.assertListEqual(serializedSamples, self.usrpServer.collect())
 
     def test_usrpIsResetAtDestruction(self) -> None:
-        usrpMock = Mock()
-        usrpServer = UsrpServer(usrpMock)
-        del usrpServer
-        usrpMock.reset.assert_called_once()
+        del self.usrpServer
+        self.usrpMock.reset.assert_called_once()

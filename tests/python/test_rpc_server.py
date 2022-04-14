@@ -133,3 +133,15 @@ class TestUsrpServer(unittest.TestCase):
         self.assertAlmostEqual(
             usrpMock.setRfConfig.call_args[0][0].rxSamplingRate, rxSamplingRate
         )
+
+    def test_executeGetsCalled(self) -> None:
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        usrpServer.execute()
+        usrpMock.execute.assert_called_once()
+
+    def test_settingTimeToZeroNextPps_getsCalled(self) -> None:
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        usrpServer.setTimeToZeroNextPps()
+        usrpMock.setTimeToZeroNextPps.assert_called_once()

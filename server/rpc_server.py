@@ -67,3 +67,9 @@ class UsrpServer:
                 rxSamplingRate=rxSamplingRate,
             )
         )
+
+    def execute(self) -> None:
+        self.__usrp.execute()
+
+    def setTimeToZeroNextPps(self) -> None:
+        self.__usrp.setTimeToZeroNextPps()

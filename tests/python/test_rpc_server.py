@@ -8,7 +8,7 @@ sys.path.extend([os.path.join("build", "lib"), os.path.join("release_build", "li
 import numpy as np
 import numpy.testing as npt
 
-from rpcserver.rpc_server import (
+from server.rpc_server import (
     UsrpServer,
     serializeComplexArray,
     deserializeComplexArray,

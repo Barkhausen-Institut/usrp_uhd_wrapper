@@ -73,3 +73,7 @@ class UsrpServer:
 
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
+
+    def collect(self, baseTime: float) -> np.ndarray:
+        _ = self.__usrp.collect(baseTime)
+        return np.array([])

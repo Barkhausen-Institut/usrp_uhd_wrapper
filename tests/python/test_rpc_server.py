@@ -145,3 +145,10 @@ class TestUsrpServer(unittest.TestCase):
         usrpServer = UsrpServer(usrpMock)
         usrpServer.setTimeToZeroNextPps()
         usrpMock.setTimeToZeroNextPps.assert_called_once()
+
+    def test_collectGetsCalledWithBaseTime(self) -> None:
+        BASE_TIME = 3.0
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        _ = usrpServer.collect(BASE_TIME)
+        usrpMock.collect.assert_called_once_with(BASE_TIME)

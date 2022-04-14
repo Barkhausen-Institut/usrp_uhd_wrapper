@@ -56,8 +56,12 @@ class TestDeserializationComplexArr(unittest.TestCase):
 
 class TestUsrpServer(unittest.TestCase):
     def setUp(self) -> None:
-        self.usrpMock = Mock()
+        self.usrpMock = Mock(spec=Usrp)
         self.usrpServer = UsrpServer(self.usrpMock)
+
+    def test_mockThrowsExceptionIfCallMismatchesSpec(self) -> None:
+        self.assertRaises(AttributeError, lambda: self.usrpMock.notImplemented())
+        self.usrpMock.execute(3.0)
 
     def test_configureTxCalledWithCorrectArguments(self) -> None:
         TIME_OFFSET = 2.0

@@ -8,14 +8,17 @@ import numpy as np
 from usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
 
 
-def serializeComplexArray(data: np.ndarray) -> Tuple[List, List]:
+SerializedComplexArray = Tuple[List, List]
+
+
+def serializeComplexArray(data: np.ndarray) -> SerializedComplexArray:
     data = np.squeeze(data)
     if len(data.shape) == 2:
         raise ValueError("Array must be one dimensional!")
     return (np.real(data).tolist(), np.imag(data).tolist())
 
 
-def deserializeComplexArray(data: Tuple[List, List]) -> np.ndarray:
+def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
     if len(data[0]) != len(data[1]):
         raise ValueError(
             """Number of imaginary samples
@@ -33,7 +36,7 @@ class UsrpServer:
         self.__usrp.reset()
 
     def configureTx(
-        self, sendTimeOffset: float, samples: List[Tuple[List, List]]
+        self, sendTimeOffset: float, samples: List[SerializedComplexArray]
     ) -> None:
         self.__usrp.setTxConfig(
             TxStreamingConfig(
@@ -77,7 +80,7 @@ class UsrpServer:
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
 
-    def collect(self) -> List[Tuple[List, List]]:
+    def collect(self) -> List[SerializedComplexArray]:
         samplesInFpga = self.__usrp.collect()
         return [serializeComplexArray(frame) for frame in samplesInFpga]
 

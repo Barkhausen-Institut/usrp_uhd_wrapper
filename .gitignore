@@ -6,3 +6,5 @@ __pycache__/
 .vscode/
 .mypy*/
 *.csv
+.python-version
+env/

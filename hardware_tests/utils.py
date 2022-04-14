@@ -26,6 +26,16 @@ class RandomSignal(Signal):
             1 + 1j
         ))
 
+class WhiteNoise(Signal):
+    def __init__(self, mean: float, std: float) -> None:
+        self.__mean = mean
+        self.__std = std
+
+    def create(self, noSamples: int, amplitude: float) -> None:
+        iSamples = np.random.normal(loc = self.__mean, scale=self.__std, size=(noSamples,))
+        qSamples = np.random.normal(loc = self.__mean, scale=self.__std, size=(noSamples,))
+        self.samples = iSamples + 1j * qSamples
+
 class FrequencyZOH(Signal):
     def __init__(self, noSignals: float, fStart: float, fStop: float, fSampling: float):
         self.__noSignals= noSignals

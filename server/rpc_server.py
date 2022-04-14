@@ -1,3 +1,4 @@
+from email.mime import base
 from typing import Tuple, List
 import sys
 import os
@@ -68,12 +69,12 @@ class UsrpServer:
             )
         )
 
-    def execute(self) -> None:
-        self.__usrp.execute()
+    def execute(self, baseTime: float) -> None:
+        self.__usrp.execute(baseTime)
 
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
 
-    def collect(self, baseTime: float) -> np.ndarray:
-        _ = self.__usrp.collect(baseTime)
+    def collect(self) -> np.ndarray:
+        _ = self.__usrp.collect()
         return np.array([])

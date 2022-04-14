@@ -134,11 +134,13 @@ class TestUsrpServer(unittest.TestCase):
             usrpMock.setRfConfig.call_args[0][0].rxSamplingRate, rxSamplingRate
         )
 
-    def test_executeGetsCalled(self) -> None:
+    def test_executeGetsCalledWithCorrectArguments(self) -> None:
+        BASE_TIME = 3.0
         usrpMock = Mock()
+        usrpMock.execute = Mock(spec=["baseTime"])
         usrpServer = UsrpServer(usrpMock)
-        usrpServer.execute()
-        usrpMock.execute.assert_called_once()
+        usrpServer.execute(BASE_TIME)
+        usrpMock.execute.assert_called_once_with(BASE_TIME)
 
     def test_settingTimeToZeroNextPps_getsCalled(self) -> None:
         usrpMock = Mock()
@@ -146,9 +148,8 @@ class TestUsrpServer(unittest.TestCase):
         usrpServer.setTimeToZeroNextPps()
         usrpMock.setTimeToZeroNextPps.assert_called_once()
 
-    def test_collectGetsCalledWithBaseTime(self) -> None:
-        BASE_TIME = 3.0
+    def test_collectGetsCalled(self) -> None:
         usrpMock = Mock()
         usrpServer = UsrpServer(usrpMock)
-        _ = usrpServer.collect(BASE_TIME)
-        usrpMock.collect.assert_called_once_with(BASE_TIME)
+        _ = usrpServer.collect()
+        usrpMock.collect.assert_called_once()

@@ -73,7 +73,7 @@ class TestUsrpServer(unittest.TestCase):
             samples=[(REAL_LIST, IMAG_LIST)],
         )
 
-        self.assertAlmostEqual(
+        self.assertEqual(
             self.usrpMock.setTxConfig.call_args[0][0].sendTimeOffset, TIME_OFFSET
         )
         np.testing.assert_array_almost_equal(

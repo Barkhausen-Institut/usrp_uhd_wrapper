@@ -74,3 +74,18 @@ class TestUsrpServer(unittest.TestCase):
             usrpMock.setTxConfig.call_args[0][0].samples[0],
             np.array(REAL_LIST) + 1j * np.array(IMAG_LIST),
         )
+
+    def test_configureRxCAlledWithCorrectArguments(self) -> None:
+        NO_SAMPLES = int(1e3)
+        TIME_OFFSET = 2.0
+
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        usrpServer.configureRx(receiveTimeOffset=TIME_OFFSET, noSamples=NO_SAMPLES)
+
+        self.assertAlmostEqual(
+            usrpMock.setRxConfig.call_args[0][0].receiveTimeOffset, TIME_OFFSET
+        )
+        self.assertAlmostEqual(
+            usrpMock.setRxConfig.call_args[0][0].noSamples, NO_SAMPLES
+        )

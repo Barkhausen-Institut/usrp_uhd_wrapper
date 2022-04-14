@@ -36,3 +36,8 @@ class UsrpServer:
                 sendTimeOffset=timeOffset,
             )
         )
+
+    def configureRx(self, receiveTimeOffset: float, noSamples: int) -> None:
+        self.__usrp.setRxConfig(
+            RxStreamingConfig(noSamples=noSamples, receiveTimeOffset=receiveTimeOffset)
+        )

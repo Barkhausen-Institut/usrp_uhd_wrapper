@@ -65,12 +65,11 @@ class TestUsrpServer(unittest.TestCase):
 
     def test_configureTxCalledWithCorrectArguments(self) -> None:
         TIME_OFFSET = 2.0
-        REAL_LIST = [2, 3]
-        IMAG_LIST = [0, 1]
-
+        samples = np.array([2, 3]) + 1j * np.array([0, 1])
+        serializedSamples = serializeComplexArray(samples)
         self.usrpServer.configureTx(
             sendTimeOffset=TIME_OFFSET,
-            samples=[(REAL_LIST, IMAG_LIST)],
+            samples=[serializedSamples],
         )
 
         self.assertEqual(
@@ -78,7 +77,7 @@ class TestUsrpServer(unittest.TestCase):
         )
         np.testing.assert_array_almost_equal(
             self.usrpMock.setTxConfig.call_args[0][0].samples[0],
-            np.array(REAL_LIST) + 1j * np.array(IMAG_LIST),
+            samples,
         )
 
     def test_configureRxCalledWithCorrectArguments(self) -> None:

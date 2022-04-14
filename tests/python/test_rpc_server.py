@@ -63,8 +63,8 @@ class TestUsrpServer(unittest.TestCase):
         usrpMock = Mock()
         usrpServer = UsrpServer(usrpMock)
         usrpServer.configureTx(
-            timeOffset=TIME_OFFSET,
-            buffers=[(REAL_LIST, IMAG_LIST)],
+            sendTimeOffset=TIME_OFFSET,
+            samples=[(REAL_LIST, IMAG_LIST)],
         )
 
         self.assertAlmostEqual(

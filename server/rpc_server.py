@@ -29,11 +29,13 @@ class UsrpServer:
     def __init__(self, usrp: Usrp) -> None:
         self.__usrp = usrp
 
-    def configureTx(self, timeOffset: float, buffers: List[Tuple[List, List]]) -> None:
+    def configureTx(
+        self, sendTimeOffset: float, samples: List[Tuple[List, List]]
+    ) -> None:
         self.__usrp.setTxConfig(
             TxStreamingConfig(
-                samples=[deserializeComplexArray(buffer) for buffer in buffers],
-                sendTimeOffset=timeOffset,
+                samples=[deserializeComplexArray(frame) for frame in samples],
+                sendTimeOffset=sendTimeOffset,
             )
         )
 

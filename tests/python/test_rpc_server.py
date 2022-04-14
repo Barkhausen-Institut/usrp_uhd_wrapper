@@ -75,7 +75,7 @@ class TestUsrpServer(unittest.TestCase):
             np.array(REAL_LIST) + 1j * np.array(IMAG_LIST),
         )
 
-    def test_configureRxCAlledWithCorrectArguments(self) -> None:
+    def test_configureRxCalledWithCorrectArguments(self) -> None:
         NO_SAMPLES = int(1e3)
         TIME_OFFSET = 2.0
 
@@ -88,4 +88,48 @@ class TestUsrpServer(unittest.TestCase):
         )
         self.assertAlmostEqual(
             usrpMock.setRxConfig.call_args[0][0].noSamples, NO_SAMPLES
+        )
+
+    def test_configureRfConfigCalledWithCorrectArguments(self) -> None:
+        txGain = [50.0]
+        rxGain = [30.0]
+        txCarrierFrequency = [2e9]
+        rxCarrierFrequency = [2e9]
+        txAnalogFilterBw = 400e6
+        rxAnalogFilterBw = 400e6
+        txSamplingRate = 10e6
+        rxSamplingRate = 10e6
+
+        usrpMock = Mock()
+        usrpServer = UsrpServer(usrpMock)
+        usrpServer.configureRfConfig(
+            txGain=txGain,
+            rxGain=rxGain,
+            txCarrierFrequency=txCarrierFrequency,
+            rxCarrierFrequency=rxCarrierFrequency,
+            txAnalogFilterBw=txAnalogFilterBw,
+            rxAnalogFilterBw=rxAnalogFilterBw,
+            txSamplingRate=txSamplingRate,
+            rxSamplingRate=rxSamplingRate,
+        )
+
+        self.assertListEqual(usrpMock.setRfConfig.call_args[0][0].txGain, txGain)
+        self.assertListEqual(usrpMock.setRfConfig.call_args[0][0].rxGain, rxGain)
+        self.assertListEqual(
+            usrpMock.setRfConfig.call_args[0][0].txCarrierFrequency, txCarrierFrequency
+        )
+        self.assertListEqual(
+            usrpMock.setRfConfig.call_args[0][0].rxCarrierFrequency, rxCarrierFrequency
+        )
+        self.assertAlmostEqual(
+            usrpMock.setRfConfig.call_args[0][0].txAnalogFilterBw, txAnalogFilterBw
+        )
+        self.assertAlmostEqual(
+            usrpMock.setRfConfig.call_args[0][0].rxAnalogFilterBw, rxAnalogFilterBw
+        )
+        self.assertAlmostEqual(
+            usrpMock.setRfConfig.call_args[0][0].txSamplingRate, txSamplingRate
+        )
+        self.assertAlmostEqual(
+            usrpMock.setRfConfig.call_args[0][0].rxSamplingRate, rxSamplingRate
         )

@@ -43,3 +43,27 @@ class UsrpServer:
         self.__usrp.setRxConfig(
             RxStreamingConfig(noSamples=noSamples, receiveTimeOffset=receiveTimeOffset)
         )
+
+    def configureRfConfig(
+        self,
+        txGain: List[float],
+        rxGain: List[float],
+        txCarrierFrequency: List[float],
+        rxCarrierFrequency: List[float],
+        txAnalogFilterBw: float,
+        rxAnalogFilterBw: float,
+        txSamplingRate: float,
+        rxSamplingRate: float,
+    ) -> None:
+        self.__usrp.setRfConfig(
+            RfConfig(
+                txGain=txGain,
+                rxGain=rxGain,
+                txCarrierFrequency=txCarrierFrequency,
+                rxCarrierFrequency=rxCarrierFrequency,
+                txAnalogFilterBw=txAnalogFilterBw,
+                rxAnalogFilterBw=rxAnalogFilterBw,
+                txSamplingRate=txSamplingRate,
+                rxSamplingRate=rxSamplingRate,
+            )
+        )

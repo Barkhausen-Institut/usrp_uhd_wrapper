@@ -82,8 +82,8 @@ class UsrpServer:
         samplesInFpga = self.__usrp.collect()
         return [serializeComplexArray(frame) for frame in samplesInFpga]
 
-    def getCurrentFpgaTime(self) -> float:
+    def getCurrentFpgaTime(self) -> int:
         return self.__usrp.getCurrentFpgaTime()
 
-    def getCurrentSystemTime(self) -> float:
+    def getCurrentSystemTime(self) -> int:
         return self.__usrp.getCurrentSystemTime()

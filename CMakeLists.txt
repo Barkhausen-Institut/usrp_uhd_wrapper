@@ -8,7 +8,7 @@ find_package(UHD REQUIRED)
 
 add_subdirectory(3rdparty)
 add_subdirectory(lib)
-add_subdirectory(tests)
+add_subdirectory(tests/cpp/)
 add_subdirectory(snippets)
 add_subdirectory(debug)
 

@@ -29,6 +29,7 @@ std::vector<samples_vec> takeVectorOfArrays(
     }
     return vectorOfSamplesVec;
 }
+
 }  // namespace bi
 
 PYBIND11_MODULE(usrp_pybinding, m) {
@@ -39,6 +40,13 @@ PYBIND11_MODULE(usrp_pybinding, m) {
     // wrap object
     py::class_<bi::RfConfig>(m, "RfConfig")
         .def(py::init())
+        .def(py::init<const std::vector<float>&, const std::vector<float>&,
+                      const std::vector<float>&, const std::vector<float>&,
+                      const float, const float, const float, const float>(),
+             py::arg("txGain"), py::arg("rxGain"),
+             py::arg("rxCarrierFrequency"), py::arg("txCarrierFrequency"),
+             py::arg("txAnalogFilterBw"), py::arg("rxAnalogFilterBw"),
+             py::arg("txSamplingRate"), py::arg("rxSamplingRate"))
         .def_readwrite("txSamplingRate", &bi::RfConfig::txSamplingRate)
         .def_readwrite("rxSamplingRate", &bi::RfConfig::rxSamplingRate)
         .def_readwrite("txAnalogFilterBw", &bi::RfConfig::txAnalogFilterBw)
@@ -46,17 +54,33 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("txGain", &bi::RfConfig::txGain)
         .def_readwrite("rxGain", &bi::RfConfig::rxGain)
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
-        .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency);
+        .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency)
+        .def("__eq__", [](const bi::RfConfig& a, const bi::RfConfig& b) {
+            return a == b;
+        });
 
     py::class_<bi::UsrpException>(m, "UsrpException");
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
+        .def(py::init<const unsigned int, const float>(), py::arg("noSamples"),
+             py::arg("receiveTimeOffset"))
         .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
         .def_readwrite("receiveTimeOffset",
-                       &bi::RxStreamingConfig::receiveTimeOffset);
+                       &bi::RxStreamingConfig::receiveTimeOffset)
+        .def("__eq__", [](const bi::RxStreamingConfig& a,
+                          const bi::RxStreamingConfig& b) { return a == b; });
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
+        .def(py::init([](const std::vector<py::array_t<bi::sample>>& s,
+                         const float o) {
+                 auto c = std::make_unique<bi::TxStreamingConfig>();
+                 c->samples = bi::takeVectorOfArrays(s);
+                 c->sendTimeOffset = o;
+                 return c;
+             }),
+             py::arg("samples"), py::arg("sendTimeOffset"))
+
         .def_property(
             "samples",
             [](bi::TxStreamingConfig& c) {
@@ -66,8 +90,9 @@ PYBIND11_MODULE(usrp_pybinding, m) {
                const std::vector<py::array_t<bi::sample>>& samples) {
                 c.samples = bi::takeVectorOfArrays(samples);
             })
-        .def_readwrite("sendTimeOffset",
-                       &bi::TxStreamingConfig::sendTimeOffset);
+        .def_readwrite("sendTimeOffset", &bi::TxStreamingConfig::sendTimeOffset)
+        .def("__eq__", [](const bi::TxStreamingConfig& a,
+                          const bi::TxStreamingConfig& b) { return a == b; });
     py::class_<bi::UsrpInterface>(m, "Usrp")
         .def("setRfConfig", &bi::UsrpInterface::setRfConfig)
         .def("setRxConfig", &bi::UsrpInterface::setRxConfig)

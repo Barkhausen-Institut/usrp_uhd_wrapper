@@ -1,6 +1,34 @@
 #include "config.hpp"
 #include "usrp_exception.hpp"
+
 namespace bi {
+
+bool operator==(const RfConfig& a, const RfConfig& b) {
+    bool equal = true;
+    equal &= a.txGain == b.txGain;
+    equal &= a.rxGain == b.rxGain;
+    equal &= a.txCarrierFrequency == b.txCarrierFrequency;
+    equal &= a.rxCarrierFrequency == b.rxCarrierFrequency;
+    equal &= a.txAnalogFilterBw == b.txAnalogFilterBw;
+    equal &= a.rxAnalogFilterBw == b.rxAnalogFilterBw;
+    equal &= a.txSamplingRate == b.txSamplingRate;
+    equal &= a.rxSamplingRate == b.rxSamplingRate;
+    return equal;
+}
+
+bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b) {
+    bool equal = true;
+    equal &= a.noSamples == b.noSamples;
+    equal &= a.receiveTimeOffset == b.receiveTimeOffset;
+    return equal;
+}
+
+bool operator==(const TxStreamingConfig& a, const TxStreamingConfig& b) {
+    bool equal = true;
+    equal &= a.samples == b.samples;
+    equal &= a.sendTimeOffset == b.sendTimeOffset;
+    return equal;
+}
 size_t calcNoPackages(const size_t noSamples, const size_t spb) {
     // taken from
     // https://stackoverflow.com/questions/2745074/fast-ceiling-of-an-integer-division-in-c-c

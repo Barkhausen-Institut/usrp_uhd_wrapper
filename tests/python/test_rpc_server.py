@@ -13,7 +13,7 @@ from server.rpc_server import (
     serializeComplexArray,
     deserializeComplexArray,
 )
-from usrp_pybinding import Usrp
+from usrp_pybinding import Usrp, RfConfig, RxStreamingConfig, TxStreamingConfig
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -71,13 +71,8 @@ class TestUsrpServer(unittest.TestCase):
             sendTimeOffset=TIME_OFFSET,
             samples=[serializedSamples],
         )
-
-        self.assertEqual(
-            self.usrpMock.setTxConfig.call_args[0][0].sendTimeOffset, TIME_OFFSET
-        )
-        np.testing.assert_array_almost_equal(
-            self.usrpMock.setTxConfig.call_args[0][0].samples[0],
-            samples,
+        self.usrpMock.setTxConfig.assert_called_once_with(
+            TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=[samples])
         )
 
     def test_configureRxCalledWithCorrectArguments(self) -> None:
@@ -85,15 +80,12 @@ class TestUsrpServer(unittest.TestCase):
         TIME_OFFSET = 2.0
 
         self.usrpServer.configureRx(receiveTimeOffset=TIME_OFFSET, noSamples=NO_SAMPLES)
-
-        self.assertAlmostEqual(
-            self.usrpMock.setRxConfig.call_args[0][0].receiveTimeOffset, TIME_OFFSET
-        )
-        self.assertAlmostEqual(
-            self.usrpMock.setRxConfig.call_args[0][0].noSamples, NO_SAMPLES
+        self.usrpMock.setRxConfig.assert_called_once_with(
+            RxStreamingConfig(receiveTimeOffset=TIME_OFFSET, noSamples=NO_SAMPLES)
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:
+
         txGain = [50.0]
         rxGain = [30.0]
         txCarrierFrequency = [2e9]
@@ -114,27 +106,17 @@ class TestUsrpServer(unittest.TestCase):
             rxSamplingRate=rxSamplingRate,
         )
 
-        self.assertListEqual(self.usrpMock.setRfConfig.call_args[0][0].txGain, txGain)
-        self.assertListEqual(self.usrpMock.setRfConfig.call_args[0][0].rxGain, rxGain)
-        self.assertListEqual(
-            self.usrpMock.setRfConfig.call_args[0][0].txCarrierFrequency,
-            txCarrierFrequency,
-        )
-        self.assertListEqual(
-            self.usrpMock.setRfConfig.call_args[0][0].rxCarrierFrequency,
-            rxCarrierFrequency,
-        )
-        self.assertAlmostEqual(
-            self.usrpMock.setRfConfig.call_args[0][0].txAnalogFilterBw, txAnalogFilterBw
-        )
-        self.assertAlmostEqual(
-            self.usrpMock.setRfConfig.call_args[0][0].rxAnalogFilterBw, rxAnalogFilterBw
-        )
-        self.assertAlmostEqual(
-            self.usrpMock.setRfConfig.call_args[0][0].txSamplingRate, txSamplingRate
-        )
-        self.assertAlmostEqual(
-            self.usrpMock.setRfConfig.call_args[0][0].rxSamplingRate, rxSamplingRate
+        self.usrpMock.setRfConfig.assert_called_once_with(
+            RfConfig(
+                txGain=txGain,
+                rxGain=rxGain,
+                txCarrierFrequency=txCarrierFrequency,
+                rxCarrierFrequency=rxCarrierFrequency,
+                txAnalogFilterBw=txAnalogFilterBw,
+                rxAnalogFilterBw=rxAnalogFilterBw,
+                txSamplingRate=txSamplingRate,
+                rxSamplingRate=rxSamplingRate,
+            )
         )
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:

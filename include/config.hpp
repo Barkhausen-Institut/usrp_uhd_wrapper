@@ -47,6 +47,11 @@ struct RxStreamingConfig {
     float receiveTimeOffset;
 };
 
+// oerpators are overloaded for testing purposes
+bool operator==(const RfConfig& a, const RfConfig& b);
+bool operator==(const TxStreamingConfig& a, const TxStreamingConfig& b);
+bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b);
+
 size_t calcNoPackages(const size_t noSamples, const size_t spb);
 size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb);
 void assertSamplingRate(const double actualSamplingRate,

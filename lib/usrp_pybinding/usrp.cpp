@@ -1,4 +1,5 @@
 #include <pybind11/numpy.h>
+#include <pybind11/operators.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
@@ -55,9 +56,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("rxGain", &bi::RfConfig::rxGain)
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency)
-        .def("__eq__", [](const bi::RfConfig& a, const bi::RfConfig& b) {
-            return a == b;
-        });
+        .def(py::self == py::self);
 
     py::class_<bi::UsrpException>(m, "UsrpException");
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
@@ -67,8 +66,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
         .def_readwrite("receiveTimeOffset",
                        &bi::RxStreamingConfig::receiveTimeOffset)
-        .def("__eq__", [](const bi::RxStreamingConfig& a,
-                          const bi::RxStreamingConfig& b) { return a == b; });
+        .def(py::self == py::self);
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
@@ -91,8 +89,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
                 c.samples = bi::takeVectorOfArrays(samples);
             })
         .def_readwrite("sendTimeOffset", &bi::TxStreamingConfig::sendTimeOffset)
-        .def("__eq__", [](const bi::TxStreamingConfig& a,
-                          const bi::TxStreamingConfig& b) { return a == b; });
+        .def(py::self == py::self);
     py::class_<bi::UsrpInterface>(m, "Usrp")
         .def("setRfConfig", &bi::UsrpInterface::setRfConfig)
         .def("setRxConfig", &bi::UsrpInterface::setRxConfig)

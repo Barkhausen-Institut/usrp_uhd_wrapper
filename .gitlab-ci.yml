@@ -19,4 +19,4 @@ build_test:
     - make
     - ctest -V
     - cd ..
-    - python -m pytest tests/python/
+    - python3 -m pytest tests/python/

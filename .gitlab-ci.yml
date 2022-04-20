@@ -15,7 +15,7 @@ build_test:
   script:
     - pip install -r requirements_usrp.txt
     - pip install -r requirements_tests.txt
-    - cd usrp-server
+    - cd usrp_uhd_wrapper
     - mkdir build && cd build
     - cmake ..
     - make

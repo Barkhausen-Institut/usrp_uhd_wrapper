@@ -8,8 +8,8 @@ sys.path.extend([os.path.join("..", "usrp_uhd_rapper", "build", "lib")])
 import numpy as np
 import numpy.testing as npt
 
-from rpc_server.rpc_server import (
-    UsrpServer,
+from rpc_server.rpc_server import UsrpServer
+from utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
 )

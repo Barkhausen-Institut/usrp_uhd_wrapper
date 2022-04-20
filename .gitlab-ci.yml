@@ -1,4 +1,4 @@
-image: python:3.9
+image: ubuntu:20.04
 
 stages:
   - build_test
@@ -9,18 +9,20 @@ before_script:
   - apt-get install -y software-properties-common apt-utils
   - add-apt-repository ppa:ettusresearch/uhd
   - apt-get update
-  - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host
+  - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host python3.9-venv python3.9-dev
 
 build_test:
   stage: build_test
   script:
+    - python3.9 -m venv .venv
+    - . .venv/bin/activate
     - pip install -e .
     - pip install -r requirements_tests.txt
     - cd uhd_wrapper
     - mkdir build && cd build
     - cmake ..
-    - make
+    - make && make install
     - ctest -V
     - cd ../../
     - python -m pytest uhd_wrapper/tests/python/
-    - python -m pytest uhd_wrapper/usrp_client/tests/
+    - python -m pytest usrp_client/tests/

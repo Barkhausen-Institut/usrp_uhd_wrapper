@@ -13,7 +13,7 @@ before_script:
 build_test:
   stage: build_test
   script:
-    - pip install -r requirements_usrp.txt
+    - pip install -e .
     - pip install -r requirements_tests.txt
     - cd usrp_uhd_wrapper
     - mkdir build && cd build
@@ -21,4 +21,4 @@ build_test:
     - make
     - ctest -V
     - cd ..
-    - python3 -m pytest tests/python/
+    - python3 -m pytest tests/

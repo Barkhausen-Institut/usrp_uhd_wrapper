@@ -2,8 +2,7 @@ from typing import Tuple, List
 import sys
 import os
 
-sys.path.extend([os.path.join("build", "lib"), os.path.join("release_build", "lib")])
-import numpy as np
+sys.path.extend([os.path.join("usrp_uhd_wrapper", "build", "lib")])
 
 from usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
 from utils.serialization import (

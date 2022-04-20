@@ -15,7 +15,7 @@ build_test:
   script:
     - pip install -e .
     - pip install -r requirements_tests.txt
-    - cd usrp_uhd_wrapper
+    - cd uhd_wrapper
     - mkdir build && cd build
     - cmake ..
     - make

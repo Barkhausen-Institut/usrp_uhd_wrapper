@@ -68,8 +68,8 @@ class TestUsrpServer(unittest.TestCase):
         samples = np.array([2, 3]) + 1j * np.array([0, 1])
         serializedSamples = serializeComplexArray(samples)
         self.usrpServer.configureTx(
-            sendTimeOffset=TIME_OFFSET,
-            samples=[serializedSamples],
+            TIME_OFFSET,
+            [serializedSamples],
         )
         self.usrpMock.setTxConfig.assert_called_once_with(
             TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=[samples])
@@ -79,7 +79,7 @@ class TestUsrpServer(unittest.TestCase):
         NO_SAMPLES = int(1e3)
         TIME_OFFSET = 2.0
 
-        self.usrpServer.configureRx(receiveTimeOffset=TIME_OFFSET, noSamples=NO_SAMPLES)
+        self.usrpServer.configureRx(TIME_OFFSET, NO_SAMPLES)
         self.usrpMock.setRxConfig.assert_called_once_with(
             RxStreamingConfig(receiveTimeOffset=TIME_OFFSET, noSamples=NO_SAMPLES)
         )
@@ -96,14 +96,14 @@ class TestUsrpServer(unittest.TestCase):
         rxSamplingRate = 10e6
 
         self.usrpServer.configureRfConfig(
-            txGain=txGain,
-            rxGain=rxGain,
-            txCarrierFrequency=txCarrierFrequency,
-            rxCarrierFrequency=rxCarrierFrequency,
-            txAnalogFilterBw=txAnalogFilterBw,
-            rxAnalogFilterBw=rxAnalogFilterBw,
-            txSamplingRate=txSamplingRate,
-            rxSamplingRate=rxSamplingRate,
+            txGain,
+            rxGain,
+            txCarrierFrequency,
+            rxCarrierFrequency,
+            txAnalogFilterBw,
+            rxAnalogFilterBw,
+            txSamplingRate,
+            rxSamplingRate,
         )
 
         self.usrpMock.setRfConfig.assert_called_once_with(

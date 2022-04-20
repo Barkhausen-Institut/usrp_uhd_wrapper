@@ -1,4 +1,4 @@
-image: ubuntu:20.04
+image: python:3.9
 
 stages:
   - build_test
@@ -8,8 +8,7 @@ before_script:
   - apt-get update
   - apt-get install -y software-properties-common apt-utils
   - add-apt-repository ppa:ettusresearch/uhd
-  - add-apt-repository ppa:deadsnakes/ppa
-  - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host python3-pip python3.9
+  - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host
 
 build_test:
   stage: build_test
@@ -21,5 +20,5 @@ build_test:
     - cmake ..
     - make
     - ctest -V
-    - cd ..
-    - python3 -m pytest tests/
+    - cd ../../
+    - python -m pytest tests/

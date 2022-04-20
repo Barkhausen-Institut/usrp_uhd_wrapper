@@ -3,12 +3,12 @@ from unittest.mock import Mock
 import sys
 import os
 
-sys.path.extend([os.path.join("build", "lib"), os.path.join("release_build", "lib")])
+sys.path.extend([os.path.join("..", "usrp_uhd_rapper", "build", "lib")])
 
 import numpy as np
 import numpy.testing as npt
 
-from server.rpc_server import (
+from rpc_server.rpc_server import (
     UsrpServer,
     serializeComplexArray,
     deserializeComplexArray,

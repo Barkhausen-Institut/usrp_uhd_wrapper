@@ -1,9 +1,9 @@
 import sys
 import os
 
-sys.path.extend([os.path.join("build", "lib"), os.path.join("release_build", "lib")])
+sys.path.extend([os.path.join("usrp_uhd_wrapper", "build", "lib")])
 
-from server.rpc_server import UsrpServer
+from rpc_server.rpc_server import UsrpServer
 import zerorpc
 from usrp_pybinding import Usrp, createUsrp
 

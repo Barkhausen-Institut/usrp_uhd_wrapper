@@ -1,15 +1,11 @@
 from typing import Tuple, List
-import sys
-import os
 
-sys.path.extend([os.path.join("usrp_uhd_wrapper", "build", "lib")])
-
-from usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
-from utils.serialization import (
+from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
-    SerializedComplexArray,
-)
+    SerializedComplexArray,)
+from uhd_wrapper.usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
+
 
 
 class UsrpServer:

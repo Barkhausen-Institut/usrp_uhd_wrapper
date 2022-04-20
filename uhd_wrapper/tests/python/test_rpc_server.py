@@ -1,19 +1,15 @@
 import unittest
 from unittest.mock import Mock
-import sys
-import os
-
-sys.path.extend([os.path.join("..", "usrp_uhd_rapper", "build", "lib")])
 
 import numpy as np
 import numpy.testing as npt
 
-from rpc_server.rpc_server import UsrpServer
-from utils.serialization import (
+from uhd_wrapper.rpc_server.rpc_server import UsrpServer
+from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
 )
-from usrp_pybinding import Usrp, RfConfig, RxStreamingConfig, TxStreamingConfig
+from uhd_wrapper.usrp_pybinding import Usrp, RfConfig, RxStreamingConfig, TxStreamingConfig
 
 
 class TestSerializationComplexArr(unittest.TestCase):

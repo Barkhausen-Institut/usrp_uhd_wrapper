@@ -5,8 +5,8 @@ import numpy as np
 import numpy.testing as npt
 
 from usrp_client.rpc_client import UsrpClient
-from utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-from utils.serialization import serializeComplexArray, deserializeComplexArray
+from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
+from uhd_wrapper.utils.serialization import serializeComplexArray
 
 
 class TestUsrpClient(unittest.TestCase):

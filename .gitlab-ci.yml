@@ -21,4 +21,5 @@ build_test:
     - make
     - ctest -V
     - cd ../../
-    - python -m pytest tests/
+    - python -m pytest uhd_wrapper/tests/python/
+    - python -m pytest uhd_wrapper/usrp_client/tests/

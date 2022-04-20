@@ -3,8 +3,8 @@ from typing import List
 import zerorpc
 import numpy as np
 
-from utils.serialization import serializeComplexArray, deserializeComplexArray
-from utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
+from uhd_wrapper.utils.serialization import serializeComplexArray, deserializeComplexArray
+from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
 
 
 class UsrpClient:

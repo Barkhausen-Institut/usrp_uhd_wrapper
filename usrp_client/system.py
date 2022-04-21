@@ -36,6 +36,4 @@ class System:
             self.__usrpClients[usrp][1].setTimeToZeroNextPps()
 
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
-        for usrp in self.__usrpClients.keys():
-            if usrp == usrpName:
-                self.__usrpClients[usrp][1].configureTx(txStreamingConfig)
+        self.__usrpClients[usrpName][1].configureTx(txStreamingConfig)

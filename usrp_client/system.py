@@ -1,4 +1,4 @@
-from typing import Tuple, Dict
+from typing import Tuple, Dict, List
 import time
 
 import zerorpc
@@ -64,3 +64,6 @@ class System:
 
         if np.any(np.abs(np.diff(fpgaTimes)) > System.syncThresholdMs):
             raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
+
+    def collect(self) -> List[List[np.array]]:
+        return [item[1].collect() for _, item in self.__usrpClients.items()]

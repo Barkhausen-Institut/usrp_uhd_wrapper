@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock
 
 import numpy as np
+import numpy.testing as npt
 from usrp_client.rpc_client import UsrpClient
 
 from usrp_client.system import System
@@ -122,3 +123,12 @@ class TestExecution(unittest.TestCase):
         self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp1)
         self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp2)
         self.assertRaises(ValueError, lambda: self.system.execute())
+
+    def test_collectCallsCollectFromUsrpClient(self) -> None:
+        samplesUsrp1 = [np.ones(10)]
+        samplesUsrp2 = [2 * np.ones(10)]
+        self.mockUsrpClient1.collect = Mock(return_value=samplesUsrp1)
+        self.mockUsrpClient2.collect = Mock(return_value=samplesUsrp2)
+        samples = self.system.collect()
+        npt.assert_array_equal(samples[0][0], samplesUsrp1[0])
+        npt.assert_array_equal(samples[1][0], samplesUsrp2[0])

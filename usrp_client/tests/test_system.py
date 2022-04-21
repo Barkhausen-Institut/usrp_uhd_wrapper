@@ -70,3 +70,11 @@ class TestConfigurationTxRx(unittest.TestCase):
         self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
         self.mockUsrpClient1.configureTx.assert_called_once_with(txStreamingConfig)
         self.mockUsrpClient2.configureTx.assert_not_called()
+
+    def test_configureRxCallsFunctionInRpcClient(self) -> None:
+        rxStreamingConfig = RxStreamingConfig(
+            receiveTimeOffset=2.0, noSamples=int(60e3)
+        )
+        self.system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig)
+        self.mockUsrpClient1.configureRx.assert_not_called()
+        self.mockUsrpClient2.configureRx.assert_called_once_with(rxStreamingConfig)

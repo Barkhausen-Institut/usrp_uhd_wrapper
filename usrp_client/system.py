@@ -2,7 +2,7 @@ from typing import Tuple, Dict
 
 import zerorpc
 
-from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig
+from uhd_wrapper.utils.config import RfConfig, RxStreamingConfig, TxStreamingConfig
 from usrp_client.rpc_client import UsrpClient
 
 
@@ -37,3 +37,6 @@ class System:
 
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
         self.__usrpClients[usrpName][1].configureTx(txStreamingConfig)
+
+    def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
+        self.__usrpClients[usrpName][1].configureRx(rxStreamingConfig)

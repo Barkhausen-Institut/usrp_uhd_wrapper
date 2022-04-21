@@ -3,7 +3,10 @@ from typing import List
 import zerorpc
 import numpy as np
 
-from uhd_wrapper.utils.serialization import serializeComplexArray, deserializeComplexArray
+from uhd_wrapper.utils.serialization import (
+    serializeComplexArray,
+    deserializeComplexArray,
+)
 from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
 
 

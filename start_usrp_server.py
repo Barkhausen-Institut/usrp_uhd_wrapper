@@ -1,11 +1,7 @@
-import sys
-import os
-
-sys.path.extend([os.path.join("usrp_uhd_wrapper", "build", "lib")])
-
-from rpc_server.rpc_server import UsrpServer
 import zerorpc
-from usrp_pybinding import Usrp, createUsrp
+
+from uhd_wrapper.usrp_pybinding import Usrp, createUsrp
+from uhd_wrapper.rpc_server.rpc_server import UsrpServer
 
 # create environment
 PORT = 5555

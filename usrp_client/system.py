@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import Tuple, Dict
 
 import zerorpc
 
@@ -9,10 +9,11 @@ class System:
     def __init__(self) -> None:
         self.__rpcClients: Dict[str, Tuple[str, zerorpc.Client]] = dict()
 
-    def addUsrp(self, rfConfig: RfConfig, ip: str, name: str):
+    def addUsrp(self, rfConfig: RfConfig, ip: str, name: str, c: zerorpc.Client = None):
         if ip in self.__rpcClients.keys():
             raise ValueError("Connection to USRP already exists!")
-        c = zerorpc.Client()
+        if c is None:
+            c = zerorpc.Client()
         c.connect(f"tcp://{ip}:5555")
         self.__rpcClients[ip] = (name, c)
 

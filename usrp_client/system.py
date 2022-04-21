@@ -5,7 +5,7 @@ LabeledRpcClient = namedtuple("LabeledRpcClient", "label client")
 
 import zerorpc
 
-from uhd_wrapper.utils.config import RfConfig
+from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig
 
 
 class System:
@@ -26,6 +26,11 @@ class System:
     def __synchronizeUsrps(self) -> None:
         for ip in self.__rpcClients.keys():
             self.__rpcClients[ip].client.setTimeToZeroNextPps()
+
+    def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
+        for ip in self.__rpcClients.keys():
+            if self.__rpcClients[ip].label == usrpName:
+                self.__rpcClients[ip].client.configureTx(txStreamingConfig)
 
     @property
     def rpcClients(self) -> Dict[str, Tuple[str, zerorpc.Client]]:

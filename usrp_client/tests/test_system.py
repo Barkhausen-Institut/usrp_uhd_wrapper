@@ -33,19 +33,20 @@ class TestAddingUsrp(unittest.TestCase):
         self.system.addUsrp(c, "localhost", "testusrp", self.mockClients)
         self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
 
-    def test_usrpsRestartSynchronization_newUsrpAddedToSystem(self) -> None:
-        c = RfConfig()
 
-        self.system.addUsrp(c, "ip1", "usrp1", self.mockClients)
-        self.mockUsrpClient.setTimeToZeroNextPps.assert_called_once()
-
-        # reset mocks
-        self.mockUsrpClient.reset_mock()
-        mockZeroRpcClient2 = Mock(spec=zerorpc.Client)
-        mockUsrpClient2 = Mock(spec=UsrpClient)
-        self.system.addUsrp(c, "ip2", "usrp2", (mockZeroRpcClient2, mockUsrpClient2))
-        self.mockUsrpClient.setTimeToZeroNextPps.assert_called_once()
-        mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
+#    def test_usrpsRestartSynchronization_newUsrpAddedToSystem(self) -> None:
+#        c = RfConfig()
+#
+#        self.system.addUsrp(c, "ip1", "usrp1", self.mockClients)
+#        self.mockUsrpClient.setTimeToZeroNextPps.assert_called_once()
+#
+#        # reset mocks
+#        self.mockUsrpClient.reset_mock()
+#        mockZeroRpcClient2 = Mock(spec=zerorpc.Client)
+#        mockUsrpClient2 = Mock(spec=UsrpClient)
+#        self.system.addUsrp(c, "ip2", "usrp2", (mockZeroRpcClient2, mockUsrpClient2))
+#        self.mockUsrpClient.setTimeToZeroNextPps.assert_called_once()
+#        mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
 
 # class TestConfigurationTxRx(unittest.TestCase):

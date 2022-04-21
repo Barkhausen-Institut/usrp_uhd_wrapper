@@ -35,8 +35,6 @@ class System:
         usrpClient.configureRfConfig(rfConfig)
         self.__usrpClients[name] = (ip, usrpClient)
 
-        self.__synchronizeUsrps()
-
     def __synchronizeUsrps(self) -> None:
         for usrp in self.__usrpClients.keys():
             self.__usrpClients[usrp][1].setTimeToZeroNextPps()

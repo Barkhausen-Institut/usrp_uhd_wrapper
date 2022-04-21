@@ -18,6 +18,12 @@ class System:
         c.configureRfConfig(rfConfig)
         self.__rpcClients[ip] = (name, c)
 
+        self.__synchronizeUsrps()
+
+    def __synchronizeUsrps(self) -> None:
+        for ip in self.__rpcClients.keys():
+            self.__rpcClients[ip][1].setTimeToZeroNextPps()
+
     @property
     def rpcClients(self) -> Dict[str, Tuple[str, zerorpc.Client]]:
         return self.__rpcClients

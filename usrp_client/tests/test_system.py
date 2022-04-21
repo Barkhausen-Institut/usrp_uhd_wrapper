@@ -27,3 +27,16 @@ class TestAddingUsrp(unittest.TestCase):
         c = RfConfig()
         self.system.addUsrp(c, "localhost", "testusrp", self.mockRpcClient)
         self.mockRpcClient.configureRfConfig.assert_called_once_with(c)
+
+    def test_usrpsRestartSynchronization_newUsrpAddedToSystem(self) -> None:
+        c = RfConfig()
+
+        self.system.addUsrp(c, "ip1", "usrp1", self.mockRpcClient)
+        self.mockRpcClient.setTimeToZeroNextPps.assert_called_once()
+
+        # reset mocks
+        self.mockRpcClient.reset_mock()
+        mockRpcClient2 = Mock()
+        self.system.addUsrp(c, "ip2", "usrp2", mockRpcClient2)
+        self.mockRpcClient.setTimeToZeroNextPps.assert_called_once()
+        mockRpcClient2.setTimeToZeroNextPps.assert_called_once()

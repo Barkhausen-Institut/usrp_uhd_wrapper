@@ -1,4 +1,7 @@
 from typing import Tuple, Dict
+from collections import namedtuple
+
+LabeledRpcClient = namedtuple("LabeledRpcClient", "label client")
 
 import zerorpc
 
@@ -16,13 +19,13 @@ class System:
             c = zerorpc.Client()
         c.connect(f"tcp://{ip}:5555")
         c.configureRfConfig(rfConfig)
-        self.__rpcClients[ip] = (name, c)
+        self.__rpcClients[ip] = LabeledRpcClient(name, c)
 
         self.__synchronizeUsrps()
 
     def __synchronizeUsrps(self) -> None:
         for ip in self.__rpcClients.keys():
-            self.__rpcClients[ip][1].setTimeToZeroNextPps()
+            self.__rpcClients[ip].client.setTimeToZeroNextPps()
 
     @property
     def rpcClients(self) -> Dict[str, Tuple[str, zerorpc.Client]]:

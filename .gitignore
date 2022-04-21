@@ -8,3 +8,4 @@ __pycache__/
 *.csv
 .python-version
 env/
+*.egg-info/

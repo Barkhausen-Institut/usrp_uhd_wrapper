@@ -6,18 +6,23 @@ stages:
 before_script:
   - export DEBIAN_FRONTEND=noninteractive
   - apt-get update
-  - apt-get install -y software-properties-common apt-utils
+  - apt-get install -y --no-install-recommends software-properties-common
   - add-apt-repository ppa:ettusresearch/uhd
-  - apt-get install -y cmake build-essential libboost-all-dev libuhd-dev libuhd4.1.0 uhd-host python3-pip
+  - apt-get update
+  - apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev
 
 build_test:
   stage: build_test
   script:
-    - pip install -r requirements_usrp.txt
+    - python3.9 -m venv .venv
+    - . .venv/bin/activate
+    - pip install -e .
     - pip install -r requirements_tests.txt
+    - cd uhd_wrapper
     - mkdir build && cd build
     - cmake ..
-    - make
+    - make && make install
     - ctest -V
-    - cd ..
-    - python3 -m pytest tests/python/
+    - cd ../../
+    - python -m pytest uhd_wrapper/tests/python/
+    - python -m pytest usrp_client/tests/

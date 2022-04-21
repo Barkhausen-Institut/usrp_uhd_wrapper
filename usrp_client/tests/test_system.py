@@ -1,36 +1,33 @@
 import unittest
 from unittest.mock import Mock
 
-import zerorpc
-
 from usrp_client.system import System
-from usrp_client.rpc_client import UsrpClient
 from uhd_wrapper.utils.config import RfConfig
 
 
 class TestAddingUsrp(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
-        self.mockZeroRpcClient = Mock(spec=zerorpc.Client)
-        self.mockUsrpClient = Mock(spec=UsrpClient)
-        self.mockClients = (self.mockZeroRpcClient, self.mockUsrpClient)
+        self.mockUsrpClient = Mock()
 
-    def test_clientConnects(self) -> None:
-        self.system.addUsrp(RfConfig(), "localhost", "testUsrp", self.mockClients)
-        self.mockZeroRpcClient.connect.assert_called_once_with("tcp://localhost:5555")
+        self.system.createUsrpClient = Mock()  # type: ignore
+        self.system.createUsrpClient.return_value = self.mockUsrpClient  # type: ignore
+
+    def test_usrpClientGetsCreated(self) -> None:
+        IP = "localhost"
+        self.system.addUsrp(RfConfig(), IP, "dummyName")
+        self.system.createUsrpClient.assert_called_once_with(IP)  # type: ignore
 
     def test_throwExceptionIfConnectionToUsrpAlreadyExists(self) -> None:
-        self.system.addUsrp(RfConfig(), "localhost", "testName", self.mockClients)
+        self.system.addUsrp(RfConfig(), "localhost", "testName")
         self.assertRaises(
             ValueError,
-            lambda: self.system.addUsrp(
-                RfConfig(), "localhost", "testName", self.mockClients
-            ),
+            lambda: self.system.addUsrp(RfConfig(), "localhost", "testName"),
         )
 
     def test_rfConfigPassedToRpcClient(self) -> None:
         c = RfConfig()
-        self.system.addUsrp(c, "localhost", "testusrp", self.mockClients)
+        self.system.addUsrp(c, "localhost", "testusrp")
         self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
 
 

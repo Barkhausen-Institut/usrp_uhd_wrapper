@@ -111,3 +111,9 @@ class TestExecution(unittest.TestCase):
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient3.setTimeToZeroNextPps.assert_called_once()
+
+    def test_executeGetsPassedToUsrpClient(self) -> None:
+        BASE_TIME = 3.2
+        self.system.execute(BASE_TIME)
+        self.mockUsrpClient1.execute.assert_called_once_with(BASE_TIME)
+        self.mockUsrpClient2.execute.assert_called_once_with(BASE_TIME)

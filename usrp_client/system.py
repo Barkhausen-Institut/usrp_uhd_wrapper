@@ -47,3 +47,6 @@ class System:
         if not self.__usrpsSynced:
             self.__synchronizeUsrps()
             self.__usrpsSynced = True
+
+        for usrpName in self.__usrpClients.keys():
+            self.__usrpClients[usrpName][1].execute(baseTime)

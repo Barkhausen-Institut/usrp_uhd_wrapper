@@ -48,16 +48,18 @@ class TestAddingUsrp(unittest.TestCase):
 #        mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
 
-class TestConfigurationTxRx(unittest.TestCase):
+class TestExecution(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
         self.mockUsrpClient1 = Mock()
         self.mockUsrpClient2 = Mock()
+        self.mockUsrpClient3 = Mock()
 
         self.system.createUsrpClient = Mock()  # type: ignore
         self.system.createUsrpClient.side_effect = [
             self.mockUsrpClient1,
             self.mockUsrpClient2,
+            self.mockUsrpClient3,
         ]  # type: ignore
 
         self.system.addUsrp(RfConfig(), "localhost1", "usrp1")
@@ -78,3 +80,34 @@ class TestConfigurationTxRx(unittest.TestCase):
         self.system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig)
         self.mockUsrpClient1.configureRx.assert_not_called()
         self.mockUsrpClient2.configureRx.assert_called_once_with(rxStreamingConfig)
+
+    def test_executeCallsSynchronisation(self) -> None:
+        self.system.execute(0.0)
+        self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
+
+    def test_syncOnlyOnce(self) -> None:
+        self.system.execute(0.0)
+        self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
+
+        self.mockUsrpClient1.reset_mock()
+        self.mockUsrpClient2.reset_mock()
+        self.system.execute(0.0)
+        self.mockUsrpClient1.setTimeToZeroNextPps.assert_not_called()
+        self.mockUsrpClient2.setTimeToZeroNextPps.assert_not_called()
+
+    def test_execute_reSyncIfUsrpAdded(self) -> None:
+        self.system.execute(0.0)
+        self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
+
+        self.mockUsrpClient1.reset_mock()
+        self.mockUsrpClient2.reset_mock()
+
+        # add new usrp
+        self.system.addUsrp(RfConfig(), "localhost3", "usrp3")
+        self.system.execute(0.0)
+        self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrpClient3.setTimeToZeroNextPps.assert_called_once()

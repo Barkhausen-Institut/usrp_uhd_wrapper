@@ -9,6 +9,7 @@ from usrp_client.rpc_client import UsrpClient
 class System:
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, Tuple[str, UsrpClient]] = dict()
+        self.__usrpsSynced = False
 
     def createUsrpClient(self, ip: str) -> UsrpClient:
         zeroRpcClient = zerorpc.Client()
@@ -30,6 +31,7 @@ class System:
         usrpClient = self.createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
         self.__usrpClients[name] = (ip, usrpClient)
+        self.__usrpsSynced = False
 
     def __synchronizeUsrps(self) -> None:
         for usrp in self.__usrpClients.keys():
@@ -40,3 +42,8 @@ class System:
 
     def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
         self.__usrpClients[usrpName][1].configureRx(rxStreamingConfig)
+
+    def execute(self, baseTime: float) -> None:
+        if not self.__usrpsSynced:
+            self.__synchronizeUsrps()
+            self.__usrpsSynced = True

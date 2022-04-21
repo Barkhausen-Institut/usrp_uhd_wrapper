@@ -1,8 +1,10 @@
 import unittest
 from unittest.mock import Mock
 
+import numpy as np
+
 from usrp_client.system import System
-from uhd_wrapper.utils.config import RfConfig
+from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
 
 
 class TestAddingUsrp(unittest.TestCase):
@@ -46,18 +48,25 @@ class TestAddingUsrp(unittest.TestCase):
 #        mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
 
-# class TestConfigurationTxRx(unittest.TestCase):
-#    def setUp(self) -> None:
-#        self.mockRpcClient1 = Mock()
-#        self.mockRpcClient2 = Mock()
-#        self.system = System()
-#        self.system.addUsrp(RfConfig(), "localhost", "usrp1", self.mockRpcClient1)
-#        self.system.addUsrp(RfConfig(), "localhost2", "usrp2", self.mockRpcClient2)
-#
-#    def test_configureTxCallsFunctionInRpcClient(self) -> None:
-#        txStreamingConfig = TxStreamingConfig(
-#            sendTimeOffset=2.0, samples=[np.ones(int(2e3))]
-#        )
-#        self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
-#        self.mockRpcClient1.configureTx.assert_called_once_with(txStreamingConfig)
-#        self.mockRpcClient2.configureTx.assert_not_called()
+class TestConfigurationTxRx(unittest.TestCase):
+    def setUp(self) -> None:
+        self.system = System()
+        self.mockUsrpClient1 = Mock()
+        self.mockUsrpClient2 = Mock()
+
+        self.system.createUsrpClient = Mock()  # type: ignore
+        self.system.createUsrpClient.side_effect = [
+            self.mockUsrpClient1,
+            self.mockUsrpClient2,
+        ]  # type: ignore
+
+        self.system.addUsrp(RfConfig(), "localhost1", "usrp1")
+        self.system.addUsrp(RfConfig(), "localhost2", "usrp2")
+
+    def test_configureTxCallsFunctionInRpcClient(self) -> None:
+        txStreamingConfig = TxStreamingConfig(
+            sendTimeOffset=2.0, samples=[np.ones(int(2e3))]
+        )
+        self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
+        self.mockUsrpClient1.configureTx.assert_called_once_with(txStreamingConfig)
+        self.mockUsrpClient2.configureTx.assert_not_called()

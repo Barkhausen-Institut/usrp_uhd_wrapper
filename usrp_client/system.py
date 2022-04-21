@@ -1,5 +1,5 @@
-from multiprocessing.sharedctypes import Value
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict
+import time
 
 import zerorpc
 import numpy as np
@@ -57,6 +57,7 @@ class System:
             self.__usrpClients[usrpName][1].execute(0.0)
 
     def __assertSynchronisationValid(self) -> None:
+        time.sleep(1.1)  # sleep to make sure that pps is locked
         fpgaTimes = [
             item[1].getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]

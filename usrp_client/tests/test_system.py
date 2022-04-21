@@ -82,23 +82,23 @@ class TestExecution(unittest.TestCase):
         self.mockUsrpClient2.configureRx.assert_called_once_with(rxStreamingConfig)
 
     def test_executeCallsSynchronisation(self) -> None:
-        self.system.execute(0.0)
+        self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
     def test_syncOnlyOnce(self) -> None:
-        self.system.execute(0.0)
+        self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
         self.mockUsrpClient1.reset_mock()
         self.mockUsrpClient2.reset_mock()
-        self.system.execute(0.0)
+        self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_not_called()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_not_called()
 
     def test_execute_reSyncIfUsrpAdded(self) -> None:
-        self.system.execute(0.0)
+        self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
@@ -107,13 +107,7 @@ class TestExecution(unittest.TestCase):
 
         # add new usrp
         self.system.addUsrp(RfConfig(), "localhost3", "usrp3")
-        self.system.execute(0.0)
+        self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient3.setTimeToZeroNextPps.assert_called_once()
-
-    def test_executeGetsPassedToUsrpClient(self) -> None:
-        BASE_TIME = 3.2
-        self.system.execute(BASE_TIME)
-        self.mockUsrpClient1.execute.assert_called_once_with(BASE_TIME)
-        self.mockUsrpClient2.execute.assert_called_once_with(BASE_TIME)

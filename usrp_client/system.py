@@ -43,10 +43,10 @@ class System:
     def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
         self.__usrpClients[usrpName][1].configureRx(rxStreamingConfig)
 
-    def execute(self, baseTime: float) -> None:
+    def execute(self) -> None:
         if not self.__usrpsSynced:
             self.__synchronizeUsrps()
             self.__usrpsSynced = True
 
         for usrpName in self.__usrpClients.keys():
-            self.__usrpClients[usrpName][1].execute(baseTime)
+            self.__usrpClients[usrpName][1].execute(0.0)

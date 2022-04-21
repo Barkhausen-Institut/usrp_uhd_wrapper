@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock
 
 import numpy as np
+from usrp_client.rpc_client import UsrpClient
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
@@ -51,9 +52,12 @@ class TestAddingUsrp(unittest.TestCase):
 class TestExecution(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
-        self.mockUsrpClient1 = Mock()
-        self.mockUsrpClient2 = Mock()
-        self.mockUsrpClient3 = Mock()
+        self.mockUsrpClient1 = Mock(spec=UsrpClient)
+        self.mockUsrpClient2 = Mock(spec=UsrpClient)
+        self.mockUsrpClient3 = Mock(spec=UsrpClient)
+        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=3.0)
+        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=3.0)
+        self.mockUsrpClient3.getCurrentFpgaTime = Mock(return_value=3.0)
 
         self.system.createUsrpClient = Mock()  # type: ignore
         self.system.createUsrpClient.side_effect = [
@@ -111,3 +115,10 @@ class TestExecution(unittest.TestCase):
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient3.setTimeToZeroNextPps.assert_called_once()
+
+    def test_throwExceptionIfSyncIsInvalid(self) -> None:
+        fpgaTimeUsrp1 = 3.0
+        fpgaTimeUsrp2 = fpgaTimeUsrp1 + 2 * System.syncThresholdMs
+        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp1)
+        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp2)
+        self.assertRaises(ValueError, lambda: self.system.execute())

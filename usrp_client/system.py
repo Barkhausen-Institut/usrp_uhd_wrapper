@@ -1,12 +1,16 @@
-from typing import Tuple, Dict
+from multiprocessing.sharedctypes import Value
+from typing import Tuple, Dict, List
 
 import zerorpc
+import numpy as np
 
 from uhd_wrapper.utils.config import RfConfig, RxStreamingConfig, TxStreamingConfig
 from usrp_client.rpc_client import UsrpClient
 
 
 class System:
+    syncThresholdMs = 5.0
+
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, Tuple[str, UsrpClient]] = dict()
         self.__usrpsSynced = False
@@ -48,5 +52,14 @@ class System:
             self.__synchronizeUsrps()
             self.__usrpsSynced = True
 
+        self.__assertSynchronisationValid()
         for usrpName in self.__usrpClients.keys():
             self.__usrpClients[usrpName][1].execute(0.0)
+
+    def __assertSynchronisationValid(self) -> None:
+        fpgaTimes = [
+            item[1].getCurrentFpgaTime() for _, item in self.__usrpClients.items()
+        ]
+
+        if np.any(np.abs(np.diff(fpgaTimes)) > System.syncThresholdMs):
+            raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")

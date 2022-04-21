@@ -15,6 +15,7 @@ class System:
         if c is None:
             c = zerorpc.Client()
         c.connect(f"tcp://{ip}:5555")
+        c.configureRfConfig(rfConfig)
         self.__rpcClients[ip] = (name, c)
 
     @property

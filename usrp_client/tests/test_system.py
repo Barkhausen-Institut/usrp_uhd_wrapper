@@ -22,3 +22,8 @@ class TestAddingUsrp(unittest.TestCase):
                 RfConfig(), "localhost", "testName", self.mockRpcClient
             ),
         )
+
+    def test_rfConfigPassedToRpcClient(self) -> None:
+        c = RfConfig()
+        self.system.addUsrp(c, "localhost", "testusrp", self.mockRpcClient)
+        self.mockRpcClient.configureRfConfig.assert_called_once_with(c)

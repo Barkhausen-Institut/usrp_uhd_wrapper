@@ -128,7 +128,7 @@ class TestMultiDeviceSync(unittest.TestCase):
         self.assertRaises(ValueError, lambda: self.system.execute())
 
 
-class TestTransceiving(unittest.TestCase):
+class TestTransceivingMultiDevice(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
         self.mockUsrpClient1 = Mock(spec=UsrpClient)

@@ -129,6 +129,11 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 }
 
 void Usrp::setTimeToZeroNextPps() {
+    setTimeToZeroNextPpsThread_ =
+        std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction);
+}
+
+void Usrp::setTimeToZeroNextPpsThreadFunction() {
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
@@ -137,7 +142,6 @@ void Usrp::setTimeToZeroNextPps() {
 
     ppsSetToZero_ = true;
 }
-
 uint64_t Usrp::getCurrentSystemTime() {
     using namespace std::chrono;
     uint64_t msSinceEpoch =
@@ -147,6 +151,7 @@ uint64_t Usrp::getCurrentSystemTime() {
 }
 
 double Usrp::getCurrentFpgaTime() {
+    setTimeToZeroNextPpsThread_.join();
     return usrpDevice_->get_time_now().get_real_secs();
 }
 

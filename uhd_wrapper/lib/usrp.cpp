@@ -139,8 +139,6 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
-
-    ppsSetToZero_ = true;
 }
 uint64_t Usrp::getCurrentSystemTime() {
     using namespace std::chrono;
@@ -151,7 +149,10 @@ uint64_t Usrp::getCurrentSystemTime() {
 }
 
 double Usrp::getCurrentFpgaTime() {
-    setTimeToZeroNextPpsThread_.join();
+    if (!ppsSetToZero_) {
+        setTimeToZeroNextPpsThread_.join();
+        ppsSetToZero_ = true;
+    }
     return usrpDevice_->get_time_now().get_real_secs();
 }
 

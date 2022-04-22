@@ -35,7 +35,7 @@ class TestSystemInitialization(unittest.TestCase):
         self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
 
 
-class Test(unittest.TestCase):
+class TestStreamingConfiguration(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
         self.mockUsrpClient1 = Mock(spec=UsrpClient)

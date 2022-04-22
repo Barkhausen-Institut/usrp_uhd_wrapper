@@ -1,5 +1,5 @@
 from typing import Tuple
-from venv import create
+import logging
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -27,6 +27,7 @@ def findFirstSampleInFrameOfSignal(
     return np.argsort(correlation)[-1], correlation
 
 
+logging.basicConfig(level=logging.INFO)
 c = RfConfig()
 c.rxAnalogFilterBw = 400e6
 c.txAnalogFilterBw = 400e6
@@ -39,9 +40,9 @@ c.txCarrierFrequency = [2e9]
 
 txSignal = createRandom(int(20e3))
 txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=2.0, samples=[txSignal])
-rxStreamingConfig1 = RxStreamingConfig(receiveTimeOffset=2.5, noSamples=int(60e3))
+rxStreamingConfig1 = RxStreamingConfig(receiveTimeOffset=2.1, noSamples=int(60e3))
 
-txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=2.5, samples=[txSignal])
+txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=2.1, samples=[txSignal])
 rxStreamingConfig2 = RxStreamingConfig(receiveTimeOffset=2.0, noSamples=int(60e3))
 
 system = System()
@@ -67,6 +68,30 @@ txSignalStartUsrp1, correlationUsrp1 = findFirstSampleInFrameOfSignal(
 print(f"Sent signal from usrp2 starts at sample {txSignalStartUsrp1} in usrp1")
 print(f"Sent signal from usrp1 starts at sample {txSignalStartUsrp2} in usrp2")
 
+plt.subplot(221)
+plt.plot(np.arange(60e3), np.abs(samples[0][0]))
+plt.title("Received samples usrp1")
+plt.subplot(222)
+plt.plot(np.arange(60e3), np.abs(samples[1][0]))
+plt.title("Received samples usrp2")
+plt.subplot(223)
+plt.plot(np.arange(correlationUsrp1.size), np.abs(correlationUsrp1))
+plt.subplot(224)
+plt.plot(np.arange(correlationUsrp2.size), np.abs(correlationUsrp2))
+plt.show()
+system.execute()
+samples = system.collect()
+
+txSignalStartUsrp2, correlationUsrp2 = findFirstSampleInFrameOfSignal(
+    samples[1][0], txSignal
+)
+
+txSignalStartUsrp1, correlationUsrp1 = findFirstSampleInFrameOfSignal(
+    samples[0][0], txSignal
+)
+
+print(f"Sent signal from usrp2 starts at sample {txSignalStartUsrp1} in usrp1")
+print(f"Sent signal from usrp1 starts at sample {txSignalStartUsrp2} in usrp2")
 plt.subplot(221)
 plt.plot(np.arange(60e3), np.abs(samples[0][0]))
 plt.title("Received samples usrp1")

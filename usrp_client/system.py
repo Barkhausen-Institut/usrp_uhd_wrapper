@@ -1,4 +1,4 @@
-from email.mime import base
+import logging
 from typing import Tuple, Dict, List
 import time
 
@@ -46,26 +46,30 @@ class System:
                 print("Set time to zero for PPS.")
             time.sleep(1.1)
             self.__usrpsSynced = True
-            print("Successfully synchronised USRPs...")
+            logging.info("Successfully synchronised USRPs...")
 
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
         self.__usrpClients[usrpName][1].configureTx(txStreamingConfig)
-        print(f"Configured TX Streaming for USRP: {usrpName}.")
+        logging.info(f"Configured TX Streaming for USRP: {usrpName}.")
 
     def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
         self.__usrpClients[usrpName][1].configureRx(rxStreamingConfig)
-        print(f"Configured RX streaming for USRP: {usrpName}.")
+        logging.info(f"Configured RX streaming for USRP: {usrpName}.")
 
     def execute(self) -> None:
         print("Synchronizing...")
         self.__synchronizeUsrps()
         self.__assertSynchronisationValid()
         baseTimeSec = self.__calculateBaseTimeSec()
+        logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
         for usrpName in self.__usrpClients.keys():
             self.__usrpClients[usrpName][1].execute(baseTimeSec)
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()
+        logging.info(
+            f"For calculating the base time, I received the following fpgaTimes: {currentFpgaTimesSec}"
+        )
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec
 

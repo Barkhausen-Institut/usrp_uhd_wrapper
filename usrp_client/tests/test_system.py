@@ -35,7 +35,7 @@ class TestSystemInitialization(unittest.TestCase):
         self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
 
 
-class TestExecution(unittest.TestCase):
+class Test(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
         self.mockUsrpClient1 = Mock(spec=UsrpClient)
@@ -71,12 +71,33 @@ class TestExecution(unittest.TestCase):
         self.mockUsrpClient1.configureRx.assert_not_called()
         self.mockUsrpClient2.configureRx.assert_called_once_with(rxStreamingConfig)
 
-    def test_executeCallsSynchronisation(self) -> None:
+
+class TestMultiDeviceSync(unittest.TestCase):
+    def setUp(self) -> None:
+        self.system = System()
+        self.mockUsrpClient1 = Mock(spec=UsrpClient)
+        self.mockUsrpClient2 = Mock(spec=UsrpClient)
+        self.mockUsrpClient3 = Mock(spec=UsrpClient)
+        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=3.0)
+        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=3.0)
+        self.mockUsrpClient3.getCurrentFpgaTime = Mock(return_value=3.0)
+
+        self.system.createUsrpClient = Mock()  # type: ignore
+        self.system.createUsrpClient.side_effect = [
+            self.mockUsrpClient1,
+            self.mockUsrpClient2,
+            self.mockUsrpClient3,
+        ]  # type: ignore
+
+        self.system.addUsrp(RfConfig(), "localhost1", "usrp1")
+        self.system.addUsrp(RfConfig(), "localhost2", "usrp2")
+
+    def test_synchronisationUponExecution(self) -> None:
         self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
-    def test_syncOnlyOnce(self) -> None:
+    def test_syncOnlyPerformedIfRequired(self) -> None:
         self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
@@ -87,7 +108,7 @@ class TestExecution(unittest.TestCase):
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_not_called()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_not_called()
 
-    def test_execute_reSyncIfUsrpAdded(self) -> None:
+    def test_reSyncIfNewUsrpAdded(self) -> None:
         self.system.execute()
         self.mockUsrpClient1.setTimeToZeroNextPps.assert_called_once()
         self.mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
@@ -109,17 +130,8 @@ class TestExecution(unittest.TestCase):
         self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp2)
         self.assertRaises(ValueError, lambda: self.system.execute())
 
-    def test_collectCallsCollectFromUsrpClient(self) -> None:
-        samplesUsrp1 = [np.ones(10)]
-        samplesUsrp2 = [2 * np.ones(10)]
-        self.mockUsrpClient1.collect = Mock(return_value=samplesUsrp1)
-        self.mockUsrpClient2.collect = Mock(return_value=samplesUsrp2)
-        samples = self.system.collect()
-        npt.assert_array_equal(samples[0][0], samplesUsrp1[0])
-        npt.assert_array_equal(samples[1][0], samplesUsrp2[0])
-    
 
-class TestMultiDeviceSync(unittest.TestCase):
+class TestTransceiving(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
         self.mockUsrpClient1 = Mock(spec=UsrpClient)
@@ -135,5 +147,12 @@ class TestMultiDeviceSync(unittest.TestCase):
 
         self.system.addUsrp(RfConfig(), "localhost1", "usrp1")
         self.system.addUsrp(RfConfig(), "localhost2", "usrp2")
-    def test_calculateBaseTime(self) -> None:
-        
+
+    def test_collectCallsCollectFromUsrpClient(self) -> None:
+        samplesUsrp1 = [np.ones(10)]
+        samplesUsrp2 = [2 * np.ones(10)]
+        self.mockUsrpClient1.collect = Mock(return_value=samplesUsrp1)
+        self.mockUsrpClient2.collect = Mock(return_value=samplesUsrp2)
+        samples = self.system.collect()
+        npt.assert_array_equal(samples[0][0], samplesUsrp1[0])
+        npt.assert_array_equal(samples[1][0], samplesUsrp2[0])

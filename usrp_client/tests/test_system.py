@@ -153,3 +153,16 @@ class TestTransceivingMultiDevice(unittest.TestCase):
         samples = self.system.collect()
         npt.assert_array_equal(samples[0][0], samplesUsrp1[0])
         npt.assert_array_equal(samples[1][0], samplesUsrp2[0])
+
+    def test_calculationBaseTime_validSynchronisation(self) -> None:
+        FPGA_TIME_S_USRP1 = 0.3
+        FPGA_TIME_S_USRP2 = 0.5
+        BASE_TIME_OFFSET_SEC = 0.2
+
+        System.baseTimeOffsetSec = BASE_TIME_OFFSET_SEC
+        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP1)
+        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP2)
+        expectedBaseTime = FPGA_TIME_S_USRP2 + BASE_TIME_OFFSET_SEC
+        self.system.execute()
+        self.mockUsrpClient1.execute.assert_called_once_with(expectedBaseTime)
+        self.mockUsrpClient2.execute.assert_called_once_with(expectedBaseTime)

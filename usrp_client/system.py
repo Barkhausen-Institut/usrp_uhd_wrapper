@@ -1,3 +1,4 @@
+from email.mime import base
 from typing import Tuple, Dict, List
 import time
 
@@ -10,6 +11,7 @@ from usrp_client.rpc_client import UsrpClient
 
 class System:
     syncThresholdMs = 5.0
+    baseTimeOffsetSec = 0.2
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, Tuple[str, UsrpClient]] = dict()
@@ -38,31 +40,41 @@ class System:
         self.__usrpsSynced = False
 
     def __synchronizeUsrps(self) -> None:
-        for usrp in self.__usrpClients.keys():
-            self.__usrpClients[usrp][1].setTimeToZeroNextPps()
+        if not self.__usrpsSynced:
+            for usrp in self.__usrpClients.keys():
+                self.__usrpClients[usrp][1].setTimeToZeroNextPps()
+                print("Set time to zero for PPS.")
+            time.sleep(1.1)
+            self.__usrpsSynced = True
+            print("Successfully synchronised USRPs...")
 
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
         self.__usrpClients[usrpName][1].configureTx(txStreamingConfig)
+        print(f"Configured TX Streaming for USRP: {usrpName}.")
 
     def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
         self.__usrpClients[usrpName][1].configureRx(rxStreamingConfig)
+        print(f"Configured RX streaming for USRP: {usrpName}.")
 
     def execute(self) -> None:
-        if not self.__usrpsSynced:
-            self.__synchronizeUsrps()
-            self.__usrpsSynced = True
-
+        print("Synchronizing...")
+        self.__synchronizeUsrps()
         self.__assertSynchronisationValid()
+        baseTimeSec = self.calculateBaseTimeSec()
         for usrpName in self.__usrpClients.keys():
-            self.__usrpClients[usrpName][1].execute(0.0)
+            self.__usrpClients[usrpName][1].execute(baseTimeSec)
+
+    def calculateBaseTimeSec(self) -> float:
+        currentFpgaTimesSec = self.__getCurrentFpgaTimes()
+        maxTime = np.max(currentFpgaTimesSec)
+        return maxTime + System.baseTimeOffsetSec
+
+    def __getCurrentFpgaTimes(self) -> List[int]:
+        return [item[1].getCurrentFpgaTime() for _, item in self.__usrpClients.items()]
 
     def __assertSynchronisationValid(self) -> None:
-        time.sleep(1.1)  # sleep to make sure that pps is locked
-        fpgaTimes = [
-            item[1].getCurrentFpgaTime() for _, item in self.__usrpClients.items()
-        ]
-
-        if np.any(np.abs(np.diff(fpgaTimes)) > System.syncThresholdMs):
+        currentFpgaTimes = self.__getCurrentFpgaTimes()
+        if np.any(np.abs(np.diff(currentFpgaTimes)) > System.syncThresholdMs):
             raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
     def collect(self) -> List[List[np.array]]:

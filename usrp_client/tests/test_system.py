@@ -40,16 +40,13 @@ class TestStreamingConfiguration(unittest.TestCase):
         self.system = System()
         self.mockUsrpClient1 = Mock(spec=UsrpClient)
         self.mockUsrpClient2 = Mock(spec=UsrpClient)
-        self.mockUsrpClient3 = Mock(spec=UsrpClient)
         self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=3.0)
         self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=3.0)
-        self.mockUsrpClient3.getCurrentFpgaTime = Mock(return_value=3.0)
 
         self.system.createUsrpClient = Mock()  # type: ignore
         self.system.createUsrpClient.side_effect = [
             self.mockUsrpClient1,
             self.mockUsrpClient2,
-            self.mockUsrpClient3,
         ]  # type: ignore
 
         self.system.addUsrp(RfConfig(), "localhost1", "usrp1")

@@ -44,7 +44,6 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
-    std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
@@ -58,8 +57,6 @@ class Usrp : public UsrpInterface {
     void receive(const float baseTime, std::vector<samples_vec>& buffer,
                  std::exception_ptr& exceptionPtr,
                  const double fpgaTimeThreadStart);
-    void setTimeToZeroNextPpsThreadFunction();  // use this weird nume to avoid
-                                                // bigger api changes...
 };
 
 }  // namespace bi

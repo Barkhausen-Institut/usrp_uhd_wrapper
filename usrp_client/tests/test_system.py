@@ -9,7 +9,7 @@ from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
 
 
-class TestAddingUsrp(unittest.TestCase):
+class TestSystemInitialization(unittest.TestCase):
     def setUp(self) -> None:
         self.system = System()
         self.mockUsrpClient = Mock()
@@ -33,21 +33,6 @@ class TestAddingUsrp(unittest.TestCase):
         c = RfConfig()
         self.system.addUsrp(c, "localhost", "testusrp")
         self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
-
-
-#    def test_usrpsRestartSynchronization_newUsrpAddedToSystem(self) -> None:
-#        c = RfConfig()
-#
-#        self.system.addUsrp(c, "ip1", "usrp1", self.mockClients)
-#        self.mockUsrpClient.setTimeToZeroNextPps.assert_called_once()
-#
-#        # reset mocks
-#        self.mockUsrpClient.reset_mock()
-#        mockZeroRpcClient2 = Mock(spec=zerorpc.Client)
-#        mockUsrpClient2 = Mock(spec=UsrpClient)
-#        self.system.addUsrp(c, "ip2", "usrp2", (mockZeroRpcClient2, mockUsrpClient2))
-#        self.mockUsrpClient.setTimeToZeroNextPps.assert_called_once()
-#        mockUsrpClient2.setTimeToZeroNextPps.assert_called_once()
 
 
 class TestExecution(unittest.TestCase):
@@ -132,3 +117,23 @@ class TestExecution(unittest.TestCase):
         samples = self.system.collect()
         npt.assert_array_equal(samples[0][0], samplesUsrp1[0])
         npt.assert_array_equal(samples[1][0], samplesUsrp2[0])
+    
+
+class TestMultiDeviceSync(unittest.TestCase):
+    def setUp(self) -> None:
+        self.system = System()
+        self.mockUsrpClient1 = Mock(spec=UsrpClient)
+        self.mockUsrpClient2 = Mock(spec=UsrpClient)
+        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=3.0)
+        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=3.0)
+
+        self.system.createUsrpClient = Mock()  # type: ignore
+        self.system.createUsrpClient.side_effect = [
+            self.mockUsrpClient1,
+            self.mockUsrpClient2,
+        ]  # type: ignore
+
+        self.system.addUsrp(RfConfig(), "localhost1", "usrp1")
+        self.system.addUsrp(RfConfig(), "localhost2", "usrp2")
+    def test_calculateBaseTime(self) -> None:
+        

@@ -10,7 +10,7 @@ from usrp_client.rpc_client import UsrpClient
 
 
 class System:
-    syncThresholdMs = 5.0
+    syncThresholdSec = 0.2
     baseTimeOffsetSec = 0.2
 
     def __init__(self) -> None:
@@ -74,7 +74,7 @@ class System:
 
     def __assertSynchronisationValid(self) -> None:
         currentFpgaTimes = self.__getCurrentFpgaTimes()
-        if np.any(np.abs(np.diff(currentFpgaTimes)) > System.syncThresholdMs):
+        if np.any(np.abs(np.diff(currentFpgaTimes)) > System.syncThresholdSec):
             raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
     def collect(self) -> List[List[np.array]]:

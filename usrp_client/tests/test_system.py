@@ -121,8 +121,10 @@ class TestMultiDeviceSync(unittest.TestCase):
         self.mockUsrpClient3.setTimeToZeroNextPps.assert_called_once()
 
     def test_throwExceptionIfSyncIsInvalid(self) -> None:
+        syncThresholdSec = 0.02
+        System.syncThresholdSec = syncThresholdSec
         fpgaTimeUsrp1 = 3.0
-        fpgaTimeUsrp2 = fpgaTimeUsrp1 + 2 * System.syncThresholdMs
+        fpgaTimeUsrp2 = fpgaTimeUsrp1 + System.syncThresholdSec + 1.0
         self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp1)
         self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp2)
         self.assertRaises(ValueError, lambda: self.system.execute())
@@ -159,6 +161,9 @@ class TestTransceivingMultiDevice(unittest.TestCase):
         FPGA_TIME_S_USRP2 = 0.5
         BASE_TIME_OFFSET_SEC = 0.2
 
+        System.syncThresholdSec = (
+            1  # increase to make sure that no assertion is raised...
+        )
         System.baseTimeOffsetSec = BASE_TIME_OFFSET_SEC
         self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP1)
         self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP2)

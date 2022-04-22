@@ -60,11 +60,11 @@ class System:
         print("Synchronizing...")
         self.__synchronizeUsrps()
         self.__assertSynchronisationValid()
-        baseTimeSec = self.calculateBaseTimeSec()
+        baseTimeSec = self.__calculateBaseTimeSec()
         for usrpName in self.__usrpClients.keys():
             self.__usrpClients[usrpName][1].execute(baseTimeSec)
 
-    def calculateBaseTimeSec(self) -> float:
+    def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec

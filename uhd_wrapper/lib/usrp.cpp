@@ -136,11 +136,17 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 }
 
 void Usrp::setTimeToZeroNextPps() {
-    setTimeToZeroNextPpsThread_ =
-        std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
+    // join previous thread to make sure it has properly ended. This is also necessary to use op= below 
+    // (it'll std::terminate() if not joined before)
+    if (setTimeToZeroNextPpsThread_.joinable())
+	setTimeToZeroNextPpsThread_.join();
+
+    setTimeToZeroNextPpsThread_ = 
+	std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
 }
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {
+    ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();

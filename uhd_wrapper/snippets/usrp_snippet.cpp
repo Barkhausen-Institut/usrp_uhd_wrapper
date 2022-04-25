@@ -23,8 +23,8 @@ int main() {
     rfConfig.rxCarrierFrequency = {2e9};
     rfConfig.txAnalogFilterBw = 400e6;
     rfConfig.rxAnalogFilterBw = 400e6;
-    rfConfig.txSamplingRate = 10e6;
-    rfConfig.rxSamplingRate = 10e6;
+    rfConfig.txSamplingRate = 122.88e6;
+    rfConfig.rxSamplingRate = 122.88e6;
 
     bi::TxStreamingConfig txStreamingConfig;
     txStreamingConfig.samples = createDummySamples(NO_TX_SAMPLES);
@@ -35,9 +35,12 @@ int main() {
     rxStreamingConfig.receiveTimeOffset = 1.5f;
 
     usrpPtr->setRfConfig(rfConfig);
+    usrpPtr->setRfConfig(rfConfig);
     usrpPtr->setTxConfig(txStreamingConfig);
     usrpPtr->setRxConfig(rxStreamingConfig);
+    std::cout << "Setting time to zero..." << std::endl;
     usrpPtr->setTimeToZeroNextPps();
+    std::cout << "Current Time " << usrpPtr->getCurrentFpgaTime() << std::endl;
     usrpPtr->execute(0.f);
     std::vector<bi::samples_vec> samples = usrpPtr->collect();
     std::ofstream csvFile = createCsv("rxSamples.csv", 1);

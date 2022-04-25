@@ -96,6 +96,13 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
 }
 
 void Usrp::setRfConfig(const RfConfig &conf) {
+    // workaround: return, if streams are already setup, as it can be only done once
+    if (txStreamer_) {
+        std::cout << "WARNING: Cannot set RF Config twice. " 
+            << "Check for a workaround in gitlab, issue #23" << std::endl;
+        return;
+    }
+
     // configure transmitter
     setTxSamplingRate(conf.txSamplingRate);
     usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
@@ -130,7 +137,7 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 
 void Usrp::setTimeToZeroNextPps() {
     setTimeToZeroNextPpsThread_ =
-        std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction);
+        std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
 }
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {
@@ -139,6 +146,7 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
+    ppsSetToZero_ = true;
 }
 uint64_t Usrp::getCurrentSystemTime() {
     using namespace std::chrono;
@@ -151,7 +159,6 @@ uint64_t Usrp::getCurrentSystemTime() {
 double Usrp::getCurrentFpgaTime() {
     if (!ppsSetToZero_) {
         setTimeToZeroNextPpsThread_.join();
-        ppsSetToZero_ = true;
     }
     return usrpDevice_->get_time_now().get_real_secs();
 }

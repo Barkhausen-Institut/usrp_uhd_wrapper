@@ -148,6 +148,7 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     }
     ppsSetToZero_ = true;
 }
+
 uint64_t Usrp::getCurrentSystemTime() {
     using namespace std::chrono;
     uint64_t msSinceEpoch =

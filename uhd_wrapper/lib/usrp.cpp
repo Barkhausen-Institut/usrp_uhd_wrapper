@@ -10,6 +10,7 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
     try {
         if (rxStreamingConfigs_.size() == 0) return;
         RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
+        rxStreamingConfigs_ = {};
         buffer[0].resize(rxStreamingConfig.noSamples);
 
         size_t noPackages =
@@ -24,6 +25,8 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
         streamCmd.num_samps = rxStreamingConfig.noSamples;
         streamCmd.stream_now = false;
         rxStreamer_->issue_stream_cmd(streamCmd);
+        std::cout << "time_spec: " << streamCmd.time_spec.get_real_secs() << std::endl;
+        std::cout << "Current time " << getCurrentFpgaTime() << std::endl;
 
         uhd::rx_metadata_t mdRx;
         double timeout = (baseTime + rxStreamingConfig.receiveTimeOffset) -
@@ -56,6 +59,8 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
     try {
         if (txStreamingConfigs_.size() == 0) return;
         TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
+        txStreamingConfigs_ = {};
+
         // add helpers
         size_t noPackages = calcNoPackages(txStreamingConfig.samples[0].size(),
                                            SAMPLES_PER_BUFFER);
@@ -68,9 +73,10 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
         mdTx.end_of_burst = false;
         mdTx.has_time_spec = true;
 
-        // double fpgaTimeBeforeSending = getCurrentFpgaTime();
+        double fpgaTimeBeforeSending = getCurrentFpgaTime();
         mdTx.time_spec =
             uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
+        std::cout << "Time spec: " << mdTx.time_spec.get_real_secs() << " current time: " << fpgaTimeBeforeSending << std::endl;
 
         for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
             txStreamer_->send({txStreamingConfig.samples[0].data() +
@@ -98,7 +104,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
 void Usrp::setRfConfig(const RfConfig &conf) {
     // workaround: return, if streams are already setup, as it can be only done once
     if (txStreamer_) {
-        std::cout << "WARNING: Cannot set RF Config twice. " 
+        std::cout << "WARNING: Cannot set RF Config twice. "
             << "Check for a workaround in gitlab, issue #23" << std::endl;
         return;
     }
@@ -136,12 +142,12 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 }
 
 void Usrp::setTimeToZeroNextPps() {
-    // join previous thread to make sure it has properly ended. This is also necessary to use op= below 
+    // join previous thread to make sure it has properly ended. This is also necessary to use op= below
     // (it'll std::terminate() if not joined before)
     if (setTimeToZeroNextPpsThread_.joinable())
 	setTimeToZeroNextPpsThread_.join();
 
-    setTimeToZeroNextPpsThread_ = 
+    setTimeToZeroNextPpsThread_ =
 	std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
 }
 

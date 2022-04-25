@@ -30,7 +30,7 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
 
         uhd::rx_metadata_t mdRx;
         double timeout = (baseTime + rxStreamingConfig.receiveTimeOffset) -
-                         fpgaTimeThreadStart;
+                         fpgaTimeThreadStart + 0.2;
         for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
             rxStreamer_->recv(
                 {buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
@@ -44,6 +44,7 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                 throw UsrpException("error occurred on the receiver: " +
                                     mdRx.strerror());
         }
+        std::cout << "RX finished " << getCurrentFpgaTime() << std::endl;
 
         if (!mdRx.end_of_burst)
             throw UsrpException("I did not receive an end_of_burst.");
@@ -69,7 +70,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
 
         // specifiy on specifications of how to stream the command
         uhd::tx_metadata_t mdTx;
-        mdTx.start_of_burst = true;
+        mdTx.start_of_burst = false;
         mdTx.end_of_burst = false;
         mdTx.has_time_spec = true;
 
@@ -85,17 +86,19 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
                                   ? noSamplesLastBuffer
                                   : SAMPLES_PER_BUFFER,
                               mdTx, 0.1f);
-            mdTx.start_of_burst = false;
+            //mdTx.start_of_burst = false;
+            mdTx.has_time_spec = false;
         }
         mdTx.end_of_burst = true;
         txStreamer_->send("", 0, mdTx);
+        std::cout << "TX finished " << getCurrentFpgaTime() << std::endl;
         // we need to introduce this sleep to ensure that the samples have
         // already been sent since the buffering is non-blocking inside the
         // thread. If we close the the outer scope before the samples are
         // actually sent, they will not be sent any more out of the FPGA.
-        std::this_thread::sleep_for(std::chrono::milliseconds(
-            static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
-                                     baseTime - fpgaTimeThreadStart))));
+        //std::this_thread::sleep_for(std::chrono::milliseconds(
+        //static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
+        //baseTime - fpgaTimeThreadStart))));
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }

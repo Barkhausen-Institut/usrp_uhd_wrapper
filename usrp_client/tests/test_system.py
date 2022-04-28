@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from typing import List
 
 import numpy as np
@@ -45,23 +45,29 @@ class TestSystemInitialization(unittest.TestCase):
 
 class SystemMockFactory:
     def mockSystem(self, system: System, noMockUsrps: int) -> List[Mock]:
-        mockUsrps: List[Mock] = [Mock(spec=UsrpClient) for _ in range(noMockUsrps)]
-        mockUsrps = self.__mockUsrpClientFunctions(mockUsrps)
-        system.createUsrpClient = Mock()  # type: ignore
-        system.createUsrpClient.side_effect = mockUsrps  # type: ignore
-        for usrpIdx in range(len(mockUsrps)):  # type: ignore
-            system.addUsrp(RfConfig(), f"localhost{usrpIdx+1}", f"usrp{usrpIdx+1}")
-
+        mockUsrps = self.__createUsrpClients(noMockUsrps)
+        self.__addClientsToSystem(system, mockUsrps)
+        sleepPatcher = patch("time.sleep", return_value=None)
+        _ = sleepPatcher.start()
         return mockUsrps
 
-    def __mockUsrpClientFunctions(self, mockedUsrpClients: List[Mock]) -> List[Mock]:
-        for mockedUsrpClient in mockedUsrpClients:
+    def __createUsrpClients(self, noUsrpClients: int) -> List[Mock]:
+        mockUsrps: List[Mock] = [Mock(spec=UsrpClient) for _ in range(noUsrpClients)]
+
+        for mockedUsrpClient in mockUsrps:
             mockedUsrpClient.getCurrentFpgaTime.return_value = 3.0
-        return mockedUsrpClients
+        return mockUsrps
+
+    def __addClientsToSystem(self, system: System, clients: List[Mock]) -> None:
+        system.createUsrpClient = Mock()  # type: ignore
+        system.createUsrpClient.side_effect = clients  # type: ignore
+        for usrpIdx in range(len(clients)):  # type: ignore
+            system.addUsrp(RfConfig(), f"localhost{usrpIdx+1}", f"usrp{usrpIdx+1}")
 
 
 class TestStreamingConfiguration(unittest.TestCase, SystemMockFactory):
-    def setUp(self) -> None:
+    @patch("time.sleep", return_value=None)
+    def setUp(self, patched_sleep) -> None:
         self.system = System()
         self.mockUsrps = self.mockSystem(self.system, 2)
 

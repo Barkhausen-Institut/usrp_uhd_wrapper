@@ -28,13 +28,13 @@ class System:
         self,
         rfConfig: RfConfig,
         ip: str,
-        name: str,
+        usrpName: str,
     ):
-        self.__assertUniqueUsrp(ip, name)
+        self.__assertUniqueUsrp(ip, usrpName)
 
         usrpClient = self.createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
-        self.__usrpClients[name] = (ip, usrpClient)
+        self.__usrpClients[usrpName] = (ip, usrpClient)
         self.__usrpsSynced = False
 
     def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:

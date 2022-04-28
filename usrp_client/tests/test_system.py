@@ -132,8 +132,8 @@ class TestMultiDeviceSync(unittest.TestCase):
         System.syncThresholdSec = syncThresholdSec
         fpgaTimeUsrp1 = 3.0
         fpgaTimeUsrp2 = fpgaTimeUsrp1 + System.syncThresholdSec + 1.0
-        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp1)
-        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=fpgaTimeUsrp2)
+        self.mockUsrpClient1.getCurrentFpgaTime.return_value = fpgaTimeUsrp1
+        self.mockUsrpClient2.getCurrentFpgaTime.return_value = fpgaTimeUsrp2
         self.assertRaises(ValueError, lambda: self.system.execute())
 
 
@@ -142,8 +142,8 @@ class TestTransceivingMultiDevice(unittest.TestCase):
         self.system = System()
         self.mockUsrpClient1 = Mock(spec=UsrpClient)
         self.mockUsrpClient2 = Mock(spec=UsrpClient)
-        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=3.0)
-        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=3.0)
+        self.mockUsrpClient1.getCurrentFpgaTime.return_value = 3.0
+        self.mockUsrpClient2.getCurrentFpgaTime.return_value = 3.0
 
         self.system.createUsrpClient = Mock()  # type: ignore
         self.system.createUsrpClient.side_effect = [
@@ -157,8 +157,8 @@ class TestTransceivingMultiDevice(unittest.TestCase):
     def test_collectCallsCollectFromUsrpClient(self) -> None:
         samplesUsrp1 = [np.ones(10)]
         samplesUsrp2 = [2 * np.ones(10)]
-        self.mockUsrpClient1.collect = Mock(return_value=samplesUsrp1)
-        self.mockUsrpClient2.collect = Mock(return_value=samplesUsrp2)
+        self.mockUsrpClient1.collect.return_value = samplesUsrp1
+        self.mockUsrpClient2.collect.return_value = samplesUsrp2
         samples = self.system.collect()
         npt.assert_array_equal(samples[0][0], samplesUsrp1[0])
         npt.assert_array_equal(samples[1][0], samplesUsrp2[0])
@@ -172,8 +172,8 @@ class TestTransceivingMultiDevice(unittest.TestCase):
             1  # increase to make sure that no assertion is raised...
         )
         System.baseTimeOffsetSec = BASE_TIME_OFFSET_SEC
-        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP1)
-        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP2)
+        self.mockUsrpClient1.getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
+        self.mockUsrpClient2.getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
         expectedBaseTime = FPGA_TIME_S_USRP2 + BASE_TIME_OFFSET_SEC
         self.system.execute()
         self.mockUsrpClient1.execute.assert_called_once_with(expectedBaseTime)
@@ -188,14 +188,14 @@ class TestTransceivingMultiDevice(unittest.TestCase):
             0.01  # decrease to make sure that assertion is raised...
         )
         System.baseTimeOffsetSec = BASE_TIME_OFFSET_SEC
-        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP1)
-        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP2)
+        self.mockUsrpClient1.getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
+        self.mockUsrpClient2.getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
         self.assertRaises(ValueError, lambda: self.system.execute())
 
     def test_calculationBaseTimeNarrowStreamingOffsets(self) -> None:
         FPGA_TIME_S_USRP1 = 0.3
         FPGA_TIME_S_USRP2 = 0.4
 
-        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP1)
-        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP2)
+        self.mockUsrpClient1.getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
+        self.mockUsrpClient2.getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
         self.assertRaises(ValueError, lambda: self.system.execute())

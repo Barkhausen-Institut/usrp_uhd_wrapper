@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 from usrp_client.rpc_client import UsrpClient
 
-from usrp_client.system import System
+from usrp_client.system import System, LabeledUsrp
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
 
 
@@ -66,8 +66,7 @@ class SystemMockFactory:
 
 
 class TestStreamingConfiguration(unittest.TestCase, SystemMockFactory):
-    @patch("time.sleep", return_value=None)
-    def setUp(self, patched_sleep) -> None:
+    def setUp(self) -> None:
         self.system = System()
         self.mockUsrps = self.mockSystem(self.system, 2)
 

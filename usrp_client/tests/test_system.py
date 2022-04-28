@@ -61,7 +61,7 @@ class SystemMockFactory:
     def __addClientsToSystem(self, system: System, clients: List[Mock]) -> None:
         system.createUsrpClient = Mock()  # type: ignore
         system.createUsrpClient.side_effect = clients  # type: ignore
-        for usrpIdx in range(len(clients)):  # type: ignore
+        for usrpIdx in range(len(clients)):
             system.addUsrp(RfConfig(), f"localhost{usrpIdx+1}", f"usrp{usrpIdx+1}")
 
 

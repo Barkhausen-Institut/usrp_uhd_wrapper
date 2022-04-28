@@ -6,7 +6,7 @@ import numpy as np
 import numpy.testing as npt
 from usrp_client.rpc_client import UsrpClient
 
-from usrp_client.system import System, LabeledUsrp
+from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
 
 

@@ -8,8 +8,8 @@ On the usrp:
 
 1. `git clone <this repo>`
 2. `python3 -m venv env`
-3. `pip install -r requirements_usrp.txt`
-4. `cd usrp_uhd_rapper && mkdir build`
+3. `pip install -e .`
+4. `cd usrp_uhd_wrapper && mkdir build`
 5. `cd build`
 6. `cmake -DCMAKE_BUILD_TYPE=Release ..`
 7. `make`

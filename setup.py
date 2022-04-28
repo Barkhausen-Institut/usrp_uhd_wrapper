@@ -16,8 +16,8 @@ if runningOnUsrp:
         version=VERSION,
         packages=["uhd_wrapper"],
         python_requires=">=3.7",
-        install_requires=[l.strip() for l in open("requirements_usrp.txt").readlines()]
-        )
+        install_requires=[line.strip() for line in open("requirements_usrp.txt").readlines()]
+    )
 
 else:
     print("Setting up for host development")

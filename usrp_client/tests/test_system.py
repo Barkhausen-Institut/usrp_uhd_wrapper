@@ -128,8 +128,6 @@ class TestMultiDeviceSync(unittest.TestCase):
         self.mockUsrpClient3.setTimeToZeroNextPps.assert_called_once()
 
     def test_throwExceptionIfSyncIsInvalid(self) -> None:
-        syncThresholdSec = 0.02
-        System.syncThresholdSec = syncThresholdSec
         fpgaTimeUsrp1 = 3.0
         fpgaTimeUsrp2 = fpgaTimeUsrp1 + System.syncThresholdSec + 1.0
         self.mockUsrpClient1.getCurrentFpgaTime.return_value = fpgaTimeUsrp1

@@ -93,7 +93,7 @@ for iteration in range(3):
     plt.plot(np.arange(60e3), np.abs(samples["usrp1"][0]))
     plt.title("Received samples usrp1")
     plt.subplot(222)
-    plt.plot(np.arange(60e3), np.abs(samples["1"][0]))
+    plt.plot(np.arange(60e3), np.abs(samples["usrp2"][0]))
     plt.title("Received samples usrp2")
     plt.subplot(223)
     plt.plot(np.arange(correlationUsrp1.size), np.abs(correlationUsrp1))

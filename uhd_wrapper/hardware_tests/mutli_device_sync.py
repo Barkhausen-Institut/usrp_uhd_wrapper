@@ -1,8 +1,6 @@
-import sys
 import argparse
-sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
-import usrp_pybinding
-from .utils import RandomSignal, dumpSamples
+import uhd_wrapper.usrp_pybinding as usrp_pybinding
+from uhd_wrapper.hardware_tests.utils import RandomSignal, dumpSamples
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tx-time-offset", type=float)

@@ -3,7 +3,7 @@ from setuptools import setup   # type: ignore
 setup(
     name="usrp_uhd_api",
     version="0.0.0",
-    packages=["usrp_client"],
+    packages=["usrp_client", "uhd_wrapper"],
     python_requires=">=3.9",
     install_requires=[
         "zerorpc~=0.6.3",

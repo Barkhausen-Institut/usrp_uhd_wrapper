@@ -22,14 +22,14 @@ class TestSystemInitialization(unittest.TestCase):
         self.system.addUsrp(RfConfig(), IP, "dummyName")
         self.system.createUsrpClient.assert_called_once_with(IP)  # type: ignore
 
-    def test_throwExceptionIfIpConnectionToUsrpAlreadyExists(self) -> None:
+    def test_throwExceptionIfIpDuplicate_ip(self) -> None:
         self.system.addUsrp(RfConfig(), "localhost", "testName")
         self.assertRaises(
             ValueError,
             lambda: self.system.addUsrp(RfConfig(), "localhost", "testName2"),
         )
 
-    def test_throwExceptionIfUsrpNameConnectionToUsrpAlreadyExists(self) -> None:
+    def test_throwExceptionIfDuplicate_usrpName(self) -> None:
         self.system.addUsrp(RfConfig(), "localhost", "testName")
         self.assertRaises(
             ValueError,

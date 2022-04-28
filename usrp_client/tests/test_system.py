@@ -22,11 +22,18 @@ class TestSystemInitialization(unittest.TestCase):
         self.system.addUsrp(RfConfig(), IP, "dummyName")
         self.system.createUsrpClient.assert_called_once_with(IP)  # type: ignore
 
-    def test_throwExceptionIfConnectionToUsrpAlreadyExists(self) -> None:
+    def test_throwExceptionIfIpConnectionToUsrpAlreadyExists(self) -> None:
         self.system.addUsrp(RfConfig(), "localhost", "testName")
         self.assertRaises(
             ValueError,
-            lambda: self.system.addUsrp(RfConfig(), "localhost", "testName"),
+            lambda: self.system.addUsrp(RfConfig(), "localhost", "testName2"),
+        )
+
+    def test_throwExceptionIfUsrpNameConnectionToUsrpAlreadyExists(self) -> None:
+        self.system.addUsrp(RfConfig(), "localhost", "testName")
+        self.assertRaises(
+            ValueError,
+            lambda: self.system.addUsrp(RfConfig(), "192.168.189.131", "testName"),
         )
 
     def test_rfConfigPassedToRpcClient(self) -> None:
@@ -181,6 +188,14 @@ class TestTransceivingMultiDevice(unittest.TestCase):
             0.01  # decrease to make sure that assertion is raised...
         )
         System.baseTimeOffsetSec = BASE_TIME_OFFSET_SEC
+        self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP1)
+        self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP2)
+        self.assertRaises(ValueError, lambda: self.system.execute())
+
+    def test_calculationBaseTimeNarrowStreamingOffsets(self) -> None:
+        FPGA_TIME_S_USRP1 = 0.3
+        FPGA_TIME_S_USRP2 = 0.4
+
         self.mockUsrpClient1.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP1)
         self.mockUsrpClient2.getCurrentFpgaTime = Mock(return_value=FPGA_TIME_S_USRP2)
         self.assertRaises(ValueError, lambda: self.system.execute())

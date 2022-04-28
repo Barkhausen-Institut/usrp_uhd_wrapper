@@ -10,7 +10,7 @@ from uhd_wrapper.utils.config import RfConfig, RxStreamingConfig, TxStreamingCon
 from usrp_client.rpc_client import UsrpClient
 
 
-LabeledUsrp = namedtuple(typename="LabeledUsrp", field_names="name ip client")
+LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
 
 
 class System:
@@ -33,7 +33,7 @@ class System:
         rfConfig: RfConfig,
         ip: str,
         usrpName: str,
-    ):
+    ) -> None:
         self.__assertUniqueUsrp(ip, usrpName)
 
         usrpClient = self.createUsrpClient(ip)

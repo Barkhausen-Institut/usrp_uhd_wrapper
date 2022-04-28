@@ -137,11 +137,12 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
     def test_collectCallsCollectFromUsrpClient(self) -> None:
         samplesUsrp1 = [np.ones(10)]
         samplesUsrp2 = [2 * np.ones(10)]
+
         self.mockUsrps[0].collect.return_value = samplesUsrp1
         self.mockUsrps[1].collect.return_value = samplesUsrp2
         samples = self.system.collect()
-        npt.assert_array_equal(samples[0][0], samplesUsrp1[0])
-        npt.assert_array_equal(samples[1][0], samplesUsrp2[0])
+        npt.assert_array_equal(samples["usrp1"][0], samplesUsrp1[0])
+        npt.assert_array_equal(samples["usrp2"][0], samplesUsrp2[0])
 
     def test_calculationBaseTime_validSynchronisation(self) -> None:
         FPGA_TIME_S_USRP1 = 0.3

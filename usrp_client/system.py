@@ -87,5 +87,5 @@ class System:
         if np.any(np.abs(np.diff(currentFpgaTimes)) > System.syncThresholdSec):
             raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
-    def collect(self) -> List[List[np.array]]:
-        return [item[1].collect() for _, item in self.__usrpClients.items()]
+    def collect(self) -> Dict[str, List[np.ndarray]]:
+        return {key: item[1].collect() for key, item in self.__usrpClients.items()}

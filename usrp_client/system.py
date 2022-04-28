@@ -30,14 +30,20 @@ class System:
         ip: str,
         name: str,
     ):
-        for usrp in self.__usrpClients.keys():
-            if self.__usrpClients[usrp][0] == ip:
-                raise ValueError("Connection to USRP already exists!")
+        self.__assertUniqueUsrp(ip, name)
 
         usrpClient = self.createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
         self.__usrpClients[name] = (ip, usrpClient)
         self.__usrpsSynced = False
+
+    def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
+        if usrpName in self.__usrpClients.keys():
+            raise ValueError("Connection to USRP already exists!")
+
+        for usrp in self.__usrpClients.keys():
+            if self.__usrpClients[usrp][0] == ip:
+                raise ValueError("Connection to USRP already exists!")
 
     def __synchronizeUsrps(self) -> None:
         if not self.__usrpsSynced:

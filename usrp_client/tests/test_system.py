@@ -146,12 +146,9 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
 
     def test_calculationBaseTime_validSynchronisation(self) -> None:
         FPGA_TIME_S_USRP1 = 0.3
-        FPGA_TIME_S_USRP2 = 0.5
+        FPGA_TIME_S_USRP2 = 0.4
         BASE_TIME_OFFSET_SEC = 0.2
 
-        System.syncThresholdSec = (
-            1  # increase to make sure that no assertion is raised...
-        )
         System.baseTimeOffsetSec = BASE_TIME_OFFSET_SEC
         self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
         self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
@@ -162,12 +159,9 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
 
     def test_calculationBaseTime_invalidSynchronisation(self) -> None:
         FPGA_TIME_S_USRP1 = 0.3
-        FPGA_TIME_S_USRP2 = 0.5
+        FPGA_TIME_S_USRP2 = 1.5
         BASE_TIME_OFFSET_SEC = 0.2
 
-        System.syncThresholdSec = (
-            0.01  # decrease to make sure that assertion is raised...
-        )
         System.baseTimeOffsetSec = BASE_TIME_OFFSET_SEC
         self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
         self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2

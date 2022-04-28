@@ -2,8 +2,7 @@ import sys
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
 from copy import deepcopy
-from utils import (RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples)
-
+from .utils import (RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples)
 
 
 NO_TX_SAMPLES = int(10e3)

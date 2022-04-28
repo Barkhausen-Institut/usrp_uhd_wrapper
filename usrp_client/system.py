@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Dict, List
+from typing import Dict, List
 import time
 from collections import namedtuple
 
@@ -77,7 +77,8 @@ class System:
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()
         logging.info(
-            f"For calculating the base time, I received the following fpgaTimes: {currentFpgaTimesSec}"
+            f"For calculating the base time, I received the "
+            f"following fpgaTimes: {currentFpgaTimesSec}"
         )
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec
@@ -93,7 +94,7 @@ class System:
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
         ) > System.syncThresholdSec:
             raise ValueError(
-                f"Fpga Times of USRPs mismatch... Synchronisation invalid."
+                "Fpga Times of USRPs mismatch... Synchronisation invalid."
             )
 
     def collect(self) -> Dict[str, List[np.ndarray]]:

@@ -2,7 +2,7 @@ import sys
 import argparse
 sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
 import usrp_pybinding
-from utils import RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples
+from .utils import RandomSignal, dumpSamples
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--tx-time-offset", type=float)
@@ -15,7 +15,7 @@ NO_RX_SAMPLES = int(60e3)
 txSignal = RandomSignal()
 txSignal.create(NO_TX_SAMPLES, 1)
 
-rfConfig = usrp_pybinding.RfConfig()    
+rfConfig = usrp_pybinding.RfConfig()
 rfConfig.txGain = [50]
 rfConfig.rxGain = [40]
 rfConfig.txCarrierFrequency = [2e9]

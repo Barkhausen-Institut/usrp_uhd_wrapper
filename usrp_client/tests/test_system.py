@@ -171,11 +171,3 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
         self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
         self.assertRaises(ValueError, lambda: self.system.execute())
-
-    def test_calculationBaseTimeNarrowStreamingOffsets(self) -> None:
-        FPGA_TIME_S_USRP1 = 0.3
-        FPGA_TIME_S_USRP2 = 0.4
-
-        self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
-        self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
-        self.assertRaises(ValueError, lambda: self.system.execute())

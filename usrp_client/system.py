@@ -1,6 +1,7 @@
 import logging
 from typing import Tuple, Dict, List
 import time
+from collections import namedtuple
 
 import zerorpc
 import numpy as np
@@ -84,8 +85,12 @@ class System:
 
     def __assertSynchronisationValid(self) -> None:
         currentFpgaTimes = self.__getCurrentFpgaTimes()
-        if np.any(np.abs(np.diff(currentFpgaTimes)) > System.syncThresholdSec):
-            raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
+        if (
+            np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
+        ) > System.syncThresholdSec:
+            raise ValueError(
+                f"Fpga Times of USRPs mismatch... Synchronisation invalid."
+            )
 
     def collect(self) -> Dict[str, List[np.ndarray]]:
         return {key: item[1].collect() for key, item in self.__usrpClients.items()}

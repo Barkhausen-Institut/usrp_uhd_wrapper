@@ -174,6 +174,23 @@ class TestUsrpServer(unittest.TestCase):
             )
         )
 
+    def test_getRfConfigReturnsSerializedVersion(self) -> None:
+        usrpRfConfig = RfConfig()
+        usrpRfConfig.txCarrierFrequency = [2e9]
+
+        usrpRfConfig.txGain = [30]
+        usrpRfConfig.txAnalogFilterBw = 200e6
+        usrpRfConfig.txSamplingRate = 20e6
+
+        usrpRfConfig.rxCarrierFrequency = [2e9]
+        usrpRfConfig.rxGain = [40]
+        usrpRfConfig.rxAnalogFilterBw = 100e6
+        usrpRfConfig.rxSamplingRate = 30e6
+        self.usrpMock.getRfConfig.return_value = usrpRfConfig
+        self.assertDictEqual(
+            serializeRfConfig(usrpRfConfig), self.usrpServer.getRfConfig()
+        )
+
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0
 

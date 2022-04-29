@@ -59,7 +59,9 @@ class TestDeserializationComplexArr(unittest.TestCase):
 
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
-        self.conf = RfConfig()
+        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
+
+        self.conf = RfConfigClient()
         self.conf.txCarrierFrequency = [2e9]
 
         self.conf.txGain = [30]

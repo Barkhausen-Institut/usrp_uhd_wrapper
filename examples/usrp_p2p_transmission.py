@@ -18,7 +18,7 @@ def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:
     )
 
 
-def createRamp(noSamples: int, zeropad: int = 0):
+def createRamp(noSamples: int, zeropad: int = 0) -> np.ndarray:
     return np.hstack(
         [np.zeros(zeropad, dtype=complex), np.linspace(0, 1, noSamples, endpoint=False)]
     )

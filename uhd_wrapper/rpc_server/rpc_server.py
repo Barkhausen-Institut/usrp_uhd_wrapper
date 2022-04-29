@@ -1,11 +1,10 @@
-from typing import Tuple, List
+from typing import List
 
 from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
     SerializedComplexArray,)
 from uhd_wrapper.usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
-
 
 
 class UsrpServer:

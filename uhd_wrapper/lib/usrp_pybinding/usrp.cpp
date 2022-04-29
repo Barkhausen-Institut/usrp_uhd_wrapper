@@ -39,7 +39,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
     m.def("assertSamplingRate", &bi::assertSamplingRate);
 
     // wrap object
-    py::class_<bi::RfConfig>(m, "RfConfig")
+    py::class_<bi::RfConfig>(m, "RfConfig", py::dynamic_attr())
         .def(py::init())
         .def(py::init<const std::vector<float>&, const std::vector<float>&,
                       const std::vector<float>&, const std::vector<float>&,

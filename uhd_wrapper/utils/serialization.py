@@ -1,9 +1,10 @@
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Union
 import numpy as np
 import json
 
-from uhd_wrapper.usrp_pybinding import Usrp, RfConfig
-
+from uhd_wrapper.usrp_pybinding import Usrp
+from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigServer
+from usrp_client.config import RfConfig as RfConfigClient
 SerializedComplexArray = Tuple[List, List]
 
 
@@ -24,7 +25,7 @@ def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
     return arr
 
 
-def serializeRfConfig(conf: RfConfig) -> Dict[str, Dict[str, Any]]:
+def serializeClientRfConfig(conf: Union[RfConfigServer, RfConfigClient]) -> Dict[str, Dict[str, Any]]:
     return {
         "rx": {
             "analogFilterBw": conf.rxAnalogFilterBw,
@@ -41,8 +42,21 @@ def serializeRfConfig(conf: RfConfig) -> Dict[str, Dict[str, Any]]:
     }
 
 
-def deserializeRfConfig(serializedConf: Dict[str, Dict[str, Any]]) -> RfConfig:
-    conf = RfConfig()
+def deserializeRfConfigClient(serializedConf: Dict[str, Dict[str, Any]]) -> RfConfigClient:
+    conf = RfConfigClient()
+    conf.txSamplingRate = serializedConf["tx"]["samplingRate"]
+    conf.txGain = serializedConf["tx"]["gain"]
+    conf.txCarrierFrequency = serializedConf["tx"]["carrierFrequency"]
+    conf.txAnalogFilterBw = serializedConf["tx"]["analogFilterBw"]
+    conf.rxSamplingRate = serializedConf["rx"]["samplingRate"]
+    conf.rxGain = serializedConf["rx"]["gain"]
+    conf.rxCarrierFrequency = serializedConf["rx"]["carrierFrequency"]
+    conf.rxAnalogFilterBw = serializedConf["rx"]["analogFilterBw"]
+    return conf
+
+
+def deserializeRfConfigServer(serializedConf: Dict[str, Dict[str, Any]]) -> RfConfigServer:
+    conf = RfConfigServer()
     conf.txSamplingRate = serializedConf["tx"]["samplingRate"]
     conf.txGain = serializedConf["tx"]["gain"]
     conf.txCarrierFrequency = serializedConf["tx"]["carrierFrequency"]

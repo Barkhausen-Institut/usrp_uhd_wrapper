@@ -6,19 +6,17 @@ import numpy.testing as npt
 
 from uhd_wrapper.rpc_server.rpc_server import UsrpServer
 from uhd_wrapper.utils.serialization import (
-    deserializeRfConfigClient,
-    deserializeRfConfigServer,
+    deserializeRfConfig,
     serializeComplexArray,
     deserializeComplexArray,
     serializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
+    RfConfig,
     RxStreamingConfig,
     TxStreamingConfig,
 )
-from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigServer
-from usrp_client.config import RfConfig as RfConfigClient
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -61,29 +59,18 @@ class TestDeserializationComplexArr(unittest.TestCase):
 
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
-        self.confClient = RfConfigServer()
-        self.confClient.txCarrierFrequency = [2e9]
+        self.conf = RfConfig()
+        self.conf.txCarrierFrequency = [2e9]
 
-        self.confClient.txGain = [30]
-        self.confClient.txAnalogFilterBw = 200e6
-        self.confClient.txSamplingRate = 20e6
+        self.conf.txGain = [30]
+        self.conf.txAnalogFilterBw = 200e6
+        self.conf.txSamplingRate = 20e6
 
-        self.confClient.rxCarrierFrequency = [2e9]
-        self.confClient.rxGain = [40]
-        self.confClient.rxAnalogFilterBw = 100e6
-        self.confClient.rxSamplingRate = 30e6
-        
-        self.confServer = RfConfigServer()
-        self.confServer.txCarrierFrequency = [2e9]
+        self.conf.rxCarrierFrequency = [2e9]
+        self.conf.rxGain = [40]
+        self.conf.rxAnalogFilterBw = 100e6
+        self.conf.rxSamplingRate = 30e6
 
-        self.confServer.txGain = [30]
-        self.confServer.txAnalogFilterBw = 200e6
-        self.confServer.txSamplingRate = 20e6
-
-        self.confServer.rxCarrierFrequency = [2e9]
-        self.confServer.rxGain = [40]
-        self.confServer.rxAnalogFilterBw = 100e6
-        self.confServer.rxSamplingRate = 30e6
     def test_properRfConfigSerialization(self) -> None:
         expectedDict = {
             "rx": {
@@ -99,7 +86,7 @@ class TestSerializationRfConfig(unittest.TestCase):
                 "samplingRate": self.conf.txSamplingRate,
             },
         }
-        serializedConf = serializeRfConfig(self.confServer)
+        serializedConf = serializeRfConfig(self.conf)
 
         self.assertDictEqual(expectedDict, serializedConf)
 
@@ -119,8 +106,8 @@ class TestSerializationRfConfig(unittest.TestCase):
             },
         }
 
-        self.assertEqual(self.confClient, deserializeRfConfigClient(serializedRfConf))
-        self.assertEqual(self.confServer, deserializeRfConfigServer(serializedRfConf))
+        self.assertEqual(self.conf, deserializeRfConfig(serializedRfConf))
+
 
 class TestUsrpServer(unittest.TestCase):
     def setUp(self) -> None:

@@ -81,7 +81,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
                                   ? noSamplesLastBuffer
                                   : SAMPLES_PER_BUFFER,
                               mdTx, 0.1f);
-            //mdTx.start_of_burst = false;
+            // mdTx.start_of_burst = false;
             mdTx.has_time_spec = false;
         }
         mdTx.end_of_burst = true;
@@ -90,13 +90,21 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
         exceptionPtr = std::current_exception();
     }
 }
-
 void Usrp::setRfConfig(const RfConfig &conf) {
-    // workaround: return, if streams are already setup, as it can be only done once
+    // workaround: return, if streams are already setup, as it can be only done
+    // once
     if (txStreamer_) {
-        std::cout << "WARNING: Cannot set RF Config twice. "
-            << "Check for a workaround in gitlab, issue #23" << std::endl;
-        return;
+        std::cout
+            << "WARNING: Attemping to set RfConfig twice. "
+            << "Maybe, this leads to time out errors on the rx_streamer side."
+            << std::endl;
+    } else {
+        uhd::stream_args_t txStreamArgs("fc32", "sc16");
+        txStreamArgs.channels = std::vector<size_t>({0});
+        txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
+        uhd::stream_args_t rxStreamArgs("fc32", "sc16");
+        rxStreamArgs.channels = std::vector<size_t>({0});
+        rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
     }
 
     // configure transmitter
@@ -114,13 +122,6 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     usrpDevice_->set_rx_freq(rxTuneRequest, 0);
     usrpDevice_->set_rx_gain(conf.rxGain[0], 0);
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
-
-    uhd::stream_args_t txStreamArgs("fc32", "sc16");
-    txStreamArgs.channels = std::vector<size_t>({0});
-    txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
-    uhd::stream_args_t rxStreamArgs("fc32", "sc16");
-    rxStreamArgs.channels = std::vector<size_t>({0});
-    rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
@@ -132,13 +133,13 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 }
 
 void Usrp::setTimeToZeroNextPps() {
-    // join previous thread to make sure it has properly ended. This is also necessary to use op= below
-    // (it'll std::terminate() if not joined before)
+    // join previous thread to make sure it has properly ended. This is also
+    // necessary to use op= below (it'll std::terminate() if not joined before)
     if (setTimeToZeroNextPpsThread_.joinable())
-	setTimeToZeroNextPpsThread_.join();
+        setTimeToZeroNextPpsThread_.join();
 
     setTimeToZeroNextPpsThread_ =
-	std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
+        std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
 }
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {

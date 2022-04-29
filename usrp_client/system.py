@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Dict, List
+from typing import Dict, List
 import time
 from collections import namedtuple
 
@@ -10,7 +10,7 @@ from uhd_wrapper.utils.config import RfConfig, RxStreamingConfig, TxStreamingCon
 from usrp_client.rpc_client import UsrpClient
 
 
-LabeledUsrp = namedtuple(typename="LabeledUsrp", field_names="name ip client")
+LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
 
 
 class System:
@@ -33,7 +33,7 @@ class System:
         rfConfig: RfConfig,
         ip: str,
         usrpName: str,
-    ):
+    ) -> None:
         self.__assertUniqueUsrp(ip, usrpName)
 
         usrpClient = self.createUsrpClient(ip)
@@ -65,6 +65,12 @@ class System:
         self.__usrpClients[usrpName].client.configureRx(rxStreamingConfig)
         logging.info(f"Configured RX streaming for USRP: {usrpName}.")
 
+    def getRfConfigs(self) -> Dict[str, RfConfig]:
+        return {
+            usrpName: self.__usrpClients[usrpName].client.getRfConfig()
+            for usrpName in self.__usrpClients.keys()
+        }
+
     def execute(self) -> None:
         print("Synchronizing...")
         self.__synchronizeUsrps()
@@ -77,7 +83,8 @@ class System:
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()
         logging.info(
-            f"For calculating the base time, I received the following fpgaTimes: {currentFpgaTimesSec}"
+            f"For calculating the base time, I received the "
+            f"following fpgaTimes: {currentFpgaTimesSec}"
         )
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec
@@ -92,9 +99,7 @@ class System:
         if (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
         ) > System.syncThresholdSec:
-            raise ValueError(
-                f"Fpga Times of USRPs mismatch... Synchronisation invalid."
-            )
+            raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
     def collect(self) -> Dict[str, List[np.ndarray]]:
         return {key: item.client.collect() for key, item in self.__usrpClients.items()}

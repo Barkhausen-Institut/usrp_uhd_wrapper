@@ -1,8 +1,10 @@
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict, Any, Union
 import numpy as np
 import json
 
-from uhd_wrapper.usrp_pybinding import Usrp, RfConfig
+from uhd_wrapper.usrp_pybinding import Usrp
+from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigServer
+from uhd_wrapper.config import RfConfig as RfConfigClient
 
 SerializedComplexArray = Tuple[List, List]
 
@@ -24,7 +26,7 @@ def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
     return arr
 
 
-def serializeRfConfig(conf: RfConfig) -> Dict[str, Dict[str, Any]]:
+def serializeRfConfig(conf: Union[RfConfigClient, RfConfigServer]) -> Dict[str, Dict[str, Any]]:
     return {
         "rx": {
             "analogFilterBw": conf.rxAnalogFilterBw,
@@ -41,8 +43,8 @@ def serializeRfConfig(conf: RfConfig) -> Dict[str, Dict[str, Any]]:
     }
 
 
-def deserializeRfConfig(serializedConf: Dict[str, Dict[str, Any]]) -> RfConfig:
-    conf = RfConfig()
+def deserializeRfConfig(serializedConf: Dict[str, Dict[str, Any]]) -> RfConfigClient:
+    conf = RfConfigClient()
     conf.txSamplingRate = serializedConf["tx"]["samplingRate"]
     conf.txGain = serializedConf["tx"]["gain"]
     conf.txCarrierFrequency = serializedConf["tx"]["carrierFrequency"]

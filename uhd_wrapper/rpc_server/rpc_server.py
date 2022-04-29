@@ -1,4 +1,4 @@
-from typing import Tuple, List, Dict, Any
+from typing import List, Dict, Any
 
 from uhd_wrapper.utils.serialization import (
     serializeComplexArray,

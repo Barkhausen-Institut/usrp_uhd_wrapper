@@ -1,9 +1,8 @@
-import sys
-sys.path.extend(["release_build/lib/", "debug_build/lib/", "build/lib/"])
-import usrp_pybinding
+import uhd_wrapper.usrp_pybinding as usrp_pybinding
 from copy import deepcopy
-from utils import (RandomSignal, findFirstSampleInFrameOfSignal, dumpSamples)
-
+from uhd_wrapper.hardware_tests.utils import (RandomSignal,
+                                              findFirstSampleInFrameOfSignal,
+                                              dumpSamples)
 
 
 NO_TX_SAMPLES = int(10e3)

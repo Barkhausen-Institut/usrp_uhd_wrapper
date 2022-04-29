@@ -1,7 +1,6 @@
-import zerorpc
-
-from uhd_wrapper.usrp_pybinding import Usrp, createUsrp
 from uhd_wrapper.rpc_server.rpc_server import UsrpServer
+import zerorpc
+from uhd_wrapper.usrp_pybinding import createUsrp
 
 # create environment
 PORT = 5555

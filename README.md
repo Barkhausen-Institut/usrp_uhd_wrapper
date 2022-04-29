@@ -1,5 +1,5 @@
 # Purpose
- 
+
 This repo wraps the UHD for our X410. It contains the **client as well as the server**. The client is to be used by the user for signal processing purposes and sending the commands to the USRP, which serves as as server.
 
 # Install
@@ -7,18 +7,21 @@ This repo wraps the UHD for our X410. It contains the **client as well as the se
 On the usrp:
 
 1. `git clone <this repo>`
-2. `cd usrp_uhd_rapper && mkdir build`
-3. `cd build`
-4. `cmake -DCMAKE_BUILD_TYPE=Release ..`
-5. `make`
-6. `ctest -V` to check if the tests pass
+2. `python3 -m venv env`
+3. `pip install -e .`
+4. `cd usrp_uhd_wrapper && mkdir build`
+5. `cd build`
+6. `cmake -DCMAKE_BUILD_TYPE=Release ..`
+7. `make`
+8. `make install`
+9. `ctest -V` to check if the tests pass
 
 For the client:
 
 1. Ensure that you use at least python3.9.
 2. Create and activate virtual env (on linux: `python -m venv env && . env/bin/activate`)
 3. `pip install -e .`
-4. **For running tests:** `pip install -r requirements_tests.txt && python -m pytests tests/`
+4. **For running tests:** `pip install -r requirements_tests.txt && pytest`
 
 # Prerequisites
 
@@ -27,9 +30,21 @@ Usrp:
 
 # Use
 
+USRP:
+1. `cd <repo>`
+2. `. env/bin/activate`
+3. `python start_usrp_server.py`
+
 Client:
 
-After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. RF config, samples, etc.) to the usrp server. The `utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module. 
+After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. RF config, samples, etc.) to the usrp server. The `utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
+
+**Ensure that usrp server is already started (cf. previous section).**
+To start a simple example script that transmit a rect signal from `192.168.189.131` to `192.168.189.133` and vice versa, run:
+
+1. `cd <repo>`
+2. `. env/bin/activate`
+3. `python examples/usrp_p2p_transmission.py`
 
 # For Developers
 

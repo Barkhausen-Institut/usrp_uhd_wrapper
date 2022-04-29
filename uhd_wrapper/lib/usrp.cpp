@@ -10,6 +10,7 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
     try {
         if (rxStreamingConfigs_.size() == 0) return;
         RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
+        rxStreamingConfigs_ = {};
         buffer[0].resize(rxStreamingConfig.noSamples);
 
         size_t noPackages =
@@ -27,7 +28,7 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
 
         uhd::rx_metadata_t mdRx;
         double timeout = (baseTime + rxStreamingConfig.receiveTimeOffset) -
-                         fpgaTimeThreadStart;
+                         fpgaTimeThreadStart + 0.2;
         for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
             rxStreamer_->recv(
                 {buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
@@ -56,6 +57,8 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
     try {
         if (txStreamingConfigs_.size() == 0) return;
         TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
+        txStreamingConfigs_ = {};
+
         // add helpers
         size_t noPackages = calcNoPackages(txStreamingConfig.samples[0].size(),
                                            SAMPLES_PER_BUFFER);
@@ -64,11 +67,10 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
 
         // specifiy on specifications of how to stream the command
         uhd::tx_metadata_t mdTx;
-        mdTx.start_of_burst = true;
+        mdTx.start_of_burst = false;
         mdTx.end_of_burst = false;
         mdTx.has_time_spec = true;
 
-        // double fpgaTimeBeforeSending = getCurrentFpgaTime();
         mdTx.time_spec =
             uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
 
@@ -79,23 +81,24 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
                                   ? noSamplesLastBuffer
                                   : SAMPLES_PER_BUFFER,
                               mdTx, 0.1f);
-            mdTx.start_of_burst = false;
+            //mdTx.start_of_burst = false;
+            mdTx.has_time_spec = false;
         }
         mdTx.end_of_burst = true;
         txStreamer_->send("", 0, mdTx);
-        // we need to introduce this sleep to ensure that the samples have
-        // already been sent since the buffering is non-blocking inside the
-        // thread. If we close the the outer scope before the samples are
-        // actually sent, they will not be sent any more out of the FPGA.
-        std::this_thread::sleep_for(std::chrono::milliseconds(
-            static_cast<int>(1000 * (txStreamingConfigs_[0].sendTimeOffset +
-                                     baseTime - fpgaTimeThreadStart))));
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }
 }
 
 void Usrp::setRfConfig(const RfConfig &conf) {
+    // workaround: return, if streams are already setup, as it can be only done once
+    if (txStreamer_) {
+        std::cout << "WARNING: Cannot set RF Config twice. "
+            << "Check for a workaround in gitlab, issue #23" << std::endl;
+        return;
+    }
+
     // configure transmitter
     setTxSamplingRate(conf.txSamplingRate);
     usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
@@ -129,12 +132,22 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 }
 
 void Usrp::setTimeToZeroNextPps() {
+    // join previous thread to make sure it has properly ended. This is also necessary to use op= below
+    // (it'll std::terminate() if not joined before)
+    if (setTimeToZeroNextPpsThread_.joinable())
+	setTimeToZeroNextPpsThread_.join();
+
+    setTimeToZeroNextPpsThread_ =
+	std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
+}
+
+void Usrp::setTimeToZeroNextPpsThreadFunction() {
+    ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
-
     ppsSetToZero_ = true;
 }
 
@@ -147,6 +160,9 @@ uint64_t Usrp::getCurrentSystemTime() {
 }
 
 double Usrp::getCurrentFpgaTime() {
+    if (!ppsSetToZero_) {
+        setTimeToZeroNextPpsThread_.join();
+    }
     return usrpDevice_->get_time_now().get_real_secs();
 }
 

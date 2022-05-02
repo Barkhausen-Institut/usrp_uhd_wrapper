@@ -51,6 +51,7 @@ class Usrp : public UsrpInterface {
     double masterClockRate_;
 
     std::vector<samples_vec> receivedSamples_ = {{}};
+    bool subdevSpecSet_ = false;
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);

@@ -93,7 +93,6 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
 void Usrp::setRfConfig(const RfConfig &conf) {
     // configure transmitter
     setTxSamplingRate(conf.txSamplingRate);
-    usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
     usrpDevice_->set_tx_freq(txTuneRequest, 0);
     usrpDevice_->set_tx_gain(conf.txGain[0], 0);
@@ -101,21 +100,23 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
     // configure receiver
     setRxSamplingRate(conf.rxSamplingRate);
-    usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency[0]);
     usrpDevice_->set_rx_freq(rxTuneRequest, 0);
     usrpDevice_->set_rx_gain(conf.rxGain[0], 0);
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
 
-    if (txStreamer_) {
-        std::cout
-            << "WARNING: Attemping to set RfConfig twice. "
-            << "Maybe, this leads to time out errors on the rx_streamer side."
-            << std::endl;
-    } else {
+    if (!subdevSpecSet_) {
+        usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+        usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+        subdevSpecSet_ = true;
+    }
+
+    if (!txStreamer_) {
         uhd::stream_args_t txStreamArgs("fc32", "sc16");
         txStreamArgs.channels = std::vector<size_t>({0});
         txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
+    }
+    if (!rxStreamer_) {
         uhd::stream_args_t rxStreamArgs("fc32", "sc16");
         rxStreamArgs.channels = std::vector<size_t>({0});
         rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
@@ -145,7 +146,8 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 
 void Usrp::setTimeToZeroNextPps() {
     // join previous thread to make sure it has properly ended. This is also
-    // necessary to use op= below (it'll std::terminate() if not joined before)
+    // necessary to use op= below (it'll std::terminate() if not joined
+    // before)
     if (setTimeToZeroNextPpsThread_.joinable())
         setTimeToZeroNextPpsThread_.join();
 

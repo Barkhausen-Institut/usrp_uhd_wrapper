@@ -103,5 +103,6 @@ PYBIND11_MODULE(usrp_pybinding, m) {
                  return bi::returnVectorOfArrays(u.collect());
              })
         .def("reset", &bi::UsrpInterface::reset)
-        .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate);
+        .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
+        .def("getRfConfig", &bi::UsrpInterface::getRfConfig);
 }

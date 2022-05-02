@@ -43,7 +43,8 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb) {
 void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate) {
     // avoid floating inprecision issues
-    if (std::fmod(masterClockRate / actualSamplingRate, 2.0) > 0.01)
+    if (std::fmod(masterClockRate / actualSamplingRate, 2.0) > 0.01 &&
+        masterClockRate != actualSamplingRate)
         throw UsrpException("Sampling rate must be an even fraction of " +
                             std::to_string(masterClockRate));
 }

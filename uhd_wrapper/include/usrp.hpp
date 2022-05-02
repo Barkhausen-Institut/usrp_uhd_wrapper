@@ -31,6 +31,7 @@ class Usrp : public UsrpInterface {
     std::vector<samples_vec> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
+    RfConfig getRfConfig() const;
     void reset();
 
    private:
@@ -50,6 +51,7 @@ class Usrp : public UsrpInterface {
     double masterClockRate_;
 
     std::vector<samples_vec> receivedSamples_ = {{}};
+    bool subdevSpecSet_ = false;
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);

@@ -65,6 +65,12 @@ class System:
         self.__usrpClients[usrpName].client.configureRx(rxStreamingConfig)
         logging.info(f"Configured RX streaming for USRP: {usrpName}.")
 
+    def getRfConfigs(self) -> Dict[str, RfConfig]:
+        return {
+            usrpName: self.__usrpClients[usrpName].client.getRfConfig()
+            for usrpName in self.__usrpClients.keys()
+        }
+
     def execute(self) -> None:
         print("Synchronizing...")
         self.__synchronizeUsrps()
@@ -93,9 +99,7 @@ class System:
         if (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
         ) > System.syncThresholdSec:
-            raise ValueError(
-                "Fpga Times of USRPs mismatch... Synchronisation invalid."
-            )
+            raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
     def collect(self) -> Dict[str, List[np.ndarray]]:
         return {key: item.client.collect() for key, item in self.__usrpClients.items()}

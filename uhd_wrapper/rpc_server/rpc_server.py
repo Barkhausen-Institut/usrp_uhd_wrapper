@@ -1,10 +1,17 @@
-from typing import List
+from typing import List, Dict, Any
 
 from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
-    SerializedComplexArray,)
-from uhd_wrapper.usrp_pybinding import Usrp, TxStreamingConfig, RxStreamingConfig, RfConfig
+    SerializedComplexArray,
+    serializeRfConfig,
+)
+from uhd_wrapper.usrp_pybinding import (
+    Usrp,
+    TxStreamingConfig,
+    RxStreamingConfig,
+    RfConfig,
+)
 
 
 class UsrpServer:
@@ -68,3 +75,6 @@ class UsrpServer:
 
     def getCurrentSystemTime(self) -> int:
         return self.__usrp.getCurrentSystemTime()
+
+    def getRfConfig(self) -> Dict[str, Dict[str, Any]]:
+        return serializeRfConfig(self.__usrp.getRfConfig())

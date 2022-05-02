@@ -33,5 +33,8 @@ TEST_CASE("[SamplingRateSupported]") {
     SECTION("Even decimation rate throws no exception") {
         REQUIRE_NOTHROW(assertSamplingRate(250e6 / 4, 250e6));
     }
+    SECTION("Full sample rate throws no exception") {
+        REQUIRE_NOTHROW(assertSamplingRate(250e6 / 1, 250e6));
+    }
 }
 }  // namespace bi

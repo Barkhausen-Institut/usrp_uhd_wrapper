@@ -6,7 +6,7 @@ import numpy.testing as npt
 
 from usrp_client.rpc_client import UsrpClient
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-from uhd_wrapper.utils.serialization import serializeComplexArray
+from uhd_wrapper.utils.serialization import serializeComplexArray, serializeRfConfig
 
 
 class TestUsrpClient(unittest.TestCase):
@@ -40,6 +40,26 @@ class TestUsrpClient(unittest.TestCase):
         self.mockRpcClient.collect.return_value = samplesSerialized
         recvdSamples = self.usrpClient.collect()
         npt.assert_array_equal(recvdSamples[0], samplesDeserialized[0])
+
+    def test_getRfConfigReturnsSerializedRfConfig(self) -> None:
+        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
+
+        usrpRfConf = RfConfigClient()
+        usrpRfConf.txCarrierFrequency = [2e9]
+
+        usrpRfConf.txGain = [30]
+        usrpRfConf.txAnalogFilterBw = 200e6
+        usrpRfConf.txSamplingRate = 20e6
+
+        usrpRfConf.rxCarrierFrequency = [2e9]
+        usrpRfConf.rxGain = [40]
+        usrpRfConf.rxAnalogFilterBw = 100e6
+        usrpRfConf.rxSamplingRate = 30e6
+
+        self.mockRpcClient.getRfConfig.return_value = serializeRfConfig(usrpRfConf)
+        recvRfConfig = self.usrpClient.getRfConfig()
+
+        self.assertEqual(recvRfConfig, usrpRfConf)
 
     def test_configureRfConfig_calledWithCorrectArguments(self) -> None:
         txGain = [50.0]

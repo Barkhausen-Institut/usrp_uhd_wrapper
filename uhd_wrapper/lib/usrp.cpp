@@ -4,6 +4,21 @@
 
 namespace bi {
 
+RfConfig Usrp::getRfConfig() const {
+    RfConfig conf;
+    conf.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));
+    conf.txGain.push_back(usrpDevice_->get_tx_gain(0));
+    conf.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
+    conf.txSamplingRate = usrpDevice_->get_tx_rate(0);
+
+    conf.rxCarrierFrequency.push_back(usrpDevice_->get_rx_freq(0));
+    conf.rxGain.push_back(usrpDevice_->get_rx_gain(0));
+    conf.rxAnalogFilterBw = usrpDevice_->get_rx_bandwidth(0);
+    conf.rxSamplingRate = usrpDevice_->get_rx_rate(0);
+
+    return conf;
+}
+
 void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                    std::exception_ptr &exceptionPtr,
                    const double fpgaTimeThreadStart) {
@@ -81,7 +96,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
                                   ? noSamplesLastBuffer
                                   : SAMPLES_PER_BUFFER,
                               mdTx, 0.1f);
-            //mdTx.start_of_burst = false;
+            // mdTx.start_of_burst = false;
             mdTx.has_time_spec = false;
         }
         mdTx.end_of_burst = true;
@@ -90,18 +105,9 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
         exceptionPtr = std::current_exception();
     }
 }
-
 void Usrp::setRfConfig(const RfConfig &conf) {
-    // workaround: return, if streams are already setup, as it can be only done once
-    if (txStreamer_) {
-        std::cout << "WARNING: Cannot set RF Config twice. "
-            << "Check for a workaround in gitlab, issue #23" << std::endl;
-        return;
-    }
-
     // configure transmitter
     setTxSamplingRate(conf.txSamplingRate);
-    usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
     usrpDevice_->set_tx_freq(txTuneRequest, 0);
     usrpDevice_->set_tx_gain(conf.txGain[0], 0);
@@ -109,18 +115,27 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
     // configure receiver
     setRxSamplingRate(conf.rxSamplingRate);
-    usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency[0]);
     usrpDevice_->set_rx_freq(rxTuneRequest, 0);
     usrpDevice_->set_rx_gain(conf.rxGain[0], 0);
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
 
-    uhd::stream_args_t txStreamArgs("fc32", "sc16");
-    txStreamArgs.channels = std::vector<size_t>({0});
-    txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
-    uhd::stream_args_t rxStreamArgs("fc32", "sc16");
-    rxStreamArgs.channels = std::vector<size_t>({0});
-    rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
+    if (!subdevSpecSet_) {
+        usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+        usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+        subdevSpecSet_ = true;
+    }
+
+    if (!txStreamer_) {
+        uhd::stream_args_t txStreamArgs("fc32", "sc16");
+        txStreamArgs.channels = std::vector<size_t>({0});
+        txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
+    }
+    if (!rxStreamer_) {
+        uhd::stream_args_t rxStreamArgs("fc32", "sc16");
+        rxStreamArgs.channels = std::vector<size_t>({0});
+        rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
+    }
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
@@ -132,13 +147,14 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
 }
 
 void Usrp::setTimeToZeroNextPps() {
-    // join previous thread to make sure it has properly ended. This is also necessary to use op= below
-    // (it'll std::terminate() if not joined before)
+    // join previous thread to make sure it has properly ended. This is also
+    // necessary to use op= below (it'll std::terminate() if not joined
+    // before)
     if (setTimeToZeroNextPpsThread_.joinable())
-	setTimeToZeroNextPpsThread_.join();
+        setTimeToZeroNextPpsThread_.join();
 
     setTimeToZeroNextPpsThread_ =
-	std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
+        std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
 }
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {

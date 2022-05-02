@@ -67,6 +67,7 @@ class SystemMockFactory:
 
     def __mockFunctions(self, usrpClientMock: Mock) -> Mock:
         usrpClientMock.getCurrentFpgaTime.return_value = 3.0
+        usrpClientMock.getRfConfig.return_value = RfConfig()
         return usrpClientMock
 
 
@@ -90,6 +91,16 @@ class TestStreamingConfiguration(unittest.TestCase, SystemMockFactory):
         self.system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig)
         self.mockUsrps[0].configureRx.assert_not_called()
         self.mockUsrps[1].configureRx.assert_called_once_with(rxStreamingConfig)
+
+    def test_getRfConfigCallsAtEachUsrpDevice(self) -> None:
+        _ = self.system.getRfConfigs()
+        self.mockUsrps[0].getRfConfig.assert_called_once()
+        self.mockUsrps[1].getRfConfig.assert_called_once()
+
+    def test_getRfConfigReturnsDictOfRfConfigs(self) -> None:
+        rfConfigs = self.system.getRfConfigs()
+        self.assertTrue(isinstance(rfConfigs["usrp1"], RfConfig))
+        self.assertTrue(isinstance(rfConfigs["usrp1"], RfConfig))
 
 
 class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):

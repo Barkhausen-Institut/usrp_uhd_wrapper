@@ -6,10 +6,17 @@ import numpy.testing as npt
 
 from uhd_wrapper.rpc_server.rpc_server import UsrpServer
 from uhd_wrapper.utils.serialization import (
+    deserializeRfConfig,
     serializeComplexArray,
     deserializeComplexArray,
+    serializeRfConfig,
 )
-from uhd_wrapper.usrp_pybinding import Usrp, RfConfig, RxStreamingConfig, TxStreamingConfig
+from uhd_wrapper.usrp_pybinding import (
+    Usrp,
+    RfConfig,
+    RxStreamingConfig,
+    TxStreamingConfig,
+)
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -48,6 +55,45 @@ class TestDeserializationComplexArr(unittest.TestCase):
         self.assertRaises(
             ValueError, lambda: deserializeComplexArray((realList, imagList))
         )
+
+
+class TestSerializationRfConfig(unittest.TestCase):
+    def setUp(self) -> None:
+        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
+
+        self.conf = RfConfigClient()
+        self.conf.txCarrierFrequency = [2e9]
+
+        self.conf.txGain = [30]
+        self.conf.txAnalogFilterBw = 200e6
+        self.conf.txSamplingRate = 20e6
+
+        self.conf.rxCarrierFrequency = [2e9]
+        self.conf.rxGain = [40]
+        self.conf.rxAnalogFilterBw = 100e6
+        self.conf.rxSamplingRate = 30e6
+
+        self.serializedRfConf = {
+            "rx": {
+                "analogFilterBw": self.conf.rxAnalogFilterBw,
+                "carrierFrequency": self.conf.rxCarrierFrequency,
+                "gain": self.conf.rxGain,
+                "samplingRate": self.conf.rxSamplingRate,
+            },
+            "tx": {
+                "analogFilterBw": self.conf.txAnalogFilterBw,
+                "carrierFrequency": self.conf.txCarrierFrequency,
+                "gain": self.conf.txGain,
+                "samplingRate": self.conf.txSamplingRate,
+            },
+        }
+
+    def test_properRfConfigSerialization(self) -> None:
+        serializedConf = serializeRfConfig(self.conf)
+        self.assertDictEqual(self.serializedRfConf, serializedConf)
+
+    def test_properRfConfigDeSerialization(self) -> None:
+        self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
 
 
 class TestUsrpServer(unittest.TestCase):
@@ -113,6 +159,23 @@ class TestUsrpServer(unittest.TestCase):
                 txSamplingRate=txSamplingRate,
                 rxSamplingRate=rxSamplingRate,
             )
+        )
+
+    def test_getRfConfigReturnsSerializedVersion(self) -> None:
+        usrpRfConfig = RfConfig()
+        usrpRfConfig.txCarrierFrequency = [2e9]
+
+        usrpRfConfig.txGain = [30]
+        usrpRfConfig.txAnalogFilterBw = 200e6
+        usrpRfConfig.txSamplingRate = 20e6
+
+        usrpRfConfig.rxCarrierFrequency = [2e9]
+        usrpRfConfig.rxGain = [40]
+        usrpRfConfig.rxAnalogFilterBw = 100e6
+        usrpRfConfig.rxSamplingRate = 30e6
+        self.usrpMock.getRfConfig.return_value = usrpRfConfig
+        self.assertDictEqual(
+            serializeRfConfig(usrpRfConfig), self.usrpServer.getRfConfig()
         )
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:

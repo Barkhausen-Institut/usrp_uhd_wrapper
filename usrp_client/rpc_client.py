@@ -6,6 +6,7 @@ import numpy as np
 from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
+    deserializeRfConfig,
 )
 from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
 
@@ -49,3 +50,6 @@ class UsrpClient:
 
     def getCurrentSystemTime(self) -> int:
         return self.__rpcClient.getCurrentSystemTime()
+
+    def getRfConfig(self) -> RfConfig:
+        return deserializeRfConfig(self.__rpcClient.getRfConfig())

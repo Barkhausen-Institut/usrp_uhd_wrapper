@@ -9,13 +9,20 @@ from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
 
 
-def createRandom(noSamples: int, zeropad:int = 0) -> np.ndarray:
-    return np.hstack([np.zeros(zeropad, dtype=complex),
-                      np.random.rand(noSamples) + 1j * np.random.rand(noSamples)])
+def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:
+    return np.hstack(
+        [
+            np.zeros(zeropad, dtype=complex),
+            np.random.rand(noSamples) + 1j * np.random.rand(noSamples),
+        ]
+    )
 
-def createRamp(noSamples: int, zeropad: int = 0):
-    return np.hstack([np.zeros(zeropad, dtype=complex),
-                      np.linspace(0, 1, noSamples, endpoint=False)])
+
+def createRamp(noSamples: int, zeropad: int = 0) -> np.ndarray:
+    return np.hstack(
+        [np.zeros(zeropad, dtype=complex), np.linspace(0, 1, noSamples, endpoint=False)]
+    )
+
 
 def createZadoffChu(noSamples: int) -> np.ndarray:
     N = noSamples
@@ -51,8 +58,8 @@ txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=0.1, samples=[txSignal])
 rxStreamingConfig2 = RxStreamingConfig(receiveTimeOffset=0.0, noSamples=int(60e3))
 
 system = System()
-system.addUsrp(rfConfig=c, ip="192.168.189.133", name="usrp1")
-system.addUsrp(rfConfig=c, ip="192.168.189.131", name="usrp2")
+system.addUsrp(rfConfig=c, ip="192.168.189.133", usrpName="usrp1")
+system.addUsrp(rfConfig=c, ip="192.168.189.131", usrpName="usrp2")
 
 for iteration in range(3):
     start = time.time()
@@ -72,21 +79,21 @@ for iteration in range(3):
     print(f"Took {time.time() - start} seconds")
 
     txSignalStartUsrp2, correlationUsrp2 = findFirstSampleInFrameOfSignal(
-        samples[1][0], txSignal
+        samples["usrp2"][0], txSignal
     )
 
     txSignalStartUsrp1, correlationUsrp1 = findFirstSampleInFrameOfSignal(
-        samples[0][0], txSignal
+        samples["usrp1"][0], txSignal
     )
 
     print(f"Sent signal from usrp2 starts at sample {txSignalStartUsrp1} in usrp1")
     print(f"Sent signal from usrp1 starts at sample {txSignalStartUsrp2} in usrp2")
 
     plt.subplot(221)
-    plt.plot(np.arange(60e3), np.abs(samples[0][0]))
+    plt.plot(np.arange(60e3), np.abs(samples["usrp1"][0]))
     plt.title("Received samples usrp1")
     plt.subplot(222)
-    plt.plot(np.arange(60e3), np.abs(samples[1][0]))
+    plt.plot(np.arange(60e3), np.abs(samples["usrp2"][0]))
     plt.title("Received samples usrp2")
     plt.subplot(223)
     plt.plot(np.arange(correlationUsrp1.size), np.abs(correlationUsrp1))

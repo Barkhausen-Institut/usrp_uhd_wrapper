@@ -4,6 +4,21 @@
 
 namespace bi {
 
+RfConfig Usrp::getRfConfig() const {
+    RfConfig conf;
+    conf.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));
+    conf.txGain.push_back(usrpDevice_->get_tx_gain(0));
+    conf.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
+    conf.txSamplingRate = usrpDevice_->get_tx_rate(0);
+
+    conf.rxCarrierFrequency.push_back(usrpDevice_->get_rx_freq(0));
+    conf.rxGain.push_back(usrpDevice_->get_rx_gain(0));
+    conf.rxAnalogFilterBw = usrpDevice_->get_rx_bandwidth(0);
+    conf.rxSamplingRate = usrpDevice_->get_rx_rate(0);
+
+    return conf;
+}
+
 void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                    std::exception_ptr &exceptionPtr,
                    const double fpgaTimeThreadStart) {

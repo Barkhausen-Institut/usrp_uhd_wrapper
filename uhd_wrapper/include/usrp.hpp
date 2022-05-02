@@ -31,7 +31,6 @@ class Usrp : public UsrpInterface {
     std::vector<samples_vec> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
-    RfConfig getCurrentRfConfig() const;
     void reset();
 
    private:

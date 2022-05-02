@@ -1,3 +1,5 @@
+import argparse
+
 import uhd_wrapper.usrp_pybinding as usrp_pybinding
 from copy import deepcopy
 from uhd_wrapper.hardware_tests.utils import (
@@ -7,24 +9,27 @@ from uhd_wrapper.hardware_tests.utils import (
 )
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument("--bandwidth", type=float, help="Bandwidth in Hz of chirp")
+parser.add_argument("--carrier-frequency", type=float, help="Carrier frequency of chirp")
+args = parser.parse_args()
+
 NO_TX_SAMPLES = int(10e3)
 NO_RX_SAMPLES = int(60e3)
-ip = "localhost"
-usrp = usrp_pybinding.createUsrp(ip)
-fSampling = usrp.getMasterClockRate() / 4
+usrp = usrp_pybinding.createUsrp("localhost")
 
-txSignal = Chirp(fStart=10e6, fStop=25e6, fSampling=50e6)
+txSignal = Chirp(fStart=-args.bandwidth/2, fStop=args.bandwidth/2, fSampling=args.bandwidth)
 txSignal.create(NO_TX_SAMPLES, 1)
 
 rfConfig = usrp_pybinding.RfConfig()
 rfConfig.txGain = [20]
 rfConfig.rxGain = [20]
-rfConfig.txCarrierFrequency = [2e9]
-rfConfig.rxCarrierFrequency = [2e9]
+rfConfig.txCarrierFrequency = [args.carrier_frequency]
+rfConfig.rxCarrierFrequency = [args.carrier_frequency]
 rfConfig.txAnalogFilterBw = 400e6
 rfConfig.rxAnalogFilterBw = 400e6
-rfConfig.txSamplingRate = fSampling
-rfConfig.rxSamplingRate = fSampling
+rfConfig.txSamplingRate = args.bandwidth
+rfConfig.rxSamplingRate = args.bandwidth
 
 rxStreamingConfig = usrp_pybinding.RxStreamingConfig()
 rxStreamingConfig.noSamples = NO_RX_SAMPLES

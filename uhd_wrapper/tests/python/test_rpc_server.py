@@ -73,8 +73,7 @@ class TestSerializationRfConfig(unittest.TestCase):
         self.conf.rxAnalogFilterBw = 100e6
         self.conf.rxSamplingRate = 30e6
 
-    def test_properRfConfigSerialization(self) -> None:
-        expectedDict = {
+        self.serializedRfConf = {
             "rx": {
                 "analogFilterBw": self.conf.rxAnalogFilterBw,
                 "carrierFrequency": self.conf.rxCarrierFrequency,
@@ -88,27 +87,16 @@ class TestSerializationRfConfig(unittest.TestCase):
                 "samplingRate": self.conf.txSamplingRate,
             },
         }
+
+
+    def test_properRfConfigSerialization(self) -> None:
         serializedConf = serializeRfConfig(self.conf)
 
-        self.assertDictEqual(expectedDict, serializedConf)
+        self.assertDictEqual(self.serializedRfConf, serializedConf)
 
     def test_properRfConfigDeSerialization(self) -> None:
-        serializedRfConf = {
-            "rx": {
-                "analogFilterBw": self.conf.rxAnalogFilterBw,
-                "carrierFrequency": self.conf.rxCarrierFrequency,
-                "gain": self.conf.rxGain,
-                "samplingRate": self.conf.rxSamplingRate,
-            },
-            "tx": {
-                "analogFilterBw": self.conf.txAnalogFilterBw,
-                "carrierFrequency": self.conf.txCarrierFrequency,
-                "gain": self.conf.txGain,
-                "samplingRate": self.conf.txSamplingRate,
-            },
-        }
 
-        self.assertEqual(self.conf, deserializeRfConfig(serializedRfConf))
+        self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
 
 
 class TestUsrpServer(unittest.TestCase):

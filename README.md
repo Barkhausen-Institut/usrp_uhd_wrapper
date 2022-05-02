@@ -50,7 +50,7 @@ Usage:
 ```bash
 $ cd <repo>
 $ . env/bin/activate
-$ python examples/ujcas.py --plot <True/False>
+$ python examples/jcas.py --plot <True/False>
 ```
 
 Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well.

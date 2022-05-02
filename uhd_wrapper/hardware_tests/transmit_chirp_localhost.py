@@ -13,11 +13,12 @@ ip = "localhost"
 usrp = usrp_pybinding.createUsrp(ip)
 fSampling = usrp.getMasterClockRate() / 4
 
-txSignal = Chirp()
+txSignal = Chirp(fStart=10e6, fStop=25e6, fSampling=50e6)
 txSignal.create(NO_TX_SAMPLES, 1)
+
 rfConfig = usrp_pybinding.RfConfig()
-rfConfig.txGain = [35]
-rfConfig.rxGain = [35]
+rfConfig.txGain = [20]
+rfConfig.rxGain = [20]
 rfConfig.txCarrierFrequency = [2e9]
 rfConfig.rxCarrierFrequency = [2e9]
 rfConfig.txAnalogFilterBw = 400e6
@@ -44,5 +45,7 @@ usrp.reset()
 # post-process
 signalStartSample = findFirstSampleInFrameOfSignal(samples[0], txSignal.samples)
 print(f"The siganl starts at sample {signalStartSample}")
-dumpSamples("rxSamples.csv", samples[0])
-dumpSamples("txSamples.csv", txSignal.samples)
+
+# Optional: dump samples for plotting purposes.
+#dumpSamples("rxSamples.csv", samples[0])
+#dumpSamples("txSamples.csv", txSignal.samples)

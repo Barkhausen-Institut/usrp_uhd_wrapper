@@ -1,4 +1,3 @@
-from typing import Tuple
 import argparse
 
 import numpy as np
@@ -6,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-from examples.utils import createRandom, findFirstSampleInFrameOfSignal
+from examples.helpers import createRandom, findFirstSampleInFrameOfSignal
 
 
 parser = argparse.ArgumentParser()

@@ -17,20 +17,6 @@ def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:
     )
 
 
-def createRamp(noSamples: int, zeropad: int = 0) -> np.ndarray:
-    return np.hstack(
-        [np.zeros(zeropad, dtype=complex), np.linspace(0, 1, noSamples, endpoint=False)]
-    )
-
-
-def createZadoffChu(noSamples: int) -> np.ndarray:
-    N = noSamples
-    cF = noSamples % 2
-    q = 0
-    k = np.arange(N)
-    return np.exp(-1j * np.pi * (k * (k + cF + q)) / N)
-
-
 def findFirstSampleInFrameOfSignal(
     frame: np.ndarray, txSignal: np.ndarray
 ) -> Tuple[int, np.ndarray]:

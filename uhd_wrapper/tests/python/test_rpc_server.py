@@ -88,14 +88,11 @@ class TestSerializationRfConfig(unittest.TestCase):
             },
         }
 
-
     def test_properRfConfigSerialization(self) -> None:
         serializedConf = serializeRfConfig(self.conf)
-
         self.assertDictEqual(self.serializedRfConf, serializedConf)
 
     def test_properRfConfigDeSerialization(self) -> None:
-
         self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
 
 

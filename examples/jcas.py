@@ -6,25 +6,7 @@ import matplotlib.pyplot as plt
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-
-
-def createChirp(
-    fStart: float,
-    fStop: float,
-    fSampling: float,
-    noSamples: int,
-    amplitude: float = 1.0,
-) -> np.ndarray:
-    t = np.arange(noSamples) / fSampling
-    f = np.linspace(fStart, fStop, noSamples)
-    return amplitude * np.exp(1j * 2 * np.pi * f * t)
-
-
-def findFirstSampleInFrameOfSignal(
-    frame: np.ndarray, txSignal: np.ndarray
-) -> Tuple[int, np.ndarray]:
-    correlation = np.abs(np.correlate(frame, txSignal))
-    return np.argsort(correlation)[-1], correlation
+from examples.utils import createRandom, findFirstSampleInFrameOfSignal
 
 
 parser = argparse.ArgumentParser()
@@ -39,9 +21,7 @@ NO_RX_SAMPLES = 60e3
 NO_TX_SAMPLES = int(20e3)
 
 # create signal to be se nt
-txSignal = createChirp(
-    fStart=-25e6, fStop=25e6, fSampling=50e6, noSamples=NO_TX_SAMPLES
-)
+txSignal = createRandom(noSamples=NO_TX_SAMPLES)
 
 # create configurations
 rfConfig = RfConfig()

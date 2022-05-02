@@ -62,10 +62,10 @@ class FrequencyZOH(Signal):
         zohLength = noSamples // self.__noSignals
         frequencies = np.linspace(self.__fStart, self.__fStop, self.__noSignals)
         frame = np.arange(noSamples, dtype=np.complex64) / self.__fSampling
-        frame[zohLength * self.__noSignals :] = 0
+        frame[zohLength * self.__noSignals:] = 0
         for fIdx in range(self.__noSignals):
-            timeStamps = frame[fIdx * zohLength : (fIdx + 1) * zohLength]
-            frame[fIdx * zohLength : (fIdx + 1) * zohLength] = amplitude * np.exp(
+            timeStamps = frame[fIdx * zohLength:(fIdx + 1) * zohLength]
+            frame[fIdx * zohLength:(fIdx + 1) * zohLength] = amplitude * np.exp(
                 1j * 2 * np.pi * frequencies[fIdx] * timeStamps
             )  # noqa
         self.samples = frame

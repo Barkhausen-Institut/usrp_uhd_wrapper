@@ -1,11 +1,8 @@
 from typing import Tuple
-import logging
-import time
 import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
-
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
@@ -105,9 +102,6 @@ print(f"Sent random signal from usrp2 starts at sample {txSignalStartUsrp1} in u
 print(f"Sent random signal from usrp1 starts at sample {txSignalStartUsrp2} in usrp2")
 
 if args.plot:
-    import matplotlib.pyplot as plt
-    import numpy as np
-
     rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0]))
     rxFreqSpectrumUsrp1 = np.fft.fftshift(np.fft.fftfreq(samples["usrp1"][0].size))
 

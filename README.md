@@ -29,6 +29,17 @@ Usrp:
 - libzmq
 # Examples
 
+- **usrp_p2p_transmission**: Sends random signal from Usrp1 to Usrp2, check file.
+
+Usage:
+
+
+```bash
+$ cd <repo>
+$ . env/bin/activate
+$ python examples/usrp_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency>
+```
+
 ## hardware_tests
 
 **transmit_chirp_localhost**: Sends a chirp localhost. This code is to be run on the USRP directly and uses the python binding of the UHD wrapper. Call on the usrp:

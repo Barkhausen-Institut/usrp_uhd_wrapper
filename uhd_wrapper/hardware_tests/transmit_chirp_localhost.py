@@ -55,5 +55,5 @@ signalStartSample = findFirstSampleInFrameOfSignal(samples[0], txSignal.samples)
 print(f"The siganl starts at sample {signalStartSample}")
 
 # Optional: dump samples for plotting purposes.
-# dumpSamples("rxSamples.csv", samples[0])
-# dumpSamples("txSamples.csv", txSignal.samples)
+dumpSamples("rxSamples.csv", samples[0])
+dumpSamples("txSamples.csv", txSignal.samples)

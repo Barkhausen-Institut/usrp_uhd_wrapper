@@ -123,19 +123,6 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     }
 }
 
-RfConfig Usrp::getCurrentRfConfig() const {
-    RfConfig c;
-    c.txGain.push_back(usrpDevice_->get_tx_gain(0));
-    c.rxGain.push_back(usrpDevice_->get_rx_gain(0));
-    c.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));
-    c.rxCarrierFrequency.push_back(usrpDevice_->get_rx_freq(0));
-    c.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
-    c.rxAnalogFilterBw = usrpDevice_->get_rx_bandwidth(0);
-    c.txSamplingRate = usrpDevice_->get_tx_rate(0);
-    c.rxSamplingRate = usrpDevice_->get_rx_rate(0);
-    return c;
-}
-
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
     txStreamingConfigs_.push_back(conf);
 }

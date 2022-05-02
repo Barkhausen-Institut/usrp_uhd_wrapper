@@ -42,7 +42,9 @@ class TestUsrpClient(unittest.TestCase):
         npt.assert_array_equal(recvdSamples[0], samplesDeserialized[0])
 
     def test_getRfConfigReturnsSerializedRfConfig(self) -> None:
-        usrpRfConf = RfConfig()
+        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
+
+        usrpRfConf = RfConfigClient()
         usrpRfConf.txCarrierFrequency = [2e9]
 
         usrpRfConf.txGain = [30]
@@ -57,21 +59,7 @@ class TestUsrpClient(unittest.TestCase):
         self.mockRpcClient.getRfConfig.return_value = serializeRfConfig(usrpRfConf)
         recvRfConfig = self.usrpClient.getRfConfig()
 
-        # we have to make a component wise comparison as we are comparing RfConfig
-        # from utils and RfConfig from uhd_wrapper
-        self.assertListEqual(
-            recvRfConfig.txCarrierFrequency, usrpRfConf.txCarrierFrequency
-        )
-        self.assertListEqual(recvRfConfig.txGain, usrpRfConf.txGain)
-        self.assertEqual(recvRfConfig.txAnalogFilterBw, usrpRfConf.txAnalogFilterBw)
-        self.assertEqual(recvRfConfig.txSamplingRate, usrpRfConf.txSamplingRate)
-
-        self.assertListEqual(
-            recvRfConfig.rxCarrierFrequency, usrpRfConf.rxCarrierFrequency
-        )
-        self.assertListEqual(recvRfConfig.rxGain, usrpRfConf.rxGain)
-        self.assertEqual(recvRfConfig.rxAnalogFilterBw, usrpRfConf.rxAnalogFilterBw)
-        self.assertEqual(recvRfConfig.rxSamplingRate, usrpRfConf.rxSamplingRate)
+        self.assertEqual(recvRfConfig, usrpRfConf)
 
     def test_configureRfConfig_calledWithCorrectArguments(self) -> None:
         txGain = [50.0]

@@ -27,6 +27,20 @@ For the client:
 
 Usrp:
 - libzmq
+# Examples
+
+## hardware_tests
+
+**transmit_chirp_localhost**: Sends a chirp localhost. This code is to be run on the USRP directly and uses the python binding of the UHD wrapper. Call on the usrp:
+
+```bash
+$ cd <repo>
+$ . env/bin/activate
+$ cd uhd_wrapper
+$ python hardware_tests/transmit_chirp_localhost.py --bandwidth <bandwidth> --carrier-frequency <carrier-frequency>
+```
+
+`bandwidth` denotes the bandwidth of the chirp, starting at `f0 = bandwidth/2` until `f1 = bandwidth/2`.
 
 # Use
 

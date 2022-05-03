@@ -17,7 +17,6 @@ def readArgs() -> Any:
     )
     parser.add_argument(
         "--plot",
-        type=bool,
         action="store_true",
         help="Plot received singals in time and frequency",
     )

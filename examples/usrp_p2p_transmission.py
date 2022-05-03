@@ -1,27 +1,10 @@
-from typing import Any, Dict, Tuple
-import argparse
+from typing import Dict, Tuple
 
 import numpy as np
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-from examples.helpers import createRandom, printDelays, plot
-
-
-def readArgs() -> Any:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--usrp1-ip", type=str, help="IP of first USRP")
-    parser.add_argument("--usrp2-ip", type=str, help="IP of second USRP")
-    parser.add_argument(
-        "--carrier-frequency", type=float, help="Carrier frequency of sent signal"
-    )
-    parser.add_argument(
-        "--plot",
-        action="store_true",
-        help="Plot received singals in time and frequency",
-    )
-    args = parser.parse_args()
-    return args
+from examples.helpers import createRandom, printDelays, plot, readArgs
 
 
 def createSystem(

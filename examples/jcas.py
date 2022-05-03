@@ -1,25 +1,15 @@
-from typing import Any, Tuple
-import argparse
+from typing import Tuple
 
 import numpy as np
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-from examples.helpers import createRandom, printDelays, plot
+from examples.helpers import createRandom, printDelays, plot, readArgs
 
 
-def readArgs() -> Any:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        "--plot",
-        action="store_true",
-        help="Plot received singals in time and frequency",
-    )
-    args = parser.parse_args()
-    return args
-
-
-def createSystem(fc: float, fs: float, txGain: float, rxGain: float) -> System:
+def createSystem(
+    fc: float, fs: float, txGain: float, rxGain: float, ipUsrp1: str, ipUsrp2: str
+) -> System:
     # create configurations
     rfConfig = RfConfig()
     rfConfig.rxAnalogFilterBw = 400e6
@@ -32,13 +22,15 @@ def createSystem(fc: float, fs: float, txGain: float, rxGain: float) -> System:
     rfConfig.txCarrierFrequency = [fc]
 
     system = System()
-    system.addUsrp(rfConfig=rfConfig, ip="192.168.189.131", usrpName="usrp1")
-    system.addUsrp(rfConfig=rfConfig, ip="192.168.189.133", usrpName="usrp2")
+    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
+    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp2, usrpName="usrp2")
     return system
 
 
 def createStreamingConfigs(
-    streamingOffset: float, txSignal: np.ndarray, noRxSamples: float
+    streamingOffset: float,
+    txSignal: np.ndarray,
+    noRxSamples: float,
 ) -> Tuple[TxStreamingConfig, RxStreamingConfig, RxStreamingConfig]:
     txStreamingConfig1 = TxStreamingConfig(
         sendTimeOffset=streamingOffset, samples=[txSignal]
@@ -54,7 +46,14 @@ def createStreamingConfigs(
 
 def main() -> None:
     args = readArgs()
-    system = createSystem(fc=2e9, fs=245e6, txGain=35, rxGain=35)
+    system = createSystem(
+        fc=args.carrier_frequency,
+        fs=245e6,
+        txGain=35,
+        rxGain=35,
+        ipUsrp1=args.usrp1_ip,
+        ipUsrp2=args.usrp2_ip,
+    )
     txSignal = createRandom(noSamples=int(20e3))
     txStreamingConfig1, rxStreamingConfig1, rxStreamingConfig2 = createStreamingConfigs(
         streamingOffset=0.0,

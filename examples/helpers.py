@@ -1,7 +1,24 @@
-from typing import Tuple, Dict, List
+from typing import Tuple, Dict, List, Any
+import argparse
 
 import numpy as np
 import matplotlib.pyplot as plt
+
+
+def readArgs() -> Any:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--usrp1-ip", type=str, help="IP of first USRP")
+    parser.add_argument("--usrp2-ip", type=str, help="IP of second USRP")
+    parser.add_argument(
+        "--carrier-frequency", type=float, help="Carrier frequency of sent signal"
+    )
+    parser.add_argument(
+        "--plot",
+        action="store_true",
+        help="Plot received singals in time and frequency",
+    )
+    args = parser.parse_args()
+    return args
 
 
 def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:

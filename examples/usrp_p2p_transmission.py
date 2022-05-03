@@ -1,103 +1,102 @@
+from typing import Any, Dict, Union
 import argparse
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-from examples.helpers import createRandom, findFirstSampleInFrameOfSignal
+from examples.helpers import createRandom, printDelays, plot
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--usrp1-ip", type=str, help="IP of first USRP")
-parser.add_argument("--usrp2-ip", type=str, help="IP of second USRP")
-parser.add_argument(
-    "--carrier-frequency", type=float, help="Carrier frequency of sent signal"
-)
-parser.add_argument(
-    "--plot",
-    type=bool,
-    default=False,
-    help="Plot received singals in time and frequency",
-)
-args = parser.parse_args()
+def readArgs() -> Any:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--usrp1-ip", type=str, help="IP of first USRP")
+    parser.add_argument("--usrp2-ip", type=str, help="IP of second USRP")
+    parser.add_argument(
+        "--carrier-frequency", type=float, help="Carrier frequency of sent signal"
+    )
+    parser.add_argument(
+        "--plot",
+        type=bool,
+        default=False,
+        help="Plot received singals in time and frequency",
+    )
+    args = parser.parse_args()
+    return args
 
-# create signal to be se nt
-txSignal = createRandom(int(20e3), zeropad=2000)
 
-# create configurations
-NO_RX_SAMPLES = 60e3
-rfConfig = RfConfig()
-rfConfig.rxAnalogFilterBw = 400e6
-rfConfig.txAnalogFilterBw = 400e6
-rfConfig.rxSamplingRate = 245.76e6 / 2
-rfConfig.txSamplingRate = 245.76e6 / 2
-rfConfig.rxGain = [35]
-rfConfig.txGain = [35]
-rfConfig.rxCarrierFrequency = [args.carrier_frequency]
-rfConfig.txCarrierFrequency = [args.carrier_frequency]
+def createSystem(
+    fc: float, fs: float, txGain: float, rxGain: float, ipUsrp1: str, ipUsrp2: str
+) -> System:
+    rfConfig = RfConfig()
+    rfConfig.rxAnalogFilterBw = 400e6
+    rfConfig.txAnalogFilterBw = 400e6
+    rfConfig.rxSamplingRate = fs
+    rfConfig.txSamplingRate = fs
+    rfConfig.rxGain = [rxGain]
+    rfConfig.txGain = [txGain]
+    rfConfig.rxCarrierFrequency = [fc]
+    rfConfig.txCarrierFrequency = [fc]
 
-txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=0.0, samples=[txSignal])
-rxStreamingConfig1 = RxStreamingConfig(
-    receiveTimeOffset=0.1, noSamples=int(NO_RX_SAMPLES)
-)
+    # ceate system
+    system = System()
+    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
+    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp2, usrpName="usrp2")
+    return system
 
-txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=0.1, samples=[txSignal])
-rxStreamingConfig2 = RxStreamingConfig(
-    receiveTimeOffset=0.0, noSamples=int(NO_RX_SAMPLES)
-)
 
-# ceate system
-system = System()
-system.addUsrp(rfConfig=rfConfig, ip=args.usrp1_ip, usrpName="usrp1")
-system.addUsrp(rfConfig=rfConfig, ip=args.usrp2_ip, usrpName="usrp2")
+def createStreamingConfigs(
+    txSignal: np.ndarray, noRxSamples: float
+) -> Dict[str, Dict[str, Union[RxStreamingConfig, TxStreamingConfig]]]:
 
-system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
-system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+    txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=0.0, samples=[txSignal])
+    rxStreamingConfig1 = RxStreamingConfig(
+        receiveTimeOffset=0.1, noSamples=int(noRxSamples)
+    )
 
-system.configureTx(usrpName="usrp2", txStreamingConfig=txStreamingConfig2)
-system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
+    txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=0.1, samples=[txSignal])
+    rxStreamingConfig2 = RxStreamingConfig(
+        receiveTimeOffset=0.0, noSamples=int(noRxSamples)
+    )
+    configs = {
+        "usrp1": {"rx": rxStreamingConfig1, "tx": txStreamingConfig1},
+        "usrp2": {"rx": rxStreamingConfig2, "tx": txStreamingConfig2},
+    }
+    return configs
 
-system.execute()
-samples = system.collect()
-txSignalStartUsrp2, correlationUsrp2 = findFirstSampleInFrameOfSignal(
-    samples["usrp2"][0], txSignal
-)
 
-txSignalStartUsrp1, correlationUsrp1 = findFirstSampleInFrameOfSignal(
-    samples["usrp1"][0], txSignal
-)
+def main() -> None:
+    args = readArgs()
+    system = createSystem(
+        fc=args.carrier_frequency,
+        fs=245e6 / 2,
+        txGain=35,
+        rxGain=35,
+        ipUsrp1=args.usrp1_ip,
+        ipUsrp2=args.usrp2_ip,
+    )
+    txSignal = createRandom(noSamples=int(20e3))
+    streamingConfigs = createStreamingConfigs(txSignal=txSignal, noRxSamples=60e3)
+    system.configureTx(
+        usrpName="usrp1", txStreamingConfig=streamingConfigs["usrp1"]["tx"]
+    )
+    system.configureRx(
+        usrpName="usrp1", rxStreamingConfig=streamingConfigs["usrp1"]["rx"]
+    )
 
-print(f"Sent random signal from usrp2 starts at sample {txSignalStartUsrp1} in usrp1")
-print(f"Sent random signal from usrp1 starts at sample {txSignalStartUsrp2} in usrp2")
+    system.configureTx(
+        usrpName="usrp2", txStreamingConfig=streamingConfigs["usrp2"]["tx"]
+    )
+    system.configureRx(
+        usrpName="usrp2", rxStreamingConfig=streamingConfigs["usrp2"]["rx"]
+    )
+    system.execute()
+    samples = system.collect()
+    printDelays(samples=samples, txSignal=txSignal)
 
-if args.plot:
-    rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0]))
-    rxFreqSpectrumUsrp1 = np.fft.fftshift(np.fft.fftfreq(samples["usrp1"][0].size))
+    if args.plot:
+        plot(samples)
 
-    rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samples["usrp2"][0]))
-    rxFreqSpectrumUsrp2 = np.fft.fftshift(np.fft.fftfreq(samples["usrp2"][0].size))
-    plt.subplot(221)
-    plt.plot(np.arange(NO_RX_SAMPLES), samples["usrp1"][0])
-    plt.xlabel("Samples [#]")
-    plt.ylabel("Value")
-    plt.title("Usrp1, received samples, time")
 
-    plt.subplot(222)
-    plt.plot(np.arange(NO_RX_SAMPLES), samples["usrp2"][0])
-    plt.xlabel("Samples [#]")
-    plt.ylabel("Value")
-    plt.title("Usrp2, received samples, time")
-
-    plt.subplot(223)
-    plt.semilogy(rxFreqSpectrumUsrp1 / 1e6, np.abs(rxSpectrumUsrp1))
-    plt.xlabel("Frequency [Mhz]")
-    plt.ylabel("Power [log]")
-    plt.title("Spectrum USRP1")
-
-    plt.subplot(224)
-    plt.semilogy(rxFreqSpectrumUsrp2 / 1e6, np.abs(rxSpectrumUsrp2))
-    plt.xlabel("Frequency [Mhz]")
-    plt.ylabel("Power [log]")
-    plt.title("Spectrum USRP2")
-    plt.show()
+if __name__ == "__main__":
+    main()

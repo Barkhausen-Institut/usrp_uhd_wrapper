@@ -5,11 +5,11 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXAPI     = sphinx-apidoc
-APIEXCLUDES   = ../setup.py 
+APIEXCLUDES   = ../usrp_client/tests/
 SPHINXPROJ    = UsrpUhdApi
 SOURCEDIR     = .
 BUILDDIR      = _build
-APISOURCE	  = ../usrp_client
+APISOURCE	  = ../usrp_client ../uhd_wrapper/utils/
 # Put it first so that "make" without argument is like "make help".
 help:
 	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)

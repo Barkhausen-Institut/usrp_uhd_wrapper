@@ -1,3 +1,8 @@
+"""This modules contains functions required for serialization.
+
+Since we use zerorpc for RPC, we need to serialize non-pythonic datatypes.
+"""
+
 from typing import List, Tuple, Dict, Any, Union
 import numpy as np
 
@@ -11,6 +16,19 @@ SerializedComplexArray = Tuple[List, List]
 
 
 def serializeComplexArray(data: np.ndarray) -> SerializedComplexArray:
+    """Serialize a complex array.
+
+    Args:
+        data (np.ndarray): Onedimensional array of complex samples.
+
+    Raises:
+        ValueError: Array must be one dimensional.
+
+    Returns:
+        SerializedComplexArray:
+            Tuple containing real samples as `List` as first element
+            and complex samples as `List` as second element.
+    """
     data = np.squeeze(data)
     if len(data.shape) == 2:
         raise ValueError("Array must be one dimensional!")
@@ -18,6 +36,18 @@ def serializeComplexArray(data: np.ndarray) -> SerializedComplexArray:
 
 
 def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
+    """Deserialize into a complex array.
+
+    Args:
+        data (SerializedComplexArray):
+            Tuple containing real samples as `List` as first element
+            and complex samples as `List` as second element.
+    Raises:
+        ValueError: Number of samples msut match
+
+    Returns:
+        np.ndarray: One dimensional numpy array.
+    """
     if len(data[0]) != len(data[1]):
         raise ValueError(
             """Number of imaginary samples
@@ -30,6 +60,14 @@ def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
 def serializeRfConfig(
     conf: Union[RfConfigClient, RfConfigServer]
 ) -> Dict[str, Dict[str, Any]]:
+    """Serializes the radio frontend configuration.
+
+    Args:
+        conf (Union[RfConfigClient, RfConfigServer]): Configuration to be serilaized
+
+    Returns:
+        Dict[str, Dict[str, Any]]: Serialized configuration.
+    """
     return {
         "rx": {
             "analogFilterBw": conf.rxAnalogFilterBw,
@@ -47,6 +85,14 @@ def serializeRfConfig(
 
 
 def deserializeRfConfig(serializedConf: Dict[str, Dict[str, Any]]) -> RfConfigClient:
+    """Deserializes dict into RfConfig.
+
+    Args:
+        serializedConf (Dict[str, Dict[str, Any]]): Dictionary containing configuration.
+
+    Returns:
+        RfConfigClient: Rf configuration.
+    """
     conf = RfConfigClient()
     conf.txSamplingRate = serializedConf["tx"]["samplingRate"]
     conf.txGain = serializedConf["tx"]["gain"]

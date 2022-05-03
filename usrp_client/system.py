@@ -20,7 +20,7 @@ class System:
     USRPs can be added. Using the system functions defined in the `System` class gives you
     direct access to the USRP configuration etc.
 
-    Attrbiutes:
+    Attributes:
         syncThresholdSec(float): In order to verify if the USRPs in the system are properly
             synchronized, respective FPGA values are queried and compared. If the FPGA times
             differ more than `syncThresholdSec`, an exception is thrown that the USRPs are not

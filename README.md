@@ -28,11 +28,22 @@ For the client:
 
 # Use
 
+After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. RF config, samples, etc.) to the usrp server. The `uhd_wrapper.utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
+
 We implemented a multidevice setup with SISO only. It is easily extendible however. The examples below will explain its usage until further documentaiton will follows.
+
+**Note**: Ensure that the usrp server is started:
+
+ssh to usrp.
+
+1. `cd <repo>`
+2. `. env/bin/activate`
+3. `python start_usrp_server.py`
+
 
 ## Examples
 
-The **examples** directory contains two examples. In each example file, we will print when the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic. A value of 100-110 is realistic, depending on the sampling rate. All exapmples are to be run from the client side. **Port 5555 is being used.** We add the option to plot signals. Examples should be self-explanatory.
+The **examples** directory contains two examples. In each example file, we will print when the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. **Port 5555 is being used.** We add the option to plot signals. Examples should be self-explanatory.
 
 **usrp_p2p_transmission**: Sends random signal from Usrp1 to Usrp2, check file.
 
@@ -41,7 +52,7 @@ Usage:
 ```bash
 $ cd <repo>
 $ . env/bin/activate
-$ python examples/usrp_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot <True/False>
+$ python examples/usrp_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot
 ```
 
 **jcas**: Implements the JCAS scenario, but using a random signal instead.
@@ -50,10 +61,10 @@ Usage:
 ```bash
 $ cd <repo>
 $ . env/bin/activate
-$ python examples/jcas.py --plot <True/False>
+$ python examples/jcas.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot
 ```
 
-Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well.
+Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well. If `--plot` argument is omitted, the signal will be sent/received 10 times a row.
 
 
 
@@ -72,18 +83,6 @@ $ python hardware_tests/transmit_chirp_localhost.py --bandwidth <bandwidth> --ca
 
 **Note**: The Usrp should be stopped for this purpose!
 
-# Use
-
-Client:
-
-After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. RF config, samples, etc.) to the usrp server. The `utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
-
-**Ensure that usrp server is already started (cf. previous section).**
-To start a simple example script that transmit a rect signal from `192.168.189.131` to `192.168.189.133` and vice versa, run:
-
-1. `cd <repo>`
-2. `. env/bin/activate`
-3. `python examples/usrp_p2p_transmission.py`
 
 # For Developers
 
@@ -95,8 +94,3 @@ We also have a **debug** folder that contains some files to be used for debuggin
 
 ## Start usrp server
 
-ssh to usrp.
-
-1. `cd <repo>`
-2. `. env/bin/activate`
-3. `python start_usrp_server.py`

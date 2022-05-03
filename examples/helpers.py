@@ -8,7 +8,7 @@ def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:
     return np.hstack(
         [
             np.zeros(zeropad, dtype=complex),
-            np.random.rand(noSamples) + 1j * np.random.rand(noSamples),
+            np.random.randn(noSamples) + 1j * np.random.randn(noSamples),
         ]
     )
 
@@ -39,10 +39,9 @@ def db(data: np.ndarray) -> np.ndarray:
 def plot(samples: Dict[str, List[np.ndarray]]) -> None:
     noRxSamples = samples["usrp1"][0].size
     rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0]))
-    rxFreqSpectrumUsrp1 = np.fft.fftshift(np.fft.fftfreq(noRxSamples))
 
     rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samples["usrp2"][0]))
-    rxFreqSpectrumUsrp2 = np.fft.fftshift(np.fft.fftfreq(noRxSamples))
+    freq = np.linspace(-0.5, 0.5, noRxSamples, endpoint=False)
     plt.subplot(221)
     plt.plot(np.arange(noRxSamples), samples["usrp1"][0])
     plt.xlabel("Samples [#]")
@@ -56,14 +55,14 @@ def plot(samples: Dict[str, List[np.ndarray]]) -> None:
     plt.title("Usrp2, received samples, time")
 
     plt.subplot(223)
-    plt.plot(rxFreqSpectrumUsrp1 / 1e6, db(rxSpectrumUsrp1))
-    plt.xlabel("Frequency [Mhz]")
+    plt.plot(freq, db(rxSpectrumUsrp1))
+    plt.xlabel("Frequency / fs")
     plt.ylabel("Power [dB]")
     plt.title("Spectrum USRP1")
 
     plt.subplot(224)
-    plt.plot(rxFreqSpectrumUsrp2 / 1e6, db(rxSpectrumUsrp2))
-    plt.xlabel("Frequency [Mhz]")
+    plt.plot(freq, db(rxSpectrumUsrp2))
+    plt.xlabel("Frequency / fs")
     plt.ylabel("Power [dB]")
     plt.title("Spectrum USRP2")
     plt.show()

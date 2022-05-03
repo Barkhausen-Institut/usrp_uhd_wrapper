@@ -54,13 +54,16 @@ def createStreamingConfigs(
 
 def main() -> None:
     args = readArgs()
-    system = createSystem(fc=2e9, fs=245e6 / 2, txGain=35, rxGain=35)
+    system = createSystem(fc=2e9, fs=245e6, txGain=35, rxGain=35)
     txSignal = createRandom(noSamples=int(20e3))
     txStreamingConfig1, rxStreamingConfig1, rxStreamingConfig2 = createStreamingConfigs(
         streamingOffset=0.0,
         txSignal=txSignal,
         noRxSamples=60e3,
     )
+    from time import time
+
+    startTime = time()
     for _ in range(10):
         system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
         system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
@@ -69,6 +72,7 @@ def main() -> None:
 
         system.execute()
         samples = system.collect()
+        print(time() - startTime)
         printDelays(samples, txSignal)
         if args.plot:
             plot(samples)

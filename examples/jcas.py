@@ -58,7 +58,7 @@ def main():
     system = createSystem(fc=2e9, fs=245e6 / 2, txGain=35, rxGain=35)
     txSignal = createRandom(noSamples=int(20e3))
     txStreamingConfig1, rxStreamingConfig1, rxStreamingConfig2 = createStreamingConfigs(
-        streamingOffset=1.0,
+        streamingOffset=0.0,
         txSignal=txSignal,
         noRxSamples=60e3,
     )

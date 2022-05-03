@@ -28,6 +28,7 @@ build_test:
     - pytest
 
 pages:
+  stage: pages
   script:
     - cd docs && pip install -r ../requirements_doc.txt && cd ..
     - cd docs && make api && cd ..

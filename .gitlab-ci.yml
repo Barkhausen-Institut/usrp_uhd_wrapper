@@ -2,6 +2,7 @@ image: ubuntu:20.04
 
 stages:
   - build_test
+  - pages
 
 before_script:
   - export DEBIAN_FRONTEND=noninteractive

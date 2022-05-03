@@ -60,9 +60,7 @@ def main() -> None:
         txSignal=txSignal,
         noRxSamples=60e3,
     )
-    from time import time
 
-    startTime = time()
     for _ in range(10):
         system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
         system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
@@ -71,7 +69,6 @@ def main() -> None:
 
         system.execute()
         samples = system.collect()
-        print(time() - startTime)
         printDelays(samples, txSignal)
         if args.plot:
             plot(samples)

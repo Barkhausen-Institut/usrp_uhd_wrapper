@@ -32,6 +32,10 @@ def printDelays(samples: Dict[str, List[np.ndarray]], txSignal: np.ndarray) -> N
     print(f"Sent chirp from usrp1 starts at sample {txSignalStartUsrp2} in usrp2")
 
 
+def db(data: np.ndarray) -> np.ndarray:
+    return 20 * np.log10(np.abs(data))
+
+
 def plot(samples: Dict[str, List[np.ndarray]]) -> None:
     noRxSamples = samples["usrp1"][0].size
     rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0]))
@@ -52,14 +56,14 @@ def plot(samples: Dict[str, List[np.ndarray]]) -> None:
     plt.title("Usrp2, received samples, time")
 
     plt.subplot(223)
-    plt.semilogy(rxFreqSpectrumUsrp1 / 1e6, np.abs(rxSpectrumUsrp1))
+    plt.plot(rxFreqSpectrumUsrp1 / 1e6, db(rxSpectrumUsrp1))
     plt.xlabel("Frequency [Mhz]")
-    plt.ylabel("Power [log]")
+    plt.ylabel("Power [dB]")
     plt.title("Spectrum USRP1")
 
     plt.subplot(224)
-    plt.semilogy(rxFreqSpectrumUsrp2 / 1e6, np.abs(rxSpectrumUsrp2))
+    plt.plot(rxFreqSpectrumUsrp2 / 1e6, db(rxSpectrumUsrp2))
     plt.xlabel("Frequency [Mhz]")
-    plt.ylabel("Power [log]")
+    plt.ylabel("Power [dB]")
     plt.title("Spectrum USRP2")
     plt.show()

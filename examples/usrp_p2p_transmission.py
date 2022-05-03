@@ -1,102 +1,93 @@
-from typing import Tuple
-import logging
-import time
+from typing import Any, Dict, Tuple
+import argparse
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
+from examples.helpers import createRandom, printDelays, plot
 
 
-def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:
-    return np.hstack(
-        [
-            np.zeros(zeropad, dtype=complex),
-            np.random.rand(noSamples) + 1j * np.random.rand(noSamples),
-        ]
+def readArgs() -> Any:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--usrp1-ip", type=str, help="IP of first USRP")
+    parser.add_argument("--usrp2-ip", type=str, help="IP of second USRP")
+    parser.add_argument(
+        "--carrier-frequency", type=float, help="Carrier frequency of sent signal"
+    )
+    parser.add_argument(
+        "--plot",
+        action="store_true",
+        help="Plot received singals in time and frequency",
+    )
+    args = parser.parse_args()
+    return args
+
+
+def createSystem(
+    fc: float, fs: float, txGain: float, rxGain: float, ipUsrp1: str, ipUsrp2: str
+) -> System:
+    rfConfig = RfConfig()
+    rfConfig.rxAnalogFilterBw = 400e6
+    rfConfig.txAnalogFilterBw = 400e6
+    rfConfig.rxSamplingRate = fs
+    rfConfig.txSamplingRate = fs
+    rfConfig.rxGain = [rxGain]
+    rfConfig.txGain = [txGain]
+    rfConfig.rxCarrierFrequency = [fc]
+    rfConfig.txCarrierFrequency = [fc]
+
+    # ceate system
+    system = System()
+    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
+    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp2, usrpName="usrp2")
+    return system
+
+
+def createStreamingConfigs(
+    txSignal: np.ndarray, noRxSamples: float
+) -> Dict[str, Tuple[RxStreamingConfig, TxStreamingConfig]]:
+
+    txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=0.0, samples=[txSignal])
+    rxStreamingConfig1 = RxStreamingConfig(
+        receiveTimeOffset=0.1, noSamples=int(noRxSamples)
     )
 
-
-def createRamp(noSamples: int, zeropad: int = 0) -> np.ndarray:
-    return np.hstack(
-        [np.zeros(zeropad, dtype=complex), np.linspace(0, 1, noSamples, endpoint=False)]
+    txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=0.1, samples=[txSignal])
+    rxStreamingConfig2 = RxStreamingConfig(
+        receiveTimeOffset=0.0, noSamples=int(noRxSamples)
     )
+    configs = {
+        "usrp1": (rxStreamingConfig1, txStreamingConfig1),
+        "usrp2": (rxStreamingConfig2, txStreamingConfig2),
+    }
+    return configs
 
 
-def createZadoffChu(noSamples: int) -> np.ndarray:
-    N = noSamples
-    cF = noSamples % 2
-    q = 0
-    k = np.arange(N)
-    return np.exp(-1j * np.pi * (k * (k + cF + q)) / N)
+def main() -> None:
+    args = readArgs()
+    system = createSystem(
+        fc=args.carrier_frequency,
+        fs=245e6 / 2,
+        txGain=35,
+        rxGain=35,
+        ipUsrp1=args.usrp1_ip,
+        ipUsrp2=args.usrp2_ip,
+    )
+    txSignal = createRandom(noSamples=int(20e3))
+    streamingConfigs = createStreamingConfigs(txSignal=txSignal, noRxSamples=60e3)
+    system.configureTx(usrpName="usrp1", txStreamingConfig=streamingConfigs["usrp1"][1])
+    system.configureRx(usrpName="usrp1", rxStreamingConfig=streamingConfigs["usrp1"][0])
 
-
-def findFirstSampleInFrameOfSignal(
-    frame: np.ndarray, txSignal: np.ndarray
-) -> Tuple[int, np.ndarray]:
-    correlation = np.abs(np.correlate(frame, txSignal))
-    return np.argsort(correlation)[-1], correlation
-
-
-logging.basicConfig(level=logging.INFO)
-c = RfConfig()
-c.rxAnalogFilterBw = 400e6
-c.txAnalogFilterBw = 400e6
-c.rxSamplingRate = 245.76e6 / 2
-c.txSamplingRate = 245.76e6 / 2
-c.rxGain = [35]
-c.txGain = [35]
-c.rxCarrierFrequency = [2e9]
-c.txCarrierFrequency = [2e9]
-
-txSignal = createRandom(int(20e3), zeropad=2000)
-txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=0.0, samples=[txSignal])
-rxStreamingConfig1 = RxStreamingConfig(receiveTimeOffset=0.1, noSamples=int(60e3))
-
-txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=0.1, samples=[txSignal])
-rxStreamingConfig2 = RxStreamingConfig(receiveTimeOffset=0.0, noSamples=int(60e3))
-
-system = System()
-system.addUsrp(rfConfig=c, ip="192.168.189.133", usrpName="usrp1")
-system.addUsrp(rfConfig=c, ip="192.168.189.131", usrpName="usrp2")
-
-for iteration in range(3):
-    start = time.time()
-    system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
-    print(f"Config 1 Took {time.time() - start} seconds")
-    system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
-    print(f"Config 1RX Took {time.time() - start} seconds")
-
-    system.configureTx(usrpName="usrp2", txStreamingConfig=txStreamingConfig2)
-    system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
-    print(f"Config 2 Took {time.time() - start} seconds")
-
+    system.configureTx(usrpName="usrp2", txStreamingConfig=streamingConfigs["usrp2"][1])
+    system.configureRx(usrpName="usrp2", rxStreamingConfig=streamingConfigs["usrp2"][0])
     system.execute()
-    print(f"EXecute Took {time.time() - start} seconds")
-
     samples = system.collect()
-    print(f"Took {time.time() - start} seconds")
+    printDelays(samples=samples, txSignal=txSignal)
 
-    txSignalStartUsrp2, correlationUsrp2 = findFirstSampleInFrameOfSignal(
-        samples["usrp2"][0], txSignal
-    )
+    if args.plot:
+        plot(samples)
 
-    txSignalStartUsrp1, correlationUsrp1 = findFirstSampleInFrameOfSignal(
-        samples["usrp1"][0], txSignal
-    )
 
-    print(f"Sent signal from usrp2 starts at sample {txSignalStartUsrp1} in usrp1")
-    print(f"Sent signal from usrp1 starts at sample {txSignalStartUsrp2} in usrp2")
-
-    plt.subplot(221)
-    plt.plot(np.arange(60e3), np.abs(samples["usrp1"][0]))
-    plt.title("Received samples usrp1")
-    plt.subplot(222)
-    plt.plot(np.arange(60e3), np.abs(samples["usrp2"][0]))
-    plt.title("Received samples usrp2")
-    plt.subplot(223)
-    plt.plot(np.arange(correlationUsrp1.size), np.abs(correlationUsrp1))
-    plt.subplot(224)
-    plt.plot(np.arange(correlationUsrp2.size), np.abs(correlationUsrp2))
-    plt.show()
+if __name__ == "__main__":
+    main()

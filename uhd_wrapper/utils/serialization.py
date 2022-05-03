@@ -1,7 +1,10 @@
 from typing import List, Tuple, Dict, Any, Union
 import numpy as np
 
-from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigServer
+try:
+    from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigServer
+except ImportError:
+    RfConfigServer = None
 from uhd_wrapper.utils.config import RfConfig as RfConfigClient
 
 SerializedComplexArray = Tuple[List, List]

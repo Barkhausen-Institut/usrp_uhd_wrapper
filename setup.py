@@ -32,5 +32,6 @@ else:
             "zerorpc~=0.6.3",
             "pyzmq~=22.3.0",
             "numpy~=1.21.6",
+            "matplotlib~=3.5.2"
         ],
     )

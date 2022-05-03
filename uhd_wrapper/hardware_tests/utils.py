@@ -15,8 +15,12 @@ class ZadoffChuChirp(Signal):
         M = 1
         cF = N % 2
         q = 0
-        self.samples = np.array([amplitude*np.exp(-1j*np.pi*M*k*(k+cF + q) / N)
-                                 for k in range(N)])
+        self.samples = np.array(
+            [
+                amplitude * np.exp(-1j * np.pi * M * k * (k + cF + q) / N)
+                for k in range(N)
+            ]
+        )
 
 
 class RectSignal(Signal):
@@ -26,9 +30,10 @@ class RectSignal(Signal):
 
 class RandomSignal(Signal):
     def create(self, noSamples: int, ampltitude: float) -> None:
-        self.samples = ampltitude * (2 * (np.random.sample((noSamples,)) +
-                                          1j * np.random.sample((noSamples,))) -
-                                     (1 + 1j))
+        self.samples = ampltitude * (
+            2 * (np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,)))
+            - (1 + 1j)
+        )
 
 
 class WhiteNoise(Signal):
@@ -37,8 +42,12 @@ class WhiteNoise(Signal):
         self.__std = std
 
     def create(self, noSamples: int, amplitude: float) -> None:
-        iSamples = np.random.normal(loc=self.__mean, scale=self.__std, size=(noSamples,))
-        qSamples = np.random.normal(loc=self.__mean, scale=self.__std, size=(noSamples,))
+        iSamples = np.random.normal(
+            loc=self.__mean, scale=self.__std, size=(noSamples,)
+        )
+        qSamples = np.random.normal(
+            loc=self.__mean, scale=self.__std, size=(noSamples,)
+        )
         self.samples = iSamples + 1j * qSamples
 
 
@@ -56,8 +65,22 @@ class FrequencyZOH(Signal):
         frame[zohLength * self.__noSignals:] = 0
         for fIdx in range(self.__noSignals):
             timeStamps = frame[fIdx * zohLength:(fIdx + 1) * zohLength]
-            frame[fIdx * zohLength:(fIdx + 1) * zohLength] = amplitude*np.exp(1j * 2 * np.pi * frequencies[fIdx] * timeStamps) # noqa
+            frame[fIdx * zohLength:(fIdx + 1) * zohLength] = amplitude * np.exp(
+                1j * 2 * np.pi * frequencies[fIdx] * timeStamps
+            )  # noqa
         self.samples = frame
+
+
+class Chirp(Signal):
+    def __init__(self, fStart: float, fStop: float, fSampling: float) -> None:
+        self.__fStart = fStart
+        self.__fStop = fStop
+        self.__fSampling = fSampling
+
+    def create(self, noSamples: int, amplitude: float) -> None:
+        t = np.arange(noSamples) / self.__fSampling
+        f = np.linspace(self.__fStart, self.__fStop, noSamples)
+        self.samples = amplitude * np.exp(1j * 2 * np.pi * f * t)
 
 
 def findFirstSampleInFrameOfSignal(frame: np.ndarray, txSignal: np.ndarray) -> int:
@@ -66,7 +89,7 @@ def findFirstSampleInFrameOfSignal(frame: np.ndarray, txSignal: np.ndarray) -> i
 
 
 def dumpSamples(csvName: str, samples: np.ndarray) -> None:
-    with open(csvName, 'w') as f:
+    with open(csvName, "w") as f:
         csvWriter = csv.writer(f)
         for sample in samples.tolist():
             csvWriter.writerow([sample])

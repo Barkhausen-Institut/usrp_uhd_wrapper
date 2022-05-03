@@ -25,7 +25,8 @@ def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:
     return np.hstack(
         [
             np.zeros(zeropad, dtype=complex),
-            np.random.randn(noSamples) + 1j * np.random.randn(noSamples),
+            2 * (np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,)))
+            - (1 + 1j),
         ]
     )
 

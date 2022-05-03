@@ -1,0 +1,10 @@
+[Unit]
+Description=ZeroRpc Server
+
+[Service]
+Type=simple
+ExecStart=/home/root/usrp_uhd_api/env/bin/python /home/root/usrp_uhd_api/start_usrp_server.py
+ProtectHome=off
+
+[Install]
+WantedBy=multi-user.target

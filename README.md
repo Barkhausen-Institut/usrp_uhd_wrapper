@@ -10,7 +10,7 @@ On the usrp (server):
 Install libzmq beforehand.
 
 1. `git clone <this repo>`
-2. `python3 -m venv env`
+2. `python3 -m venv env && . env/bin/activate`
 3. `pip install -e .`
 4. `cd usrp_uhd_wrapper && mkdir build`
 5. `cd build`

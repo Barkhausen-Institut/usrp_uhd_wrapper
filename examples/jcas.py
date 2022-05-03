@@ -52,7 +52,7 @@ def createStreamingConfigs(
     return txStreamingConfig1, rxStreamingConfig1, rxStreamingConfig2
 
 
-def main():
+def main() -> None:
     args = readArgs()
     system = createSystem(fc=2e9, fs=245e6 / 2, txGain=35, rxGain=35)
     txSignal = createRandom(noSamples=int(20e3))

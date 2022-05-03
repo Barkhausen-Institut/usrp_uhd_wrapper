@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any, Dict, Tuple
 import argparse
 
 import numpy as np
@@ -46,7 +46,7 @@ def createSystem(
 
 def createStreamingConfigs(
     txSignal: np.ndarray, noRxSamples: float
-) -> Dict[str, Dict[str, Union[RxStreamingConfig, TxStreamingConfig]]]:
+) -> Dict[str, Tuple[RxStreamingConfig, TxStreamingConfig]]:
 
     txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=0.0, samples=[txSignal])
     rxStreamingConfig1 = RxStreamingConfig(
@@ -58,8 +58,8 @@ def createStreamingConfigs(
         receiveTimeOffset=0.0, noSamples=int(noRxSamples)
     )
     configs = {
-        "usrp1": {"rx": rxStreamingConfig1, "tx": txStreamingConfig1},
-        "usrp2": {"rx": rxStreamingConfig2, "tx": txStreamingConfig2},
+        "usrp1": (rxStreamingConfig1, txStreamingConfig1),
+        "usrp2": (rxStreamingConfig2, txStreamingConfig2),
     }
     return configs
 
@@ -76,19 +76,11 @@ def main() -> None:
     )
     txSignal = createRandom(noSamples=int(20e3))
     streamingConfigs = createStreamingConfigs(txSignal=txSignal, noRxSamples=60e3)
-    system.configureTx(
-        usrpName="usrp1", txStreamingConfig=streamingConfigs["usrp1"]["tx"]
-    )
-    system.configureRx(
-        usrpName="usrp1", rxStreamingConfig=streamingConfigs["usrp1"]["rx"]
-    )
+    system.configureTx(usrpName="usrp1", txStreamingConfig=streamingConfigs["usrp1"][1])
+    system.configureRx(usrpName="usrp1", rxStreamingConfig=streamingConfigs["usrp1"][0])
 
-    system.configureTx(
-        usrpName="usrp2", txStreamingConfig=streamingConfigs["usrp2"]["tx"]
-    )
-    system.configureRx(
-        usrpName="usrp2", rxStreamingConfig=streamingConfigs["usrp2"]["rx"]
-    )
+    system.configureTx(usrpName="usrp2", txStreamingConfig=streamingConfigs["usrp2"][1])
+    system.configureRx(usrpName="usrp2", rxStreamingConfig=streamingConfigs["usrp2"][0])
     system.execute()
     samples = system.collect()
     printDelays(samples=samples, txSignal=txSignal)

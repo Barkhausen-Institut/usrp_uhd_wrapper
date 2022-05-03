@@ -11,12 +11,12 @@ before_script:
   - add-apt-repository ppa:ettusresearch/uhd
   - apt-get update
   - apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev
+  - python3.9 -m venv .venv
+  - . .venv/bin/activate
 
 build_test:
   stage: build_test
   script:
-    - python3.9 -m venv .venv
-    - . .venv/bin/activate
     - pip install -e .
     - pip install -r requirements_tests.txt
     - cd uhd_wrapper

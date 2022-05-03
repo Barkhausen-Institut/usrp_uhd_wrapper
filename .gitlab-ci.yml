@@ -25,3 +25,12 @@ build_test:
     - ctest -V
     - cd ../../
     - pytest
+
+pages:
+  script:
+    - cd docs && pip install -r ../requirements_doc.txt && cd ..
+    - cd docs && make api && cd ..
+    - sphinx-build docs public
+  artifacts:
+    paths:
+      - public

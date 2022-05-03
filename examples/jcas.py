@@ -12,8 +12,7 @@ def readArgs() -> Any:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--plot",
-        type=bool,
-        default=False,
+        action="store_true",
         help="Plot received singals in time and frequency",
     )
     args = parser.parse_args()
@@ -62,16 +61,18 @@ def main():
         txSignal=txSignal,
         noRxSamples=60e3,
     )
-    system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
-    system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+    for _ in range(10):
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
 
-    system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
+        system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
 
-    system.execute()
-    samples = system.collect()
-    printDelays(samples, txSignal)
-    if args.plot:
-        plot(samples)
+        system.execute()
+        samples = system.collect()
+        printDelays(samples, txSignal)
+        if args.plot:
+            plot(samples)
+            break
 
 
 if __name__ == "__main__":

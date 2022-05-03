@@ -2,7 +2,7 @@
 
 This repo wraps the UHD for our X410. It contains the **client as well as the server**. The client is to be used by the user for signal processing purposes and sending the commands to the USRP, which serves as a server.
 
-Current versions of server are running on 192.168.189.131/133. **If you want to run code as a client against USRPs, only use these USRPs at the moment.**
+Current versions of server are running on 192.168.189.131/134. **If you want to run code as a client against USRPs, only use these USRPs at the moment.**
 
 # Install
 

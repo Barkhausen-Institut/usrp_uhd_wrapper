@@ -16,15 +16,17 @@ LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
 class System:
     """User interface for accessing multiple USRPs.
 
-    This module is the main interface for using the USRP. A sysem is to be defined to which USRPs can be added.
-    Using the system functions defined in the `System` class gives you direct access to the USRP configuration etc.
+    This module is the main interface for using the USRP. A sysem is to be defined to which
+    USRPs can be added. Using the system functions defined in the `System` class gives you
+    direct access to the USRP configuration etc.
 
     Attrbiutes:
-        syncThresholdSec(float): In order to verify if the USRPs in the system are properly synchronized,
-            respective FPGA values are queried and compared. If the FPGA times differ more than `syncThresholdSec`,
-            an assertion is thrown that the USRPs are not synchronized. Default value: 0.2s.
-        baseTimeOffsetSec(float): This value is taken for setting the same base time for all USRPs.
-            For internal use mainly. Do not change. Default value: 0.2s.
+        syncThresholdSec(float): In order to verify if the USRPs in the system are properly
+            synchronized, respective FPGA values are queried and compared. If the FPGA times
+            differ more than `syncThresholdSec`, an exception is thrown that the USRPs are not
+            synchronized. Default value: 0.2s.
+        baseTimeOffsetSec(float): This value is taken for setting the same base time for all
+            USRPs. For development use mainly. Do not change. Default value: 0.2s.
     """
 
     syncThresholdSec = 0.2
@@ -160,8 +162,8 @@ class System:
         """Collects the samples at each USRP.
 
         This is a blocking call. In the streaming configurations, the user defined when to send
-        and receive the samples at which USRP. This method waits until all the samples are received
-        (hence blocking) and returns them.
+        and receive the samples at which USRP. This method waits until all the samples are
+        received (hence blocking) and returns them.
 
         Returns:
             Dict[str, List[np.ndarray]]:

@@ -24,7 +24,7 @@ For the client:
 1. Ensure that you use at least python3.9.
 2. Create and activate virtual env (on linux: `python -m venv env && . env/bin/activate`)
 3. `pip install -e .`
-4. **For running tests:** `pip install -r requirements_tests.txt && pytest .`
+4. **For running tests:** `pip install -r requirements_tests.txt && pytest usrp_client/`
 
 # Use
 

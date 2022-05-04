@@ -13,3 +13,5 @@ add_subdirectory(snippets)
 add_subdirectory(debug)
 
 enable_testing()
+
+install(FILES ${CMAKE_SOURCE_DIR}/../rpc-server.service DESTINATION /etc/systemd/system/)

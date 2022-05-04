@@ -1,5 +1,5 @@
 from dataclasses import fields
-from typing import List, Dict, Any
+from typing import List
 
 from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
@@ -92,5 +92,5 @@ class UsrpServer:
     def getCurrentSystemTime(self) -> int:
         return self.__usrp.getCurrentSystemTime()
 
-    def getRfConfig(self) -> Dict[str, Dict[str, Any]]:
+    def getRfConfig(self) -> str:
         return serializeRfConfig(self.__usrp.getRfConfig())

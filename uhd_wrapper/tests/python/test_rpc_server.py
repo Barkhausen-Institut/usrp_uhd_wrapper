@@ -17,10 +17,10 @@ from uhd_wrapper.utils.serialization import (
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
-    RfConfig,
     RxStreamingConfig,
     TxStreamingConfig,
 )
+from uhd_wrapper.utils.config import RfConfig
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -63,9 +63,7 @@ class TestDeserializationComplexArr(unittest.TestCase):
 
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
-        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
-
-        self.conf = RfConfigClient()
+        self.conf = RfConfig()
         self.conf.txCarrierFrequency = [2e9]
 
         self.conf.txGain = [30]
@@ -77,24 +75,11 @@ class TestSerializationRfConfig(unittest.TestCase):
         self.conf.rxAnalogFilterBw = 100e6
         self.conf.rxSamplingRate = 30e6
 
-        self.serializedRfConf = {
-            "rx": {
-                "analogFilterBw": self.conf.rxAnalogFilterBw,
-                "carrierFrequency": self.conf.rxCarrierFrequency,
-                "gain": self.conf.rxGain,
-                "samplingRate": self.conf.rxSamplingRate,
-            },
-            "tx": {
-                "analogFilterBw": self.conf.txAnalogFilterBw,
-                "carrierFrequency": self.conf.txCarrierFrequency,
-                "gain": self.conf.txGain,
-                "samplingRate": self.conf.txSamplingRate,
-            },
-        }
+        self.serializedRfConf = self.conf.to_json()  # type: ignore
 
     def test_properRfConfigSerialization(self) -> None:
         serializedConf = serializeRfConfig(self.conf)
-        self.assertDictEqual(self.serializedRfConf, serializedConf)
+        self.assertEqual(self.serializedRfConf, serializedConf)
 
     def test_properRfConfigDeSerialization(self) -> None:
         self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
@@ -226,9 +211,7 @@ class TestUsrpServer(unittest.TestCase):
         usrpRfConfig.rxAnalogFilterBw = 100e6
         usrpRfConfig.rxSamplingRate = 30e6
         self.usrpMock.getRfConfig.return_value = usrpRfConfig
-        self.assertDictEqual(
-            serializeRfConfig(usrpRfConfig), self.usrpServer.getRfConfig()
-        )
+        self.assertEqual(serializeRfConfig(usrpRfConfig), self.usrpServer.getRfConfig())
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0

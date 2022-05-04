@@ -1,9 +1,11 @@
 from typing import List
 from dataclasses import dataclass, field
+from dataclasses_json import dataclass_json
 
 import numpy as np
 
 
+@dataclass_json
 @dataclass
 class RfConfig:
     txAnalogFilterBw: float = 0.0

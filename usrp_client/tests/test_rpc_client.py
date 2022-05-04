@@ -42,9 +42,7 @@ class TestUsrpClient(unittest.TestCase):
         npt.assert_array_equal(recvdSamples[0], samplesDeserialized[0])
 
     def test_getRfConfigReturnsSerializedRfConfig(self) -> None:
-        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
-
-        usrpRfConf = RfConfigClient()
+        usrpRfConf = RfConfig()
         usrpRfConf.txCarrierFrequency = [2e9]
 
         usrpRfConf.txGain = [30]

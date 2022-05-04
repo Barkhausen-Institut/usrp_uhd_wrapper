@@ -14,7 +14,7 @@ from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfCon
 class UsrpClient:
     """This class is the RPC client to the RPC server running on the USRP
 
-    Under the hood, we communicate with the UsrpServer class which wraps zerorpc. ZeroRPC is
+    Under the hood, we communicate with the UsrpServer class which wraps zerorpc. ZeroRPC
     implements remote procedure call client-server architecture using zeromq as a communication
     protocol. `UsrpClient` forwards user calls to the RPC server and serializes them if
     required.

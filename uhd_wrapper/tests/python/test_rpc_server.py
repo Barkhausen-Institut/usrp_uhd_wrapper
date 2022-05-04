@@ -34,7 +34,7 @@ def fillDummyRfConfig(
     conf.txAnalogFilterBw = 200e6
     conf.txSamplingRate = 20e6
 
-    conf.rxCarrierFrequency = [2e9]
+    conf.rxCarrierFrequency = [2.5e9]
     conf.rxGain = [40]
     conf.rxAnalogFilterBw = 100e6
     conf.rxSamplingRate = 30e6

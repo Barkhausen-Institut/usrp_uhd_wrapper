@@ -1,10 +1,15 @@
 import unittest
+from typing import Union
 from unittest.mock import Mock
 
 import numpy as np
 import numpy.testing as npt
 
-from uhd_wrapper.rpc_server.rpc_server import UsrpServer
+from uhd_wrapper.rpc_server.rpc_server import (
+    RfConfigFromBinding,
+    UsrpServer,
+    RfConfigToBinding,
+)
 from uhd_wrapper.utils.serialization import (
     deserializeRfConfig,
     serializeComplexArray,
@@ -13,10 +18,27 @@ from uhd_wrapper.utils.serialization import (
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
-    RfConfig,
     RxStreamingConfig,
     TxStreamingConfig,
 )
+from uhd_wrapper.utils.config import RfConfig
+from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+
+
+def fillDummyRfConfig(
+    conf: Union[RfConfig, RfConfigBinding]
+) -> Union[RfConfig, RfConfigBinding]:
+    conf.txCarrierFrequency = [2e9]
+
+    conf.txGain = [30]
+    conf.txAnalogFilterBw = 200e6
+    conf.txSamplingRate = 20e6
+
+    conf.rxCarrierFrequency = [2e9]
+    conf.rxGain = [40]
+    conf.rxAnalogFilterBw = 100e6
+    conf.rxSamplingRate = 30e6
+    return conf
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -59,41 +81,50 @@ class TestDeserializationComplexArr(unittest.TestCase):
 
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
-        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
-
-        self.conf = RfConfigClient()
-        self.conf.txCarrierFrequency = [2e9]
-
-        self.conf.txGain = [30]
-        self.conf.txAnalogFilterBw = 200e6
-        self.conf.txSamplingRate = 20e6
-
-        self.conf.rxCarrierFrequency = [2e9]
-        self.conf.rxGain = [40]
-        self.conf.rxAnalogFilterBw = 100e6
-        self.conf.rxSamplingRate = 30e6
-
-        self.serializedRfConf = {
-            "rx": {
-                "analogFilterBw": self.conf.rxAnalogFilterBw,
-                "carrierFrequency": self.conf.rxCarrierFrequency,
-                "gain": self.conf.rxGain,
-                "samplingRate": self.conf.rxSamplingRate,
-            },
-            "tx": {
-                "analogFilterBw": self.conf.txAnalogFilterBw,
-                "carrierFrequency": self.conf.txCarrierFrequency,
-                "gain": self.conf.txGain,
-                "samplingRate": self.conf.txSamplingRate,
-            },
-        }
+        self.conf = RfConfig()
+        self.conf = fillDummyRfConfig(self.conf)
+        self.serializedRfConf = self.conf.to_json()  # type: ignore
 
     def test_properRfConfigSerialization(self) -> None:
         serializedConf = serializeRfConfig(self.conf)
-        self.assertDictEqual(self.serializedRfConf, serializedConf)
+        self.assertEqual(self.serializedRfConf, serializedConf)
 
     def test_properRfConfigDeSerialization(self) -> None:
         self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
+
+
+class TestRfConfigCast(unittest.TestCase):
+    def test_castFromBindingToConfig(self) -> None:
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+
+        cBinding = RfConfigBinding()
+        cBinding = fillDummyRfConfig(cBinding)
+
+        c = RfConfigFromBinding(cBinding)
+        self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertListEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
+        self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
+        self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
+        self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
+        self.assertListEqual(cBinding.txGain, c.txGain)
+        self.assertListEqual(cBinding.rxGain, c.rxGain)
+
+    def test_castConfigToBinding(self) -> None:
+        from uhd_wrapper.utils.config import RfConfig
+
+        cBinding = RfConfig()
+        cBinding = fillDummyRfConfig(cBinding)
+
+        c = RfConfigToBinding(cBinding)
+        self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertListEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
+        self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
+        self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
+        self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
+        self.assertListEqual(cBinding.txGain, c.txGain)
+        self.assertListEqual(cBinding.rxGain, c.rxGain)
 
 
 class TestUsrpServer(unittest.TestCase):
@@ -127,56 +158,35 @@ class TestUsrpServer(unittest.TestCase):
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+        from uhd_wrapper.utils.config import RfConfig
 
-        txGain = [50.0]
-        rxGain = [30.0]
-        txCarrierFrequency = [2e9]
-        rxCarrierFrequency = [2e9]
-        txAnalogFilterBw = 400e6
-        rxAnalogFilterBw = 400e6
-        txSamplingRate = 10e6
-        rxSamplingRate = 10e6
-
-        self.usrpServer.configureRfConfig(
-            txGain,
-            rxGain,
-            txCarrierFrequency,
-            rxCarrierFrequency,
-            txAnalogFilterBw,
-            rxAnalogFilterBw,
-            txSamplingRate,
-            rxSamplingRate,
-        )
+        c = RfConfig()
+        c = fillDummyRfConfig(c)
+        self.usrpServer.configureRfConfig(serializeRfConfig(c))  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
-            RfConfig(
-                txGain=txGain,
-                rxGain=rxGain,
-                txCarrierFrequency=txCarrierFrequency,
-                rxCarrierFrequency=rxCarrierFrequency,
-                txAnalogFilterBw=txAnalogFilterBw,
-                rxAnalogFilterBw=rxAnalogFilterBw,
-                txSamplingRate=txSamplingRate,
-                rxSamplingRate=rxSamplingRate,
+            RfConfigBinding(
+                txGain=c.txGain,
+                rxGain=c.rxGain,
+                txCarrierFrequency=c.txCarrierFrequency,
+                rxCarrierFrequency=c.rxCarrierFrequency,
+                txAnalogFilterBw=c.txAnalogFilterBw,
+                rxAnalogFilterBw=c.rxAnalogFilterBw,
+                txSamplingRate=c.txSamplingRate,
+                rxSamplingRate=c.rxSamplingRate,
             )
         )
 
     def test_getRfConfigReturnsSerializedVersion(self) -> None:
-        usrpRfConfig = RfConfig()
-        usrpRfConfig.txCarrierFrequency = [2e9]
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
 
-        usrpRfConfig.txGain = [30]
-        usrpRfConfig.txAnalogFilterBw = 200e6
-        usrpRfConfig.txSamplingRate = 20e6
+        usrpRfConfig = RfConfigBinding()
+        usrpRfConfig = fillDummyRfConfig(usrpRfConfig)
+        c = RfConfigFromBinding(usrpRfConfig)
 
-        usrpRfConfig.rxCarrierFrequency = [2e9]
-        usrpRfConfig.rxGain = [40]
-        usrpRfConfig.rxAnalogFilterBw = 100e6
-        usrpRfConfig.rxSamplingRate = 30e6
         self.usrpMock.getRfConfig.return_value = usrpRfConfig
-        self.assertDictEqual(
-            serializeRfConfig(usrpRfConfig), self.usrpServer.getRfConfig()
-        )
+        self.assertEqual(serializeRfConfig(c), self.usrpServer.getRfConfig())
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0

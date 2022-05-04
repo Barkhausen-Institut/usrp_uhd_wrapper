@@ -7,6 +7,7 @@ from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
     deserializeRfConfig,
+    serializeRfConfig,
 )
 from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
 
@@ -31,16 +32,7 @@ class UsrpClient:
         return [deserializeComplexArray(frame) for frame in self.__rpcClient.collect()]
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:
-        self.__rpcClient.configureRfConfig(
-            rfConfig.txGain,
-            rfConfig.rxGain,
-            rfConfig.txCarrierFrequency,
-            rfConfig.rxCarrierFrequency,
-            rfConfig.txAnalogFilterBw,
-            rfConfig.rxAnalogFilterBw,
-            rfConfig.txSamplingRate,
-            rfConfig.rxSamplingRate,
-        )
+        self.__rpcClient.configureRfConfig(serializeRfConfig(rfConfig))
 
     def setTimeToZeroNextPps(self) -> None:
         self.__rpcClient.setTimeToZeroNextPps()

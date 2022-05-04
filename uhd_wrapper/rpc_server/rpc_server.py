@@ -1,17 +1,34 @@
-from typing import List, Dict, Any
+from dataclasses import fields
+from typing import List
 
 from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
     SerializedComplexArray,
     serializeRfConfig,
+    deserializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
     TxStreamingConfig,
     RxStreamingConfig,
-    RfConfig,
 )
+from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+from uhd_wrapper.utils.config import RfConfig
+
+
+def RfConfigFromBinding(rfConfigBinding: RfConfigBinding) -> RfConfig:
+    c = RfConfig()
+    for field in fields(RfConfig):
+        setattr(c, field.name, getattr(rfConfigBinding, field.name))
+    return c
+
+
+def RfConfigToBinding(rfConfig: RfConfig) -> RfConfigBinding:
+    cBinding = RfConfigBinding()
+    for field in fields(RfConfig):
+        setattr(cBinding, field.name, getattr(rfConfig, field.name))
+    return cBinding
 
 
 class UsrpServer:
@@ -36,28 +53,9 @@ class UsrpServer:
             RxStreamingConfig(noSamples=noSamples, receiveTimeOffset=receiveTimeOffset)
         )
 
-    def configureRfConfig(
-        self,
-        txGain: List[float],
-        rxGain: List[float],
-        txCarrierFrequency: List[float],
-        rxCarrierFrequency: List[float],
-        txAnalogFilterBw: float,
-        rxAnalogFilterBw: float,
-        txSamplingRate: float,
-        rxSamplingRate: float,
-    ) -> None:
+    def configureRfConfig(self, serializedRfConfig: str) -> None:
         self.__usrp.setRfConfig(
-            RfConfig(
-                txGain=txGain,
-                rxGain=rxGain,
-                txCarrierFrequency=txCarrierFrequency,
-                rxCarrierFrequency=rxCarrierFrequency,
-                txAnalogFilterBw=txAnalogFilterBw,
-                rxAnalogFilterBw=rxAnalogFilterBw,
-                txSamplingRate=txSamplingRate,
-                rxSamplingRate=rxSamplingRate,
-            )
+            RfConfigToBinding(deserializeRfConfig(serializedRfConfig))
         )
 
     def execute(self, baseTime: float) -> None:
@@ -76,5 +74,5 @@ class UsrpServer:
     def getCurrentSystemTime(self) -> int:
         return self.__usrp.getCurrentSystemTime()
 
-    def getRfConfig(self) -> Dict[str, Dict[str, Any]]:
-        return serializeRfConfig(self.__usrp.getRfConfig())
+    def getRfConfig(self) -> str:
+        return serializeRfConfig(RfConfigFromBinding(self.__usrp.getRfConfig()))

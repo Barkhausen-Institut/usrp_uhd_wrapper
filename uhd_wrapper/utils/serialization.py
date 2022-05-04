@@ -1,4 +1,4 @@
-"""This modules contains functions required for serialization.
+"""This module contains functions required for serialization.
 
 Since we use zerorpc for RPC, we need to serialize non-pythonic datatypes.
 """

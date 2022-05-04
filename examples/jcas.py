@@ -13,7 +13,7 @@ def createSystem(
     """This functions creates a system.
 
     The USRPs themselves can only be accessd via the `System` class. If you want
-    to define a new USRP, you have to create a System beforehand and call the function
+    to access a new USRP, you have to create a System beforehand and call the function
     `addUsrp`. The radio frontend configuration is defined using the `RfConfig` dataclass,
     cf. below.
     """
@@ -42,10 +42,10 @@ def createStreamingConfigs(
     """The streaming configuration itself is created here.
 
     If you want to transmit and receive samples, you have to define a config.
-    Both classes assume a certain offset. This offset is passed to the USRP and
-    is respective to a t=0 in future. Once the Streaming configs are passed to the
-    USRPs, the system will synchronize and reset their internal clock to t=0.
-    The offsets defined in the StreamingConfigs are with respect to this internal clock.
+    Both classes assume a certain offset relative to an implementation-defined timepoint
+    in the near future. This timepoint is the same for all streaming configs, such that
+    two configs with the same offset refer to exactly the same time in the future. Offset
+    can be zero.
     Further, you can define the samples to send and the number of samples to receive.
     """
     txStreamingConfig1 = TxStreamingConfig(
@@ -79,18 +79,18 @@ def main() -> None:
     )
 
     for _ in range(10):
-        # we send the straming configs to the USRPs
+        # we send the streaming configs to the USRPs
         system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
         system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
 
         system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
 
-        # this command resets to the internal USRP clocks to t=0
+        # this command resets the internal USRP clocks to t=0
         # (cf. documentation of createStreamingConfigs) and synchronizes the USRPs.
         # samples are buffered
         system.execute()
         samples = system.collect()
-        # samples are collected form all USRPs.
+        # samples are collected from all USRPs.
 
         printDelays(samples, txSignal)
         if args.plot:

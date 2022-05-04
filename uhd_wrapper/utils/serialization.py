@@ -13,6 +13,8 @@ except ImportError:
 from uhd_wrapper.utils.config import RfConfig as RfConfigClient
 
 SerializedComplexArray = Tuple[List, List]
+"""Tuple containing real samples as `List` as first element
+and complex samples as `List` as second element."""
 
 
 def serializeComplexArray(data: np.ndarray) -> SerializedComplexArray:
@@ -25,9 +27,8 @@ def serializeComplexArray(data: np.ndarray) -> SerializedComplexArray:
         ValueError: Array must be one dimensional.
 
     Returns:
-        SerializedComplexArray:
-            Tuple containing real samples as `List` as first element
-            and complex samples as `List` as second element.
+        SerializedComplexArray: Serialized data.
+
     """
     data = np.squeeze(data)
     if len(data.shape) == 2:
@@ -39,9 +40,7 @@ def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
     """Deserialize into a complex array.
 
     Args:
-        data (SerializedComplexArray):
-            Tuple containing real samples as `List` as first element
-            and complex samples as `List` as second element.
+        data (SerializedComplexArray): Samples.
     Raises:
         ValueError: Number of samples msut match
 

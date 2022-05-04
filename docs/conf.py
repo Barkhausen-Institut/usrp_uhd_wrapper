@@ -19,9 +19,9 @@
 
 # -- Project information -----------------------------------------------------
 
-project = "Vehicle Control"
-copyright = "2020, Connected Robotics Lab"
-author = "Connected Robotics Lab"
+project = "USRP UHD API"
+copyright = "2022, Connected Robotics Lab"
+author = "Tobias Kronauer"
 
 # The short X.Y version
 version = ""

@@ -60,36 +60,18 @@ class TestUsrpClient(unittest.TestCase):
         self.assertEqual(recvRfConfig, usrpRfConf)
 
     def test_configureRfConfig_calledWithCorrectArguments(self) -> None:
-        txGain = [50.0]
-        rxGain = [30.0]
-        txCarrierFrequency = [2e9]
-        rxCarrierFrequency = [2e9]
-        txAnalogFilterBw = 400e6
-        rxAnalogFilterBw = 400e6
-        txSamplingRate = 10e6
-        rxSamplingRate = 10e6
+        c = RfConfig()
+        c.txGain = [50.0]
+        c.rxGain = [30.0]
+        c.txCarrierFrequency = [2e9]
+        c.rxCarrierFrequency = [2e9]
+        c.txAnalogFilterBw = 400e6
+        c.rxAnalogFilterBw = 400e6
+        c.txSamplingRate = 10e6
+        c.rxSamplingRate = 10e6
 
-        rfConfig = RfConfig(
-            txGain=txGain,
-            rxGain=rxGain,
-            txCarrierFrequency=txCarrierFrequency,
-            rxCarrierFrequency=rxCarrierFrequency,
-            txAnalogFilterBw=txAnalogFilterBw,
-            rxAnalogFilterBw=rxAnalogFilterBw,
-            txSamplingRate=txSamplingRate,
-            rxSamplingRate=rxSamplingRate,
-        )
-        self.usrpClient.configureRfConfig(rfConfig=rfConfig)
-        self.mockRpcClient.configureRfConfig.assert_called_with(
-            txGain,
-            rxGain,
-            txCarrierFrequency,
-            rxCarrierFrequency,
-            txAnalogFilterBw,
-            rxAnalogFilterBw,
-            txSamplingRate,
-            rxSamplingRate,
-        )
+        self.usrpClient.configureRfConfig(rfConfig=c)
+        self.mockRpcClient.configureRfConfig.assert_called_with(serializeRfConfig(c))
 
     def test_setTimeToZeroPpsGetsCalled(self) -> None:
         self.usrpClient.setTimeToZeroNextPps()

@@ -164,37 +164,28 @@ class TestUsrpServer(unittest.TestCase):
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:
+        c = RfConfig()
+        c.txGain = [50.0]
+        c.rxGain = [30.0]
+        c.txCarrierFrequency = [2e9]
+        c.rxCarrierFrequency = [2e9]
+        c.txAnalogFilterBw = 400e6
+        c.rxAnalogFilterBw = 400e6
+        c.txSamplingRate = 10e6
+        c.rxSamplingRate = 10e6
 
-        txGain = [50.0]
-        rxGain = [30.0]
-        txCarrierFrequency = [2e9]
-        rxCarrierFrequency = [2e9]
-        txAnalogFilterBw = 400e6
-        rxAnalogFilterBw = 400e6
-        txSamplingRate = 10e6
-        rxSamplingRate = 10e6
-
-        self.usrpServer.configureRfConfig(
-            txGain,
-            rxGain,
-            txCarrierFrequency,
-            rxCarrierFrequency,
-            txAnalogFilterBw,
-            rxAnalogFilterBw,
-            txSamplingRate,
-            rxSamplingRate,
-        )
+        self.usrpServer.configureRfConfig(c.to_json())  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
             RfConfig(
-                txGain=txGain,
-                rxGain=rxGain,
-                txCarrierFrequency=txCarrierFrequency,
-                rxCarrierFrequency=rxCarrierFrequency,
-                txAnalogFilterBw=txAnalogFilterBw,
-                rxAnalogFilterBw=rxAnalogFilterBw,
-                txSamplingRate=txSamplingRate,
-                rxSamplingRate=rxSamplingRate,
+                txGain=c.txGain,
+                rxGain=c.rxGain,
+                txCarrierFrequency=c.txCarrierFrequency,
+                rxCarrierFrequency=c.rxCarrierFrequency,
+                txAnalogFilterBw=c.txAnalogFilterBw,
+                rxAnalogFilterBw=c.rxAnalogFilterBw,
+                txSamplingRate=c.txSamplingRate,
+                rxSamplingRate=c.rxSamplingRate,
             )
         )
 

@@ -6,6 +6,7 @@ from uhd_wrapper.utils.serialization import (
     deserializeComplexArray,
     SerializedComplexArray,
     serializeRfConfig,
+    deserializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
@@ -52,29 +53,8 @@ class UsrpServer:
             RxStreamingConfig(noSamples=noSamples, receiveTimeOffset=receiveTimeOffset)
         )
 
-    def configureRfConfig(
-        self,
-        txGain: List[float],
-        rxGain: List[float],
-        txCarrierFrequency: List[float],
-        rxCarrierFrequency: List[float],
-        txAnalogFilterBw: float,
-        rxAnalogFilterBw: float,
-        txSamplingRate: float,
-        rxSamplingRate: float,
-    ) -> None:
-        self.__usrp.setRfConfig(
-            RfConfig(
-                txGain=txGain,
-                rxGain=rxGain,
-                txCarrierFrequency=txCarrierFrequency,
-                rxCarrierFrequency=rxCarrierFrequency,
-                txAnalogFilterBw=txAnalogFilterBw,
-                rxAnalogFilterBw=rxAnalogFilterBw,
-                txSamplingRate=txSamplingRate,
-                rxSamplingRate=rxSamplingRate,
-            )
-        )
+    def configureRfConfig(self, serializedRfConfig: str) -> None:
+        self.__usrp.setRfConfig(deserializeRfConfig(serializedRfConfig))
 
     def execute(self, baseTime: float) -> None:
         self.__usrp.execute(baseTime)

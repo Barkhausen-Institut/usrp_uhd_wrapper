@@ -17,7 +17,17 @@ from uhd_wrapper.utils.config import RfConfig
 
 
 def RfConfigFromBinding(rfConfigBinding: RfConfigBinding) -> RfConfig:
-    return RfConfig()
+    c = RfConfig()
+    for field in fields(RfConfig):
+        setattr(c, field.name, getattr(rfConfigBinding, field.name))
+    return c
+
+
+def RfConfigToBinding(rfConfig: RfConfig) -> RfConfigBinding:
+    cBinding = RfConfigBinding()
+    for field in fields(RfConfig):
+        setattr(cBinding, field.name, getattr(rfConfig, field.name))
+    return cBinding
 
 
 class UsrpServer:

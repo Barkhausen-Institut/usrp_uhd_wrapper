@@ -4,7 +4,11 @@ from unittest.mock import Mock
 import numpy as np
 import numpy.testing as npt
 
-from uhd_wrapper.rpc_server.rpc_server import RfConfigFromBinding, UsrpServer
+from uhd_wrapper.rpc_server.rpc_server import (
+    RfConfigFromBinding,
+    UsrpServer,
+    RfConfigToBinding,
+)
 from uhd_wrapper.utils.serialization import (
     deserializeRfConfig,
     serializeComplexArray,
@@ -99,15 +103,49 @@ class TestSerializationRfConfig(unittest.TestCase):
 class TestRfConfigCast(unittest.TestCase):
     def test_castFromBindingToConfig(self) -> None:
         from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
-        from uhd_wrapper.utils.config import RfConfig
 
         cBinding = RfConfigBinding()
         cBinding.rxCarrierFrequency = [3e9]
         cBinding.txCarrierFrequency = [2e9]
+        cBinding.txSamplingRate = 2e6
+        cBinding.rxSamplingRate = 2e6
+        cBinding.txGain = [30]
+        cBinding.rxGain = [20]
+        cBinding.txAnalogFilterBw = 400e6
+        cBinding.rxAnalogFilterBw = 400e6
 
         c = RfConfigFromBinding(cBinding)
         self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
         self.assertListEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
+        self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
+        self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
+        self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
+        self.assertListEqual(cBinding.txGain, c.txGain)
+        self.assertListEqual(cBinding.rxGain, c.rxGain)
+
+    def test_castConfigToBinding(self) -> None:
+        from uhd_wrapper.utils.config import RfConfig
+
+        cBinding = RfConfig()
+        cBinding.rxCarrierFrequency = [3e9]
+        cBinding.txCarrierFrequency = [2e9]
+        cBinding.txSamplingRate = 2e6
+        cBinding.rxSamplingRate = 2e6
+        cBinding.txGain = [30]
+        cBinding.rxGain = [20]
+        cBinding.txAnalogFilterBw = 400e6
+        cBinding.rxAnalogFilterBw = 400e6
+
+        c = RfConfigToBinding(cBinding)
+        self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertListEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
+        self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
+        self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
+        self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
+        self.assertListEqual(cBinding.txGain, c.txGain)
+        self.assertListEqual(cBinding.rxGain, c.rxGain)
 
 
 class TestUsrpServer(unittest.TestCase):

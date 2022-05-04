@@ -164,6 +164,9 @@ class TestUsrpServer(unittest.TestCase):
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+        from uhd_wrapper.utils.config import RfConfig
+
         c = RfConfig()
         c.txGain = [50.0]
         c.rxGain = [30.0]
@@ -177,7 +180,7 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpServer.configureRfConfig(c.to_json())  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
-            RfConfig(
+            RfConfigBinding(
                 txGain=c.txGain,
                 rxGain=c.rxGain,
                 txCarrierFrequency=c.txCarrierFrequency,

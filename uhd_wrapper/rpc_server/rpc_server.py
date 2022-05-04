@@ -54,7 +54,9 @@ class UsrpServer:
         )
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
-        self.__usrp.setRfConfig(deserializeRfConfig(serializedRfConfig))
+        self.__usrp.setRfConfig(
+            RfConfigToBinding(deserializeRfConfig(serializedRfConfig))
+        )
 
     def execute(self, baseTime: float) -> None:
         self.__usrp.execute(baseTime)

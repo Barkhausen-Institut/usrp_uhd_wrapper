@@ -11,7 +11,7 @@ def createSystem(
     fc: float, fs: float, txGain: float, rxGain: float, ipUsrp1: str, ipUsrp2: str
 ) -> System:
     """This functions creates a system.
-    
+
     The USRPs themselves can only be accessd via the `System` class. If you want
     to define a new USRP, you have to create a System beforehand and call the function
     `addUsrp`. The radio frontend configuration is defined using the `RfConfig` dataclass,
@@ -40,7 +40,7 @@ def createStreamingConfigs(
     noRxSamples: float,
 ) -> Tuple[TxStreamingConfig, RxStreamingConfig, RxStreamingConfig]:
     """The streaming configuration itself is created here.
-    
+
     If you want to transmit and receive samples, you have to define a config.
     Both classes assume a certain offset. This offset is passed to the USRP and
     is respective to a t=0 in future. Once the Streaming configs are passed to the
@@ -85,7 +85,7 @@ def main() -> None:
 
         system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
 
-        # this command resets to the internal USRP clocks to t=0 
+        # this command resets to the internal USRP clocks to t=0
         # (cf. documentation of createStreamingConfigs) and synchronizes the USRPs.
         # samples are buffered
         system.execute()

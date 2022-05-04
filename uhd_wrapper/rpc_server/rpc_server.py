@@ -73,4 +73,4 @@ class UsrpServer:
         return self.__usrp.getCurrentSystemTime()
 
     def getRfConfig(self) -> str:
-        return serializeRfConfig(self.__usrp.getRfConfig())
+        return serializeRfConfig(RfConfigFromBinding(self.__usrp.getRfConfig()))

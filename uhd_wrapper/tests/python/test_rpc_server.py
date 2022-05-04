@@ -190,7 +190,10 @@ class TestUsrpServer(unittest.TestCase):
         )
 
     def test_getRfConfigReturnsSerializedVersion(self) -> None:
-        usrpRfConfig = RfConfig()
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+        from uhd_wrapper.utils.config import RfConfig
+
+        usrpRfConfig = RfConfigBinding()
         usrpRfConfig.txCarrierFrequency = [2e9]
 
         usrpRfConfig.txGain = [30]
@@ -202,7 +205,10 @@ class TestUsrpServer(unittest.TestCase):
         usrpRfConfig.rxAnalogFilterBw = 100e6
         usrpRfConfig.rxSamplingRate = 30e6
         self.usrpMock.getRfConfig.return_value = usrpRfConfig
-        self.assertEqual(serializeRfConfig(usrpRfConfig), self.usrpServer.getRfConfig())
+
+        c = RfConfigFromBinding(usrpRfConfig)
+
+        self.assertEqual(serializeRfConfig(c), self.usrpServer.getRfConfig())
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0

@@ -10,9 +10,10 @@ before_script:
   - apt-get install -y --no-install-recommends software-properties-common
   - add-apt-repository ppa:ettusresearch/uhd
   - apt-get update
-  - apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev
+  - apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev python3-wheel
   - python3.9 -m venv .venv
   - . .venv/bin/activate
+  - pip install wheel
 
 build_test:
   stage: build_test

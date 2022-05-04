@@ -16,7 +16,7 @@ LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
 class System:
     """User interface for accessing multiple USRPs.
 
-    This module is the main interface for using the USRP. A sysem is to be defined to which
+    This module is the main interface for using the USRP. A system is to be defined to which
     USRPs can be added. Using the system functions defined in the `System` class gives you
     direct access to the USRP configuration etc.
 

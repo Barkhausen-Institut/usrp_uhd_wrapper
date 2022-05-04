@@ -49,7 +49,7 @@ class UsrpClient:
         Set the baseTime on the receiver to the desired value.
 
         Args:
-            baseTime (float): Base time to intialize the FPGA time to.
+            baseTime (float): FPGA time all streaming config time offsets refer to.
         """
         self.__rpcClient.execute(baseTime)
 

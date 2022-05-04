@@ -1,10 +1,8 @@
-from typing import List, Union
+from typing import List, Any
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
 
 import numpy as np
-
-from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
 
 
 @dataclass_json
@@ -32,9 +30,7 @@ class RxStreamingConfig:
     noSamples: int = 0
 
 
-def fillDummyRfConfig(
-    conf: Union[RfConfig, RfConfigBinding]
-) -> Union[RfConfig, RfConfigBinding]:
+def fillDummyRfConfig(conf: Any) -> Any:
     conf.txCarrierFrequency = [2e9]
     conf.txGain = [30]
     conf.txAnalogFilterBw = 200e6

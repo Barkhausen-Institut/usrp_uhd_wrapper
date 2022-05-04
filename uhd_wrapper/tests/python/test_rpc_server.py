@@ -191,7 +191,6 @@ class TestUsrpServer(unittest.TestCase):
 
     def test_getRfConfigReturnsSerializedVersion(self) -> None:
         from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
-        from uhd_wrapper.utils.config import RfConfig
 
         usrpRfConfig = RfConfigBinding()
         usrpRfConfig.txCarrierFrequency = [2e9]

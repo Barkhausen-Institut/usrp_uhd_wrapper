@@ -62,7 +62,7 @@ def serializeRfConfig(
     """Serializes the radio frontend configuration.
 
     Args:
-        conf (Union[RfConfigClient, RfConfigServer]): Configuration to be serilaized
+        conf (Union[RfConfigClient, RfConfigServer]): Configuration to be serialized.
 
     Returns:
         Dict[str, Dict[str, Any]]: Serialized configuration.

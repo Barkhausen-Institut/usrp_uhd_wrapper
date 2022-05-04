@@ -4,7 +4,7 @@ from unittest.mock import Mock
 import numpy as np
 import numpy.testing as npt
 
-from uhd_wrapper.rpc_server.rpc_server import UsrpServer
+from uhd_wrapper.rpc_server.rpc_server import RfConfigFromBinding, UsrpServer
 from uhd_wrapper.utils.serialization import (
     deserializeRfConfig,
     serializeComplexArray,
@@ -94,6 +94,20 @@ class TestSerializationRfConfig(unittest.TestCase):
 
     def test_properRfConfigDeSerialization(self) -> None:
         self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
+
+
+class TestRfConfigCast(unittest.TestCase):
+    def test_castFromBindingToConfig(self) -> None:
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+        from uhd_wrapper.utils.config import RfConfig
+
+        cBinding = RfConfigBinding()
+        cBinding.rxCarrierFrequency = [3e9]
+        cBinding.txCarrierFrequency = [2e9]
+
+        c = RfConfigFromBinding(cBinding)
+        self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertListEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
 
 
 class TestUsrpServer(unittest.TestCase):

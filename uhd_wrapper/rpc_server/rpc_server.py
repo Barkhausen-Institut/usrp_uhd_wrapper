@@ -1,3 +1,4 @@
+from dataclasses import fields
 from typing import List, Dict, Any
 
 from uhd_wrapper.utils.serialization import (
@@ -10,8 +11,13 @@ from uhd_wrapper.usrp_pybinding import (
     Usrp,
     TxStreamingConfig,
     RxStreamingConfig,
-    RfConfig,
 )
+from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+from uhd_wrapper.utils.config import RfConfig
+
+
+def RfConfigFromBinding(rfConfigBinding: RfConfigBinding) -> RfConfig:
+    return RfConfig()
 
 
 class UsrpServer:

@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXAPI     = sphinx-apidoc
-APIEXCLUDES   = ../examples ../uhd_wrapper/3rdparty/ ../uhd_wrapper/build/ ../uhd_wrapper/debug/ ../uhd_wrapper/hardware_tests/ ../uhd_wrapper/include/ ../uhd_wrapper/lib/ ../uhd_wrapper/snippets/ ../uhd_wrapper/tests/ ../usrp_client/tests/ ../*.py
+APIEXCLUDES   = ../examples/ ../*.py
 SPHINXPROJ    = UsrpUhdApi
 SOURCEDIR     = .
 BUILDDIR      = _build
@@ -20,7 +20,7 @@ all: api html
 .PHONY: all
 
 api:
-	$(SPHINXAPI) -f -o "$(SOURCEDIR)" "$(APISOURCE)" "$(APIEXCLUDES)"
+	$(SPHINXAPI) -f -o $(SOURCEDIR) $(APISOURCE) $(APIEXCLUDES)
 .PHONY: api
 
 # Catch-all target: route all unknown targets to Sphinx using the new

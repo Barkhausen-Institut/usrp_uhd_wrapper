@@ -1,4 +1,5 @@
 import unittest
+from typing import Union
 from unittest.mock import Mock
 
 import numpy as np
@@ -21,6 +22,23 @@ from uhd_wrapper.usrp_pybinding import (
     TxStreamingConfig,
 )
 from uhd_wrapper.utils.config import RfConfig
+from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+
+
+def fillDummyRfConfig(
+    conf: Union[RfConfig, RfConfigBinding]
+) -> Union[RfConfig, RfConfigBinding]:
+    conf.txCarrierFrequency = [2e9]
+
+    conf.txGain = [30]
+    conf.txAnalogFilterBw = 200e6
+    conf.txSamplingRate = 20e6
+
+    conf.rxCarrierFrequency = [2e9]
+    conf.rxGain = [40]
+    conf.rxAnalogFilterBw = 100e6
+    conf.rxSamplingRate = 30e6
+    return conf
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -64,17 +82,7 @@ class TestDeserializationComplexArr(unittest.TestCase):
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
         self.conf = RfConfig()
-        self.conf.txCarrierFrequency = [2e9]
-
-        self.conf.txGain = [30]
-        self.conf.txAnalogFilterBw = 200e6
-        self.conf.txSamplingRate = 20e6
-
-        self.conf.rxCarrierFrequency = [2e9]
-        self.conf.rxGain = [40]
-        self.conf.rxAnalogFilterBw = 100e6
-        self.conf.rxSamplingRate = 30e6
-
+        self.conf = fillDummyRfConfig(self.conf)
         self.serializedRfConf = self.conf.to_json()  # type: ignore
 
     def test_properRfConfigSerialization(self) -> None:
@@ -90,14 +98,7 @@ class TestRfConfigCast(unittest.TestCase):
         from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
 
         cBinding = RfConfigBinding()
-        cBinding.rxCarrierFrequency = [3e9]
-        cBinding.txCarrierFrequency = [2e9]
-        cBinding.txSamplingRate = 2e6
-        cBinding.rxSamplingRate = 2e6
-        cBinding.txGain = [30]
-        cBinding.rxGain = [20]
-        cBinding.txAnalogFilterBw = 400e6
-        cBinding.rxAnalogFilterBw = 400e6
+        cBinding = fillDummyRfConfig(cBinding)
 
         c = RfConfigFromBinding(cBinding)
         self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
@@ -113,14 +114,7 @@ class TestRfConfigCast(unittest.TestCase):
         from uhd_wrapper.utils.config import RfConfig
 
         cBinding = RfConfig()
-        cBinding.rxCarrierFrequency = [3e9]
-        cBinding.txCarrierFrequency = [2e9]
-        cBinding.txSamplingRate = 2e6
-        cBinding.rxSamplingRate = 2e6
-        cBinding.txGain = [30]
-        cBinding.rxGain = [20]
-        cBinding.txAnalogFilterBw = 400e6
-        cBinding.rxAnalogFilterBw = 400e6
+        cBinding = fillDummyRfConfig(cBinding)
 
         c = RfConfigToBinding(cBinding)
         self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
@@ -168,15 +162,7 @@ class TestUsrpServer(unittest.TestCase):
         from uhd_wrapper.utils.config import RfConfig
 
         c = RfConfig()
-        c.txGain = [50.0]
-        c.rxGain = [30.0]
-        c.txCarrierFrequency = [2e9]
-        c.rxCarrierFrequency = [2e9]
-        c.txAnalogFilterBw = 400e6
-        c.rxAnalogFilterBw = 400e6
-        c.txSamplingRate = 10e6
-        c.rxSamplingRate = 10e6
-
+        c = fillDummyRfConfig(c)
         self.usrpServer.configureRfConfig(serializeRfConfig(c))  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
@@ -196,20 +182,10 @@ class TestUsrpServer(unittest.TestCase):
         from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
 
         usrpRfConfig = RfConfigBinding()
-        usrpRfConfig.txCarrierFrequency = [2e9]
-
-        usrpRfConfig.txGain = [30]
-        usrpRfConfig.txAnalogFilterBw = 200e6
-        usrpRfConfig.txSamplingRate = 20e6
-
-        usrpRfConfig.rxCarrierFrequency = [2e9]
-        usrpRfConfig.rxGain = [40]
-        usrpRfConfig.rxAnalogFilterBw = 100e6
-        usrpRfConfig.rxSamplingRate = 30e6
-        self.usrpMock.getRfConfig.return_value = usrpRfConfig
-
+        usrpRfConfig = fillDummyRfConfig(usrpRfConfig)
         c = RfConfigFromBinding(usrpRfConfig)
 
+        self.usrpMock.getRfConfig.return_value = usrpRfConfig
         self.assertEqual(serializeRfConfig(c), self.usrpServer.getRfConfig())
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:

@@ -177,7 +177,7 @@ class TestUsrpServer(unittest.TestCase):
         c.txSamplingRate = 10e6
         c.rxSamplingRate = 10e6
 
-        self.usrpServer.configureRfConfig(c.to_json())  # type: ignore
+        self.usrpServer.configureRfConfig(serializeRfConfig(c))  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
             RfConfigBinding(

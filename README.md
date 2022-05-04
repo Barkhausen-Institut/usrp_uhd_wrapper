@@ -8,6 +8,8 @@ Current versions of server are running on 192.168.189.131/134. **If you want to 
 
 Documentation is auto-generated and can be found [here](https://barkhauseninstitut.gitlab.io/corola-infrastructure/usrp-x410/usrp_uhd_api/).
 
+Read this in conjunction with **examples/jcas.py**!
+
 # Install
 
 On the usrp (server):

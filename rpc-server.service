@@ -3,7 +3,7 @@ Description=ZeroRpc Server
 
 [Service]
 Type=simple
-ExecStart=/home/root/usrp_uhd_api/env/bin/python /home/root/usrp_uhd_api/start_usrp_server.py
+ExecStart=/bin/bash /home/root/usrp_uhd_api/start_usrp_server.bash
 ProtectHome=off
 
 [Install]

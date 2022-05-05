@@ -3,7 +3,7 @@
 Since we use zerorpc for RPC, we need to serialize non-pythonic datatypes.
 """
 
-from typing import List, Tuple, Dict, Any, Union
+from typing import List, Tuple
 import numpy as np
 
 from uhd_wrapper.utils.config import RfConfig

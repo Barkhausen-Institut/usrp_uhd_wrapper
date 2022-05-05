@@ -25,8 +25,9 @@ std::vector<std::vector<py::array_t<bi::sample>>> returnVectorOfVectorOfArrays(
     const std::vector<std::vector<bi::samples_vec>>& samplesIn) {
     std::vector<std::vector<py::array_t<sample>>> samplesOut;
     for (auto& configSamples : samplesIn) {
-        samplesOut.emplace_back(returnVectorOfArrays(configSamples);
+        samplesOut.emplace_back(returnVectorOfArrays(configSamples));
     }
+    return samplesOut;
 }
 
 std::vector<samples_vec> takeVectorOfArrays(

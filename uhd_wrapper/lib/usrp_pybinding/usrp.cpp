@@ -160,7 +160,11 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("collect", &FakeUsrp::collect)
         .def("reset", &FakeUsrp::reset)
         .def("getMasterClockRate", &FakeUsrp::getMasterClockRate)
-        .def("getRfConfig", &FakeUsrp::getRfConfig);
+        .def("getRfConfig", &FakeUsrp::getRfConfig)
+
+        .def_readonly("lastTxConfig", &FakeUsrp::lastTxConfig_)
+        .def_readonly("lastRxConfig", &FakeUsrp::lastRxConfig_);
+
 
 
 

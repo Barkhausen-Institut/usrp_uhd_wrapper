@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <mutex>
 #include <thread>
 
 #include "config.hpp"
@@ -45,6 +46,7 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
+    std::mutex fpgaAccessMutex_;
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
@@ -55,11 +57,9 @@ class Usrp : public UsrpInterface {
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);
-    void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
-                  const double fpgaTimeThreadStart);
+    void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
     void receive(const float baseTime, std::vector<samples_vec>& buffer,
-                 std::exception_ptr& exceptionPtr,
-                 const double fpgaTimeThreadStart);
+                 std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
 };
 

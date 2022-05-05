@@ -38,12 +38,14 @@ def findFirstSampleInFrameOfSignal(
     return np.argsort(correlation)[-1], correlation
 
 
-def printDelays(samples: Dict[str, List[np.ndarray]], txSignal: np.ndarray) -> None:
+def printDelays(
+    samples: Dict[str, List[List[np.ndarray]]], txSignal: np.ndarray
+) -> None:
     txSignalStartUsrp2, _ = findFirstSampleInFrameOfSignal(
-        samples["usrp2"][0], txSignal
+        samples["usrp2"][0][0], txSignal
     )
     txSignalStartUsrp1, _ = findFirstSampleInFrameOfSignal(
-        samples["usrp1"][0], txSignal
+        samples["usrp1"][0][0], txSignal
     )
 
     print(f"Sent chirp from usrp2 starts at sample {txSignalStartUsrp1} in usrp1")
@@ -55,10 +57,10 @@ def db(data: np.ndarray) -> np.ndarray:
 
 
 def plot(samples: Dict[str, List[np.ndarray]]) -> None:
-    noRxSamples = samples["usrp1"][0].size
-    rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0]))
+    noRxSamples = samples["usrp1"][0][0].size
+    rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0][0]))
 
-    rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samples["usrp2"][0]))
+    rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samples["usrp2"][0][0]))
     freq = np.linspace(-0.5, 0.5, noRxSamples, endpoint=False)
     plt.subplot(221)
     plt.plot(np.arange(noRxSamples), samples["usrp1"][0])

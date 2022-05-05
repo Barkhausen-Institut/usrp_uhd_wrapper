@@ -79,4 +79,46 @@ TEST_CASE("[ValidTxStreamingConfig]") {
                           UsrpException);
     }
 }
+
+TEST_CASE("[ValidRxStreamingConfig]") {
+    double guardOffset = 1.0;
+    double fs = 20e6;
+    RxStreamingConfig prevConfig;
+    prevConfig.noSamples = 20e3;
+    prevConfig.receiveTimeOffset = 0.0;
+
+    RxStreamingConfig newConfig;
+    newConfig.noSamples = 20e3;
+    newConfig.receiveTimeOffset =
+        prevConfig.receiveTimeOffset + guardOffset + prevConfig.noSamples / fs;
+    SECTION("NewOffsetIsValid") {
+        REQUIRE_NOTHROW(assertValidRxStreamingConfig(prevConfig, newConfig,
+                                                     guardOffset, fs));
+    }
+    SECTION("NewOffsetSmallerThanPrevious") {
+        prevConfig.receiveTimeOffset = 1.0;
+        newConfig.receiveTimeOffset = 0.0;
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+                                                       guardOffset, fs),
+                          UsrpException);
+    }
+
+    SECTION("NewOffsetSmallerThanGuardOffset") {
+        double guardOffset = 1.0;
+        prevConfig.noSamples = 0;
+        prevConfig.receiveTimeOffset = 1.0;
+        prevConfig.receiveTimeOffset = 1.0 + guardOffset / 2;
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+                                                       guardOffset, fs),
+                          UsrpException);
+    }
+
+    SECTION("NewOffsetSmallerThanDurationOfPreviousSignal") {
+        prevConfig.receiveTimeOffset = 1.0;
+        prevConfig.receiveTimeOffset = 1.0 + guardOffset;
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+                                                       guardOffset, fs),
+                          UsrpException);
+    }
+}
 }  // namespace bi

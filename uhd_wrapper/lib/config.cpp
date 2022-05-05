@@ -57,4 +57,12 @@ void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
     if (newConfig.sendTimeOffset < minimumRequiredOffset)
         throw UsrpException("Invalid tx streaming config");
 }
+void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+                                  const RxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs) {
+    double minimumRequiredOffset =
+        prevConfig.receiveTimeOffset + guardOffset + prevConfig.noSamples / fs;
+    if (newConfig.receiveTimeOffset < minimumRequiredOffset)
+        throw UsrpException("Invalid rx streaming config");
+}
 }  // namespace bi

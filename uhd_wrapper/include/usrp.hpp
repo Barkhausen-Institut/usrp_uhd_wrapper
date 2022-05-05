@@ -46,7 +46,7 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
-    std::mutex fpgaTimeMutex_;
+    std::mutex fpgaAccessMutex_;
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;

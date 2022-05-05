@@ -174,7 +174,7 @@ uint64_t Usrp::getCurrentSystemTime() {
 }
 
 double Usrp::getCurrentFpgaTime() {
-    std::scoped_lock lock(fpgaTimeMutex_);
+    std::scoped_lock lock(fpgaAccessMutex_);
     if (!ppsSetToZero_) {
         setTimeToZeroNextPpsThread_.join();
     }

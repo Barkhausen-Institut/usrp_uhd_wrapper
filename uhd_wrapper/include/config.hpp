@@ -6,6 +6,7 @@ namespace bi {
 const int SAMPLES_PER_BUFFER = 2000;
 typedef std::complex<float> sample;
 typedef std::vector<sample> samples_vec;
+typedef std::vector<samples_vec> MimoSignal;
 
 struct RfConfig {
     RfConfig() {}

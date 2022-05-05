@@ -19,8 +19,7 @@ RfConfig Usrp::getRfConfig() const {
     return conf;
 }
 
-void Usrp::receive(const float baseTime,
-                   std::vector<std::vector<samples_vec>> &buffers,
+void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr,
                    const double fpgaTimeThreadStart) {
     try {
@@ -198,7 +197,7 @@ void Usrp::execute(const float baseTime) {
     }
 }
 
-std::vector<std::vector<samples_vec>> Usrp::collect() {
+std::vector<MimoSignal> Usrp::collect() {
     transmitThread_.join();
     receiveThread_.join();
     if (transmitThreadException_)

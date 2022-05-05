@@ -28,7 +28,7 @@ class Usrp : public UsrpInterface {
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
     void execute(const float baseTime);
-    std::vector<std::vector<samples_vec>> collect();
+    std::vector<MimoSignal> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
     RfConfig getRfConfig() const;
@@ -50,15 +50,14 @@ class Usrp : public UsrpInterface {
     std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
 
-    std::vector<std::vector<samples_vec>> receivedSamples_ = {{{}}};
+    std::vector<MimoSignal> receivedSamples_ = {{{}}};
     bool subdevSpecSet_ = false;
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
                   const double fpgaTimeThreadStart);
-    void receive(const float baseTime,
-                 std::vector<std::vector<samples_vec>>& buffers,
+    void receive(const float baseTime, std::vector<MimoSignal>& buffers,
                  std::exception_ptr& exceptionPtr,
                  const double fpgaTimeThreadStart);
     void setTimeToZeroNextPpsThreadFunction();

@@ -21,7 +21,7 @@ RfConfig Usrp::getRfConfig() const {
 
 void Usrp::receive(const float baseTime,
                    std::vector<std::vector<samples_vec>> &buffers,
-                   std::exception_ptr &exceptionPtr, ) {
+                   std::exception_ptr &exceptionPtr) {
     try {
         size_t configIdx = 0;
         while (rxStreamingConfigs_.size() != 0) {

@@ -36,6 +36,9 @@ class Usrp : public UsrpInterface {
     void reset();
 
    private:
+    // constants
+    const double GUARD_OFFSET_S_ = 0.05;
+
     // variables
     uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
@@ -55,6 +58,7 @@ class Usrp : public UsrpInterface {
 
     std::vector<std::vector<samples_vec>> receivedSamples_ = {{{}}};
     bool subdevSpecSet_ = false;
+
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);
@@ -63,7 +67,7 @@ class Usrp : public UsrpInterface {
                  std::vector<std::vector<samples_vec>>& buffers,
                  std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
-    void saveCurrentRfConfig() const;
+    void saveCurrentRfConfig();
 };
 
 }  // namespace bi

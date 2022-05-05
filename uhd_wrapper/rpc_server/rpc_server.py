@@ -5,8 +5,6 @@ from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
     SerializedComplexArray,
-    serializeRfConfig,
-    deserializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
@@ -55,7 +53,7 @@ class UsrpServer:
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
         self.__usrp.setRfConfig(
-            RfConfigToBinding(deserializeRfConfig(serializedRfConfig))
+            RfConfigToBinding(RfConfig.deserialize(serializedRfConfig))
         )
 
     def execute(self, baseTime: float) -> None:
@@ -78,4 +76,4 @@ class UsrpServer:
         return self.__usrp.getCurrentSystemTime()
 
     def getRfConfig(self) -> str:
-        return serializeRfConfig(RfConfigFromBinding(self.__usrp.getRfConfig()))
+        return RfConfigFromBinding(self.__usrp.getRfConfig()).serialize()

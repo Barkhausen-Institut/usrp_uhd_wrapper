@@ -10,10 +10,8 @@ from uhd_wrapper.rpc_server.rpc_server import (
     RfConfigToBinding,
 )
 from uhd_wrapper.utils.serialization import (
-    deserializeRfConfig,
     serializeComplexArray,
     deserializeComplexArray,
-    serializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
@@ -64,14 +62,14 @@ class TestDeserializationComplexArr(unittest.TestCase):
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
         self.conf = fillDummyRfConfig(RfConfig())
-        self.serializedRfConf = self.conf.to_json()  # type: ignore
+        self.serializedRfConf = self.conf.serialize()
 
     def test_properRfConfigSerialization(self) -> None:
-        serializedConf = serializeRfConfig(self.conf)
+        serializedConf = self.conf.serialize()
         self.assertEqual(self.serializedRfConf, serializedConf)
 
     def test_properRfConfigDeSerialization(self) -> None:
-        self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
+        self.assertEqual(self.conf, RfConfig.deserialize(self.serializedRfConf))
 
 
 class TestRfConfigCast(unittest.TestCase):
@@ -141,7 +139,7 @@ class TestUsrpServer(unittest.TestCase):
         from uhd_wrapper.utils.config import RfConfig
 
         c = fillDummyRfConfig(RfConfig())
-        self.usrpServer.configureRfConfig(serializeRfConfig(c))  # type: ignore
+        self.usrpServer.configureRfConfig(c.serialize())  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
             fillDummyRfConfig(RfConfigBinding())
@@ -154,7 +152,7 @@ class TestUsrpServer(unittest.TestCase):
         c = RfConfigFromBinding(usrpRfConfig)
 
         self.usrpMock.getRfConfig.return_value = usrpRfConfig
-        self.assertEqual(serializeRfConfig(c), self.usrpServer.getRfConfig())
+        self.assertEqual(c.serialize(), self.usrpServer.getRfConfig())
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0

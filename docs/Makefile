@@ -5,7 +5,7 @@
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 SPHINXAPI     = sphinx-apidoc
-APIEXCLUDES   = ../examples/ ../*.py
+APIEXCLUDES   = ../examples/ ../*.py ../uhd_wrapper/3rdparty/ ../uhd_wrapper/*.so ../uhd_wrapper/3rdparty/ ../uhd_wrapper/build/ ../uhd_wrapper/debug/ ../uhd_wrapper/hardware_tests/ ../uhd_wrapper/include/ ../uhd_wrapper/lib/ ../uhd_wrapper/snippets/
 SPHINXPROJ    = UsrpUhdApi
 SOURCEDIR     = .
 BUILDDIR      = _build

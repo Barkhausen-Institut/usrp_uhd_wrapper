@@ -50,8 +50,11 @@ void assertSamplingRate(const double actualSamplingRate,
 }
 
 void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
-                                  const TxStreamingConfig& newConfig) {
-    if (newConfig.sendTimeOffset < prevConfig.sendTimeOffset)
+                                  const TxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs) {
+    double minimumRequiredOffset = prevConfig.sendTimeOffset + guardOffset +
+                                   prevConfig.samples[0].size() / fs;
+    if (newConfig.sendTimeOffset < minimumRequiredOffset)
         throw UsrpException("Invalid tx streaming config");
 }
 }  // namespace bi

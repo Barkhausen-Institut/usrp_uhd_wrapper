@@ -83,3 +83,7 @@ class UsrpClient:
     def getRfConfig(self) -> RfConfig:
         """Queries RfConfig from RPC server and deserializes it."""
         return deserializeRfConfig(self.__rpcClient.getRfConfig())
+
+    def getMasterClockRate(self) -> float:
+        """Queries the master clock rate of the USRP."""
+        return self.__rpcClient.getMasterClockRate()

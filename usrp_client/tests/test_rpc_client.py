@@ -73,3 +73,7 @@ class TestUsrpClient(unittest.TestCase):
         TIME = 3
         self.mockRpcClient.getCurrentSystemTime.return_value = TIME
         self.assertAlmostEqual(self.usrpClient.getCurrentSystemTime(), TIME)
+
+    def test_getMasterClockRate_functionGetsCalled(self) -> None:
+        _ = self.usrpClient.getMasterClockRate()
+        self.mockRpcClient.getMasterClockRate.assert_called_once()

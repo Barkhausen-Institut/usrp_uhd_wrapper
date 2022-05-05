@@ -24,8 +24,11 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
                    const double fpgaTimeThreadStart) {
     try {
         size_t configIdx = 0;
-        while (rxStreamingConfigs_.size() != 0) {
-            RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
+        std::vector<RxStreamingConfig> rxStreamingConfigs = rxStreamingConfigs_;
+        rxStreamingConfigs_ = {};
+        while (rxStreamingConfigs.size() != 0) {
+            RxStreamingConfig rxStreamingConfig = rxStreamingConfigs[0];
+            rxStreamingConfigs.erase(rxStreamingConfigs.begin());
             buffers[configIdx][0].resize(rxStreamingConfig.noSamples);
 
             size_t noPackages =
@@ -69,11 +72,14 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
 
 void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
                     const double fpgaTimeThreadStart) {
-    // assume one txStreamConfig for the moment....
     try {
-        while (txStreamingConfigs_.size() != 0) {
+        // copy tx streaming configs for exception safety
+        std::vector<TxStreamingConfig> txStreamingConfigs = txStreamingConfigs_;
+        txStreamingConfigs_ = {};
+        while (txStreamingConfigs.size() != 0) {
             // add helpers
-            TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
+            TxStreamingConfig txStreamingConfig = txStreamingConfigs[0];
+            txStreamingConfigs.erase(txStreamingConfigs.begin());
             size_t noPackages = calcNoPackages(
                 txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
             size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
@@ -100,7 +106,6 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
             }
             mdTx.end_of_burst = true;
             txStreamer_->send("", 0, mdTx);
-            txStreamingConfigs_.erase(txStreamingConfigs_.begin());
         }
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();

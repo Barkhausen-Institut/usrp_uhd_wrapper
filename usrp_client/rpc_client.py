@@ -66,16 +66,7 @@ class UsrpClient:
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:
         """Serialize `rfConfig` and request configuration on RPC server."""
-        self.__rpcClient.configureRfConfig(
-            rfConfig.txGain,
-            rfConfig.rxGain,
-            rfConfig.txCarrierFrequency,
-            rfConfig.rxCarrierFrequency,
-            rfConfig.txAnalogFilterBw,
-            rfConfig.rxAnalogFilterBw,
-            rfConfig.txSamplingRate,
-            rfConfig.rxSamplingRate,
-        )
+        self.__rpcClient.configureRfConfig(serializeRfConfig(rfConfig))
 
     def setTimeToZeroNextPps(self) -> None:
         """Sets the time to zero on the next PPS edge."""

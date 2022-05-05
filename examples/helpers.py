@@ -56,20 +56,20 @@ def db(data: np.ndarray) -> np.ndarray:
     return 20 * np.log10(np.abs(data))
 
 
-def plot(samples: Dict[str, List[np.ndarray]]) -> None:
+def plot(samples: Dict[str, List[List[np.ndarray]]]) -> None:
     noRxSamples = samples["usrp1"][0][0].size
     rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0][0]))
 
     rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samples["usrp2"][0][0]))
     freq = np.linspace(-0.5, 0.5, noRxSamples, endpoint=False)
     plt.subplot(221)
-    plt.plot(np.arange(noRxSamples), samples["usrp1"][0])
+    plt.plot(np.arange(noRxSamples), samples["usrp1"][0][0])
     plt.xlabel("Samples [#]")
     plt.ylabel("Value")
     plt.title("Usrp1, received samples, time")
 
     plt.subplot(222)
-    plt.plot(np.arange(noRxSamples), samples["usrp2"][0])
+    plt.plot(np.arange(noRxSamples), samples["usrp2"][0][0])
     plt.xlabel("Samples [#]")
     plt.ylabel("Value")
     plt.title("Usrp2, received samples, time")

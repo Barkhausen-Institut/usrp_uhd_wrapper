@@ -21,6 +21,14 @@ std::vector<py::array_t<bi::sample>> returnVectorOfArrays(
     return samplesOut;
 }
 
+std::vector<std::vector<py::array_t<bi::sample>>> returnVectorOfVectorOfArrays(
+    const std::vector<std::vector<bi::samples_vec>>& samplesIn) {
+    std::vector<std::vector<py::array_t<sample>>> samplesOut;
+    for (auto& configSamples : samplesIn) {
+        samplesOut.emplace_back(returnVectorOfArrays(configSamples);
+    }
+}
+
 std::vector<samples_vec> takeVectorOfArrays(
     const std::vector<py::array_t<sample>>& signals) {
     std::vector<samples_vec> vectorOfSamplesVec;
@@ -100,7 +108,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("execute", &bi::UsrpInterface::execute)
         .def("collect",
              [](bi::UsrpInterface& u) {
-                 return bi::returnVectorOfArrays(u.collect());
+                 return bi::returnVectorOfVectorOfArrays(u.collect());
              })
         .def("reset", &bi::UsrpInterface::reset)
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)

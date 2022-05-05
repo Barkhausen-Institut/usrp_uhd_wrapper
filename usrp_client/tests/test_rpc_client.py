@@ -39,12 +39,25 @@ class TestUsrpClient(unittest.TestCase):
         self.mockRpcClient.execute.assert_called_with(BASE_TIME)
 
     def test_collectReturnsDeserializedSamples(self) -> None:
-        samplesDeserialized = [np.ones(10)]
-        samplesSerialized = [serializeComplexArray(samplesDeserialized[0])]
+        samplesDeserialized = [[np.ones(10)]]
+        samplesSerialized = [[serializeComplexArray(samplesDeserialized[0][0])]]
 
         self.mockRpcClient.collect.return_value = samplesSerialized
         recvdSamples = self.usrpClient.collect()
-        npt.assert_array_equal(recvdSamples[0], samplesDeserialized[0])
+        npt.assert_array_equal(recvdSamples[0][0], samplesDeserialized[0][0])
+
+    def test_collectReturnsDeserializedSamples_twoConfigs(self) -> None:
+        samplesConfig1 = [np.ones(10)]
+        samplesConfig2 = [2 * np.ones(10)]
+        samplesDeserialized = [samplesConfig1, samplesConfig2]
+        samplesSerialized = [
+            [serializeComplexArray(samplesConfig1[0])],
+            [serializeComplexArray(samplesConfig2[0])],
+        ]
+        self.mockRpcClient.collect.return_value = samplesSerialized
+        recvdSamples = self.usrpClient.collect()
+        npt.assert_array_equal(recvdSamples[0][0], samplesDeserialized[0][0])
+        npt.assert_array_equal(recvdSamples[1][0], samplesDeserialized[1][0])
 
     def test_getRfConfigReturnsSerializedRfConfig(self) -> None:
         usrpRfConf = fillDummyRfConfig(RfConfig())

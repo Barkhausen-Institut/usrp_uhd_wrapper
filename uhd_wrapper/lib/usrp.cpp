@@ -19,13 +19,15 @@ RfConfig Usrp::getRfConfig() const {
     return conf;
 }
 
-void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
+void Usrp::receive(const float baseTime,
+                   std::vector<std::vector<samples_vec>> &buffers,
                    std::exception_ptr &exceptionPtr,
                    const double fpgaTimeThreadStart) {
     try {
+        size_t configIdx = 0;
         while (rxStreamingConfigs_.size() != 0) {
             RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
-            buffer[0].resize(rxStreamingConfig.noSamples);
+            buffers[configIdx][0].resize(rxStreamingConfig.noSamples);
 
             size_t noPackages =
                 calcNoPackages(rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
@@ -44,11 +46,12 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
             double timeout = (baseTime + rxStreamingConfig.receiveTimeOffset) -
                              fpgaTimeThreadStart + 0.2;
             for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-                rxStreamer_->recv(
-                    {buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
-                    packageIdx == (noPackages - 1) ? noSamplesLastBuffer
-                                                   : SAMPLES_PER_BUFFER,
-                    mdRx, timeout);
+                rxStreamer_->recv({buffers[configIdx][0].data() +
+                                   packageIdx * SAMPLES_PER_BUFFER},
+                                  packageIdx == (noPackages - 1)
+                                      ? noSamplesLastBuffer
+                                      : SAMPLES_PER_BUFFER,
+                                  mdRx, timeout);
 
                 timeout = 0.1f;
                 if (mdRx.error_code !=
@@ -195,7 +198,7 @@ void Usrp::execute(const float baseTime) {
     }
 }
 
-std::vector<samples_vec> Usrp::collect() {
+std::vector<std::vector<samples_vec>> Usrp::collect() {
     transmitThread_.join();
     receiveThread_.join();
     if (transmitThreadException_)

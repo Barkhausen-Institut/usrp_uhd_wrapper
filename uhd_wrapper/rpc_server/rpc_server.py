@@ -64,9 +64,12 @@ class UsrpServer:
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
 
-    def collect(self) -> List[SerializedComplexArray]:
-        samplesInFpga = self.__usrp.collect()
-        return [serializeComplexArray(frame) for frame in samplesInFpga]
+    def collect(self) -> List[List[SerializedComplexArray]]:
+        configSamples = self.__usrp.collect()
+        return [
+            [serializeComplexArray(frame) for frame in samplesInFpgaPerConfig]
+            for samplesInFpgaPerConfig in configSamples
+        ]
 
     def getCurrentFpgaTime(self) -> int:
         return self.__usrp.getCurrentFpgaTime()

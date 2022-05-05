@@ -167,16 +167,31 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.setTimeToZeroNextPps.assert_called_once()
 
     def test_collectGetsCalled(self) -> None:
-        self.usrpMock.collect.return_value = [np.arange(10)]
+        self.usrpMock.collect.return_value = [[np.arange(10)]]
         _ = self.usrpServer.collect()
         self.usrpMock.collect.assert_called_once()
 
     def test_collectReturnsSerializedVersion(self) -> None:
         receivedSamplesInFpga = np.arange(10)
-        self.usrpMock.collect.return_value = [receivedSamplesInFpga]
+        self.usrpMock.collect.return_value = [[receivedSamplesInFpga]]
 
         self.assertListEqual(
-            [serializeComplexArray(receivedSamplesInFpga)], self.usrpServer.collect()
+            [[serializeComplexArray(receivedSamplesInFpga)]], self.usrpServer.collect()
+        )
+
+    def test_collectReturnsSerializedVersion_twoConfigs(self) -> None:
+        receivedSamplesInFpga = np.arange(10)
+        self.usrpMock.collect.return_value = [
+            [receivedSamplesInFpga],
+            [receivedSamplesInFpga],
+        ]
+
+        self.assertListEqual(
+            [
+                [serializeComplexArray(receivedSamplesInFpga)],
+                [serializeComplexArray(receivedSamplesInFpga)],
+            ],
+            self.usrpServer.collect(),
         )
 
     def test_usrpIsResetAtDestruction(self) -> None:

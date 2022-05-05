@@ -194,3 +194,7 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.getCurrentSystemTime.return_value = TIME
         time = self.usrpServer.getCurrentSystemTime()
         self.assertEqual(time, TIME)
+
+    def test_getMasterClockRate_functionGetsCalled(self) -> None:
+        _ = self.usrpServer.getMasterClockRate()
+        self.usrpMock.getMasterClockRate.assert_called_once()

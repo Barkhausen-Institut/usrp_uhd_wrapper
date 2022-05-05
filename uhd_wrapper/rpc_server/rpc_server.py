@@ -76,3 +76,6 @@ class UsrpServer:
 
     def getRfConfig(self) -> str:
         return serializeRfConfig(RfConfigFromBinding(self.__usrp.getRfConfig()))
+
+    def getMasterClockRate(self) -> float:
+        return self.__usrp.getMasterClockRate()

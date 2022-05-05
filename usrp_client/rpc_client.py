@@ -54,15 +54,20 @@ class UsrpClient:
         """
         self.__rpcClient.execute(baseTime)
 
-    def collect(self) -> List[np.ndarray]:
+    def collect(self) -> List[List[np.ndarray]]:
         """Collect samples from RPC server and deserialize them.
 
         Returns:
-            List[np.ndarray]:
-                Each list item corresponds to the samples of one antenna.
+            List[List[np.ndarray]]:
+                Each list item corresponds to the samples of one streaming configuration.
+                The list items of the inner list correspond to the signal of one antenna.
                 Samples are of type np.complex64.
         """
-        return [deserializeComplexArray(frame) for frame in self.__rpcClient.collect()]
+        configSamples = self.__rpcClient.collect()
+        return [
+            [deserializeComplexArray(frame) for frame in samplesInFpgaPerConfig]
+            for samplesInFpgaPerConfig in configSamples
+        ]
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:
         """Serialize `rfConfig` and request configuration on RPC server."""

@@ -158,7 +158,7 @@ class System:
         ) > System.syncThresholdSec:
             raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
-    def collect(self) -> Dict[str, List[np.ndarray]]:
+    def collect(self) -> Dict[str, List[List[np.ndarray]]]:
         """Collects the samples at each USRP.
 
         This is a blocking call. In the streaming configurations, the user defined when to send

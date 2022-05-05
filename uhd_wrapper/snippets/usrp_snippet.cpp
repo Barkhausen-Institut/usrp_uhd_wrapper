@@ -42,8 +42,8 @@ int main() {
     usrpPtr->setTimeToZeroNextPps();
     std::cout << "Current Time " << usrpPtr->getCurrentFpgaTime() << std::endl;
     usrpPtr->execute(0.f);
-    std::vector<bi::samples_vec> samples = usrpPtr->collect();
+    std::vector<std::vector<bi::samples_vec>> samples = usrpPtr->collect();
     std::ofstream csvFile = createCsv("rxSamples.csv", 1);
-    dumpSamples(samples, csvFile);
+    dumpSamplesFirstConfig(samples[0], csvFile);
     return 0;
 }

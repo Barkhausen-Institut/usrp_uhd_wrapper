@@ -6,9 +6,9 @@
 
 #include "config.hpp"
 
-void dumpSamples(const std::vector<bi::samples_vec> &samples,
-                 std::ofstream &stream) {
-    size_t noChannels = samples.size();
+void dumpSamplesFirstConfig(const std::vector<bi::samples_vec> &samples,
+                            std::ofstream &stream) {
+    size_t noChannels = samples[0].size();
     for (size_t chIdx = 0; chIdx < noChannels; chIdx++) {
         for (size_t sampleIdx = 0; sampleIdx < samples[chIdx].size();
              sampleIdx++) {

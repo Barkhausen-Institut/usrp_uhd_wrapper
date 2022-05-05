@@ -23,8 +23,8 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                    std::exception_ptr &exceptionPtr,
                    const double fpgaTimeThreadStart) {
     try {
-        if (rxStreamingConfigs_.size() == 0) return;
-        for (const auto &rxStreamingConfig : rxStreamingConfigs_) {
+        while (rxStreamingConfigs_.size() != 0) {
+            RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
             buffer[0].resize(rxStreamingConfig.noSamples);
 
             size_t noPackages =
@@ -69,9 +69,9 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
                     const double fpgaTimeThreadStart) {
     // assume one txStreamConfig for the moment....
     try {
-        if (txStreamingConfigs_.size() == 0) return;
-        for (const auto &txStreamingConfig : txStreamingConfigs_) {
+        while (txStreamingConfigs_.size() != 0) {
             // add helpers
+            TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
             size_t noPackages = calcNoPackages(
                 txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
             size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(

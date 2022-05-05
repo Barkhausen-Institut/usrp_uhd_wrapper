@@ -27,9 +27,6 @@ build_test:
     - ctest -V
     - cd ../../
     - pytest
-    #- cd docs && pip install -r ../requirements_doc.txt && cd ..
-    #- cd docs && make api && cd ..
-    #- sphinx-build docs public
 
 pages:
   stage: pages
@@ -41,5 +38,5 @@ pages:
   artifacts:
     paths:
       - public
-  #rules:
-  #  - if: '$CI_COMMIT_BRANCH == "main"'
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'

@@ -24,8 +24,7 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                    const double fpgaTimeThreadStart) {
     try {
         if (rxStreamingConfigs_.size() == 0) return;
-        RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_[0];
-        rxStreamingConfigs_ = {};
+        RxStreamingConfig rxStreamingConfig = rxStreamingConfigs_.back();
         buffer[0].resize(rxStreamingConfig.noSamples);
 
         size_t noPackages =
@@ -57,9 +56,9 @@ void Usrp::receive(const float baseTime, std::vector<samples_vec> &buffer,
                 throw UsrpException("error occurred on the receiver: " +
                                     mdRx.strerror());
         }
-
         if (!mdRx.end_of_burst)
             throw UsrpException("I did not receive an end_of_burst.");
+        rxStreamingConfigs_.pop_back();
 
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
@@ -71,9 +70,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
     // assume one txStreamConfig for the moment....
     try {
         if (txStreamingConfigs_.size() == 0) return;
-        TxStreamingConfig txStreamingConfig = txStreamingConfigs_[0];
-        txStreamingConfigs_ = {};
-
+        TxStreamingConfig txStreamingConfig = txStreamingConfigs_.back();
         // add helpers
         size_t noPackages = calcNoPackages(txStreamingConfig.samples[0].size(),
                                            SAMPLES_PER_BUFFER);
@@ -101,6 +98,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
         }
         mdTx.end_of_burst = true;
         txStreamer_->send("", 0, mdTx);
+        txStreamingConfigs_.pop_back();
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }

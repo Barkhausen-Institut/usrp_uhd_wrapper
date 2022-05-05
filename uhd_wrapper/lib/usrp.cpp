@@ -4,20 +4,7 @@
 
 namespace bi {
 
-RfConfig Usrp::getRfConfig() const {
-    RfConfig conf;
-    conf.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));
-    conf.txGain.push_back(usrpDevice_->get_tx_gain(0));
-    conf.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
-    conf.txSamplingRate = usrpDevice_->get_tx_rate(0);
-
-    conf.rxCarrierFrequency.push_back(usrpDevice_->get_rx_freq(0));
-    conf.rxGain.push_back(usrpDevice_->get_rx_gain(0));
-    conf.rxAnalogFilterBw = usrpDevice_->get_rx_bandwidth(0);
-    conf.rxSamplingRate = usrpDevice_->get_rx_rate(0);
-
-    return conf;
-}
+RfConfig Usrp::getRfConfig() const { return rfConfig_; }
 
 void Usrp::receive(const float baseTime,
                    std::vector<std::vector<samples_vec>> &buffers,
@@ -138,6 +125,17 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     }
 }
 
+void Usrp::saveCurrentRfConfig() const {
+    rfConfig_.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));
+    rfConfig_.txGain.push_back(usrpDevice_->get_tx_gain(0));
+    rfConfig_.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
+    rfConfig_.txSamplingRate = usrpDevice_->get_tx_rate(0);
+
+    rfConfig_.rxCarrierFrequency.push_back(usrpDevice_->get_rx_freq(0));
+    rfConfig_.rxGain.push_back(usrpDevice_->get_rx_gain(0));
+    rfConfig_.rxAnalogFilterBw = usrpDevice_->get_rx_bandwidth(0);
+    rfConfig_.rxSamplingRate = usrpDevice_->get_rx_rate(0);
+}
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
     txStreamingConfigs_.push_back(conf);
 }

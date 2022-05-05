@@ -51,6 +51,7 @@ class Usrp : public UsrpInterface {
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
+    RfConfig rfConfig_;
 
     std::vector<std::vector<samples_vec>> receivedSamples_ = {{{}}};
     bool subdevSpecSet_ = false;
@@ -62,6 +63,7 @@ class Usrp : public UsrpInterface {
                  std::vector<std::vector<samples_vec>>& buffers,
                  std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
+    void saveCurrentRfConfig() const;
 };
 
 }  // namespace bi

@@ -48,4 +48,10 @@ void assertSamplingRate(const double actualSamplingRate,
         throw UsrpException("Sampling rate must be an even fraction of " +
                             std::to_string(masterClockRate));
 }
+
+void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+                                  const TxStreamingConfig& newConfig) {
+    if (newConfig.sendTimeOffset < prevConfig.sendTimeOffset)
+        throw UsrpException("Invalid tx streaming config");
+}
 }  // namespace bi

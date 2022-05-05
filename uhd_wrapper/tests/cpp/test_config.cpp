@@ -37,4 +37,20 @@ TEST_CASE("[SamplingRateSupported]") {
         REQUIRE_NOTHROW(assertSamplingRate(250e6 / 1, 250e6));
     }
 }
+
+TEST_CASE("[ValidTxStreamingConfig]") {
+    TxStreamingConfig prevConfig;
+    prevConfig.samples = {{}};
+    prevConfig.sendTimeOffset = 0.0;
+
+    TxStreamingConfig newConfig;
+    newConfig.samples = {{}};
+    newConfig.sendTimeOffset = 1.0;
+    SECTION("NewOffsetSmallerThanPrevious") {
+        prevConfig.sendTimeOffset = 1.0;
+        newConfig.sendTimeOffset = 0.0;
+        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(prevConfig, newConfig),
+                          UsrpException);
+    }
+}
 }  // namespace bi

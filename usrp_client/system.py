@@ -72,8 +72,14 @@ class System:
         self.__usrpsSynced = False
 
     def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
+        self.__assertUniqueUsrpName(usrpName)
+        self.__assertUniqueIp(ip)
+
+    def __assertUniqueUsrpName(self, usrpName: str) -> None:
         if usrpName in self.__usrpClients.keys():
             raise ValueError("Connection to USRP already exists!")
+
+    def __assertUniqueIp(self, ip: str) -> None:
         for usrp in self.__usrpClients.keys():
             if self.__usrpClients[usrp].ip == ip:
                 raise ValueError("Connection to USRP already exists!")
@@ -171,3 +177,14 @@ class System:
                 The key represents the usrp identifier.
         """
         return {key: item.client.collect() for key, item in self.__usrpClients.items()}
+
+    def getSupportedSamplingRates(self, usrpName: str) -> np.ndarray:
+        """Returns supported sampling rates.
+
+        Args:
+            usrpName (str): Identifier of USRP to be queried.
+
+        Returns:
+            np.ndarray: Array of supported sampling rates.
+        """
+        return self.__usrpClients[usrpName].client.getSupportedSamplingRates()

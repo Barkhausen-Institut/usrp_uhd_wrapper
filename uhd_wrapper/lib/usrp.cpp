@@ -6,6 +6,7 @@ namespace bi {
 
 RfConfig Usrp::getRfConfig() const {
     RfConfig conf;
+    std::scoped_lock lock(fpgaAccessMutex_);
     conf.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));
     conf.txGain.push_back(usrpDevice_->get_tx_gain(0));
     conf.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
@@ -106,6 +107,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
     }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
+    std::scoped_lock lock(fpgaAccessMutex_);
     // configure transmitter
     setTxSamplingRate(conf.txSamplingRate);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
@@ -166,6 +168,7 @@ void Usrp::setTimeToZeroNextPps() {
 }
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {
+    std::scoped_lock lock(fpgaAccessMutex_);
     ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps

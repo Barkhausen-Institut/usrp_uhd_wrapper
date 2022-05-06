@@ -37,13 +37,14 @@ MimoSignal fromNumpyMimoSignal(const NumpyMimoSignal& signals) {
 
 // Custom class to convert bi::MimoSignal to / from Python. In Python
 // it is represented as a list of numpy arrays.
+// adapted from https://pybind11.readthedocs.io/en/stable/advanced/cast/custom.html
 namespace pybind11 { namespace detail {
     template <> struct type_caster<bi::MimoSignal> {
     public:
         /**
-         * This macro establishes the name 'inty' in
+         * This macro establishes the name 'MimoSignal' in
          * function signatures and declares a local variable
-         * 'value' of type inty
+         * 'value' of type MimoSignal
          */
         PYBIND11_TYPE_CASTER(bi::MimoSignal, const_name("MimoSignal"));
 

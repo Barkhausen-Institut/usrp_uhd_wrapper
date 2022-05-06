@@ -2,16 +2,15 @@ import unittest
 from unittest.mock import Mock
 
 import numpy as np
-import numpy.testing as npt
 
 from usrp_client.rpc_client import UsrpClient
 from uhd_wrapper.utils.config import (
+    MimoSignal,
     RfConfig,
     TxStreamingConfig,
     RxStreamingConfig,
     fillDummyRfConfig,
 )
-from uhd_wrapper.utils.serialization import serializeComplexArray
 
 
 class TestUsrpClient(unittest.TestCase):
@@ -27,10 +26,11 @@ class TestUsrpClient(unittest.TestCase):
         )
 
     def test_configureTxSerializesCorrectly(self) -> None:
-        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=[np.arange(10)])
+        signal = MimoSignal(signals=[np.arange(20)])
+        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal)
         self.usrpClient.configureTx(txConfig=txConfig)
         self.mockRpcClient.configureTx.assert_called_with(
-            txConfig.sendTimeOffset, [serializeComplexArray(txConfig.samples[0])]
+            txConfig.sendTimeOffset, signal.serialize()
         )
 
     def test_executeGetsCalledWithBaseTime(self) -> None:
@@ -39,25 +39,20 @@ class TestUsrpClient(unittest.TestCase):
         self.mockRpcClient.execute.assert_called_with(BASE_TIME)
 
     def test_collectReturnsDeserializedSamples(self) -> None:
-        samplesDeserialized = [[np.ones(10)]]
-        samplesSerialized = [[serializeComplexArray(samplesDeserialized[0][0])]]
-
-        self.mockRpcClient.collect.return_value = samplesSerialized
+        signal = MimoSignal(signals=[np.ones(10)])
+        self.mockRpcClient.collect.return_value = [signal.serialize()]
         recvdSamples = self.usrpClient.collect()
-        npt.assert_array_equal(recvdSamples[0][0], samplesDeserialized[0][0])
+        self.assertEqual(signal, recvdSamples[0])
 
     def test_collectReturnsDeserializedSamples_twoConfigs(self) -> None:
-        samplesConfig1 = [np.ones(10)]
-        samplesConfig2 = [2 * np.ones(10)]
-        samplesDeserialized = [samplesConfig1, samplesConfig2]
-        samplesSerialized = [
-            [serializeComplexArray(samplesConfig1[0])],
-            [serializeComplexArray(samplesConfig2[0])],
+        signalConfig1 = MimoSignal(signals=[np.ones(10, dtype=np.complex64)])
+        signalConfig2 = MimoSignal(signals=[2 * np.ones(10, dtype=np.complex64)])
+        self.mockRpcClient.collect.return_value = [
+            signalConfig1.serialize(),
+            signalConfig2.serialize(),
         ]
-        self.mockRpcClient.collect.return_value = samplesSerialized
         recvdSamples = self.usrpClient.collect()
-        npt.assert_array_equal(recvdSamples[0][0], samplesDeserialized[0][0])
-        npt.assert_array_equal(recvdSamples[1][0], samplesDeserialized[1][0])
+        self.assertListEqual(recvdSamples, [signalConfig1, signalConfig2])
 
     def test_getRfConfigReturnsSerializedRfConfig(self) -> None:
         usrpRfConf = fillDummyRfConfig(RfConfig())

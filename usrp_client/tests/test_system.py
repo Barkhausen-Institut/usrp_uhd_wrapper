@@ -7,7 +7,12 @@ import numpy.testing as npt
 from usrp_client.rpc_client import UsrpClient
 
 from usrp_client.system import System
-from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
+from uhd_wrapper.utils.config import (
+    MimoSignal,
+    RfConfig,
+    TxStreamingConfig,
+    RxStreamingConfig,
+)
 
 
 class TestSystemInitialization(unittest.TestCase):
@@ -78,7 +83,7 @@ class TestStreamingConfiguration(unittest.TestCase, SystemMockFactory):
 
     def test_configureTxCallsFunctionInRpcClient(self) -> None:
         txStreamingConfig = TxStreamingConfig(
-            sendTimeOffset=2.0, samples=[np.ones(int(2e3))]
+            sendTimeOffset=2.0, samples=MimoSignal(signals=[np.ones(int(20e3))])
         )
         self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
         self.mockUsrps[0].configureTx.assert_called_once_with(txStreamingConfig)
@@ -152,14 +157,14 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         self.mockUsrps = self.mockSystem(self.system, 2)
 
     def test_collectCallsCollectFromUsrpClient(self) -> None:
-        samplesUsrp1 = [np.ones(10)]
-        samplesUsrp2 = [2 * np.ones(10)]
+        samplesUsrp1 = MimoSignal(signals=[np.ones(10)])
+        samplesUsrp2 = MimoSignal(signals=[2 * np.ones(10)])
 
         self.mockUsrps[0].collect.return_value = [samplesUsrp1]
         self.mockUsrps[1].collect.return_value = [samplesUsrp2]
         samples = self.system.collect()
-        npt.assert_array_equal(samples["usrp1"][0][0], samplesUsrp1[0])
-        npt.assert_array_equal(samples["usrp2"][0][0], samplesUsrp2[0])
+        npt.assert_array_equal(samples["usrp1"][0], samplesUsrp1)
+        npt.assert_array_equal(samples["usrp2"][0], samplesUsrp2)
 
     def test_calculationBaseTime_validSynchronisation(self) -> None:
         FPGA_TIME_S_USRP1 = 0.3

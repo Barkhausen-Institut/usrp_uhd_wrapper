@@ -48,8 +48,11 @@ class MimoSignal:
     def deserialize(serialized: List[SerializedComplexArray]) -> "MimoSignal":
         return MimoSignal(signals=[deserializeComplexArray(s) for s in serialized])
 
-    def __eq__(self, other: "MimoSignal") -> bool:
-        return np.sum([(a == b) for a, b in zip(self.signals, other.signals)])
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, MimoSignal):
+            return False
+        else:
+            return np.sum([(a == b) for a, b in zip(self.signals, other.signals)])
 
 
 @dataclass

@@ -1,13 +1,13 @@
 from typing import List
 
 import zerorpc
-import numpy as np
 
-from uhd_wrapper.utils.serialization import (
-    serializeComplexArray,
-    deserializeComplexArray,
+from uhd_wrapper.utils.config import (
+    RxStreamingConfig,
+    TxStreamingConfig,
+    RfConfig,
+    MimoSignal,
 )
-from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
 
 
 class UsrpClient:
@@ -39,7 +39,7 @@ class UsrpClient:
         """Call `configureTx` on server and serialize `txConfig`."""
         self.__rpcClient.configureTx(
             txConfig.sendTimeOffset,
-            [serializeComplexArray(antSignal) for antSignal in txConfig.samples],
+            txConfig.samples.serialize(),
         )
 
     def execute(self, baseTime: float) -> None:
@@ -52,20 +52,14 @@ class UsrpClient:
         """
         self.__rpcClient.execute(baseTime)
 
-    def collect(self) -> List[List[np.ndarray]]:
+    def collect(self) -> List[MimoSignal]:
         """Collect samples from RPC server and deserialize them.
 
         Returns:
-            List[List[np.ndarray]]:
+            List[MimoSignal]:
                 Each list item corresponds to the samples of one streaming configuration.
-                The list items of the inner list correspond to the signal of one antenna.
-                Samples are of type np.complex64.
         """
-        configSamples = self.__rpcClient.collect()
-        return [
-            [deserializeComplexArray(frame) for frame in samplesInFpgaPerConfig]
-            for samplesInFpgaPerConfig in configSamples
-        ]
+        return [MimoSignal.deserialize(c) for c in self.__rpcClient.collect()]
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:
         """Serialize `rfConfig` and request configuration on RPC server."""

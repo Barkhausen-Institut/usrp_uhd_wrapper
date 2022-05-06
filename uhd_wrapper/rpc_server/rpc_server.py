@@ -2,8 +2,6 @@ from dataclasses import fields
 from typing import List
 
 from uhd_wrapper.utils.serialization import (
-    serializeComplexArray,
-    deserializeComplexArray,
     SerializedComplexArray,
 )
 from uhd_wrapper.usrp_pybinding import (
@@ -12,7 +10,7 @@ from uhd_wrapper.usrp_pybinding import (
     RxStreamingConfig,
 )
 from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
-from uhd_wrapper.utils.config import RfConfig
+from uhd_wrapper.utils.config import RfConfig, MimoSignal
 
 
 def RfConfigFromBinding(rfConfigBinding: RfConfigBinding) -> RfConfig:
@@ -39,10 +37,10 @@ class UsrpServer:
     def configureTx(
         self, sendTimeOffset: float, samples: List[SerializedComplexArray]
     ) -> None:
-        # TODO: Use MImoSignal serialize/deserialize functionality.
+        mimoSignal = MimoSignal.deserialize(samples)
         self.__usrp.setTxConfig(
             TxStreamingConfig(
-                samples=[deserializeComplexArray(frame) for frame in samples],
+                samples=mimoSignal.signals,
                 sendTimeOffset=sendTimeOffset,
             )
         )
@@ -64,13 +62,8 @@ class UsrpServer:
         self.__usrp.setTimeToZeroNextPps()
 
     def collect(self) -> List[List[SerializedComplexArray]]:
-        configSamples = self.__usrp.collect()
-        # TODO: here, immediately convert to config.MimoSignal, and
-        # use its serialization method for below's loop.
-        return [
-            [serializeComplexArray(frame) for frame in samplesInFpgaPerConfig]
-            for samplesInFpgaPerConfig in configSamples
-        ]
+        mimoSignals = [MimoSignal(signals=c) for c in self.__usrp.collect()]
+        return [s.serialize() for s in mimoSignals]
 
     def getCurrentFpgaTime(self) -> int:
         return self.__usrp.getCurrentFpgaTime()

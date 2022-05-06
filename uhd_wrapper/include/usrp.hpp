@@ -67,7 +67,6 @@ class Usrp : public UsrpInterface {
                  std::vector<std::vector<samples_vec>>& buffers,
                  std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
-    void saveCurrentRfConfig();
 };
 
 }  // namespace bi

@@ -70,6 +70,9 @@ namespace pybind11 { namespace detail {
     };
 }}
 
+
+/*  A very basic fake Usrp with minimal functionality. It is used to test, if the data conversion between Python and C++ works as expected.
+ */
 class FakeUsrp : public bi::UsrpInterface {
 public:
     FakeUsrp() = default;
@@ -148,22 +151,20 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig);
 
-    py::class_<FakeUsrp>(m, "FakeUsrp")
-        .def(py::init())
-        .def("setRfConfig", &FakeUsrp::setRfConfig)
-        .def("setRxConfig", &FakeUsrp::setRxConfig)
-        .def("setTxConfig", &FakeUsrp::setTxConfig)
-        .def("setTimeToZeroNextPps", &FakeUsrp::setTimeToZeroNextPps)
-        .def("getCurrentSystemTime", &FakeUsrp::getCurrentSystemTime)
-        .def("getCurrentFpgaTime", &FakeUsrp::getCurrentFpgaTime)
-        .def("execute", &FakeUsrp::execute)
-        .def("collect", &FakeUsrp::collect)
-        .def("reset", &FakeUsrp::reset)
-        .def("getMasterClockRate", &FakeUsrp::getMasterClockRate)
-        .def("getRfConfig", &FakeUsrp::getRfConfig)
 
-        .def_readonly("lastTxConfig", &FakeUsrp::lastTxConfig_)
-        .def_readonly("lastRxConfig", &FakeUsrp::lastRxConfig_);
+    // two functions for testing purposes only
+    m.def("_createTxConfig", [](const bi::MimoSignal& signal, float sendTimeOffset) {
+                                 return bi::TxStreamingConfig(signal, sendTimeOffset);
+                             });
+    m.def("_returnVectorOfMimoSignals", []() {
+                                            return std::vector<bi::MimoSignal>{
+                                                {
+                                                    { 1, 2, 3, 4 },
+                                                    { 5, 6, 7, 8 }
+                                                }
+                                            };
+                                        });
+
 
 
 

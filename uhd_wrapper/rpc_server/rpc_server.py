@@ -65,7 +65,8 @@ class UsrpServer:
 
     def collect(self) -> List[List[SerializedComplexArray]]:
         configSamples = self.__usrp.collect()
-        # TODO: here, immediately convert to config.MimoSignal, and use its serialization method for below's loop.
+        # TODO: here, immediately convert to config.MimoSignal, and
+        # use its serialization method for below's loop.
         return [
             [serializeComplexArray(frame) for frame in samplesInFpgaPerConfig]
             for samplesInFpgaPerConfig in configSamples

@@ -25,6 +25,11 @@ class TestTxStreamingConfig(unittest.TestCase):
         self.assertEqual(dut.sendTimeOffset, 42)
         nt.assert_array_equal(dut.samples, signals)
 
+    def test_inCppConstructedVersionMatchesLocallyConstructedVersion(self) -> None:
+        signals = [np.array([8, 3]), np.array([9, 7])]
+        dut = binding.TxStreamingConfig(signals, 5)
+        self.assertEqual(dut, binding._createTxConfig(signals, 5))
+
 
 class TestRxStreamingConfig(unittest.TestCase):
     def test_construction(self) -> None:
@@ -45,33 +50,10 @@ class TestRxStreamingConfig(unittest.TestCase):
         self.assertEqual(dut.noSamples, 42)
 
 
-class TestFakeUsrp(unittest.TestCase):
-    def test_construction(self) -> None:
-        binding.FakeUsrp()
+class TestMimoSignal(unittest.TestCase):
+    def test_conversionFromCpp(self) -> None:
+        res = binding._returnVectorOfMimoSignals()  # returns hard-coded values from C++
 
-    def test_txConfig(self) -> None:
-        txConfig = binding.TxStreamingConfig(samples=[np.array([8]), np.array([9])],
-                                             sendTimeOffset=8)
-
-        dut = binding.FakeUsrp()
-        dut.setTxConfig(txConfig)
-
-        self.assertEqual(dut.lastTxConfig, txConfig)
-
-    def test_rxConfig(self) -> None:
-        rxConfig = binding.RxStreamingConfig(noSamples=9, receiveTimeOffset=8)
-
-        dut = binding.FakeUsrp()
-        dut.setRxConfig(rxConfig)
-
-        self.assertEqual(dut.lastRxConfig, rxConfig)
-
-    def test_collectCorrectValues(self) -> None:
-        dut = binding.FakeUsrp()
-        # return dummy values hard-coded in C++. This test is here to
-        # verify if the data is correctly transferred between C++ and
-        # python.
-        res = dut.collect()
         self.assertIs(type(res), list)
         self.assertEqual(len(res), 1)
         self.assertIs(type(res[0]), list)

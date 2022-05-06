@@ -23,7 +23,6 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr,
                    const double fpgaTimeThreadStart) {
     try {
-        size_t configIdx = 0;
         std::vector<RxStreamingConfig> rxStreamingConfigs = rxStreamingConfigs_;
         rxStreamingConfigs_ = {};
         for (size_t configIdx = 0; configIdx < rxStreamingConfigs.size();

@@ -127,10 +127,15 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig);
 
 
-    // two functions for testing purposes only
+
+    // takes a MimoSignal as the parameter from Python and creates a streaming config
+    // with it. Used only for testing
     m.def("_createTxConfig", [](const bi::MimoSignal& signal, float sendTimeOffset) {
                                  return bi::TxStreamingConfig(signal, sendTimeOffset);
                              });
+
+    // return hard-coded vector of MimoSignal, to test if the to-python conversion works
+    // with compound types. Used only for testing
     m.def("_returnVectorOfMimoSignals", []() {
                                             return std::vector<bi::MimoSignal>{
                                                 {

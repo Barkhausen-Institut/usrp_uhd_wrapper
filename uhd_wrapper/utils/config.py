@@ -4,9 +4,11 @@ from dataclasses_json import dataclass_json
 
 import numpy as np
 
-from .serialization import (SerializedComplexArray,
-                            serializeComplexArray,
-                            deserializeComplexArray)
+from .serialization import (
+    SerializedComplexArray,
+    serializeComplexArray,
+    deserializeComplexArray,
+)
 
 
 @dataclass_json
@@ -22,17 +24,11 @@ class RfConfig:
     rxCarrierFrequency: List[float] = field(default_factory=list)
 
     def serialize(self) -> str:
-        return self.to_json()   # type: ignore
+        return self.to_json()  # type: ignore
 
     @staticmethod
     def deserialize(value: str) -> "RfConfig":
-        return RfConfig.from_json(value)   # type: ignore
-
-
-@dataclass
-class TxStreamingConfig:
-    sendTimeOffset: float = 0.0
-    samples: List[np.ndarray] = field(default_factory=list)
+        return RfConfig.from_json(value)  # type: ignore
 
 
 @dataclass
@@ -51,6 +47,15 @@ class MimoSignal:
     @staticmethod
     def deserialize(serialized: List[SerializedComplexArray]) -> "MimoSignal":
         return MimoSignal(signals=[deserializeComplexArray(s) for s in serialized])
+
+    def __eq__(self, other: "MimoSignal") -> bool:
+        return np.sum([(a == b) for a, b in zip(self.signals, other.signals)])
+
+
+@dataclass
+class TxStreamingConfig:
+    sendTimeOffset: float = 0.0
+    samples: MimoSignal = field(default_factory=list)  # type: ignore
 
 
 def fillDummyRfConfig(conf: Any) -> Any:

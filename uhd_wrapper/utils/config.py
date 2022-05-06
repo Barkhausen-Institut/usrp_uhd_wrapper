@@ -18,10 +18,10 @@ class RfConfig:
     rxAnalogFilterBw: float = 0.0
     txSamplingRate: float = 0.0
     rxSamplingRate: float = 0.0
-    txGain: List[float] = field(default_factory=list)
-    rxGain: List[float] = field(default_factory=list)
-    txCarrierFrequency: List[float] = field(default_factory=list)
-    rxCarrierFrequency: List[float] = field(default_factory=list)
+    txGain: List[float] = field(default_factory=lambda: [0.0])
+    rxGain: List[float] = field(default_factory=lambda: [0.0])
+    txCarrierFrequency: List[float] = field(default_factory=lambda: [0.0])
+    rxCarrierFrequency: List[float] = field(default_factory=lambda: [0.0])
 
     def serialize(self) -> str:
         return self.to_json()  # type: ignore

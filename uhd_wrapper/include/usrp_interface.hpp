@@ -16,7 +16,7 @@ class UsrpInterface {
     virtual std::vector<std::vector<samples_vec>> collect() = 0;
     virtual void reset() = 0;
     virtual double getMasterClockRate() const = 0;
-    virtual RfConfig getRfConfig() const = 0;
+    virtual RfConfig getRfConfig() = 0;
 };
 
 std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);

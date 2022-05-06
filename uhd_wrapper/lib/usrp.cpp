@@ -4,7 +4,7 @@
 
 namespace bi {
 
-RfConfig Usrp::getRfConfig() const {
+RfConfig Usrp::getRfConfig() {
     RfConfig conf;
     std::scoped_lock lock(fpgaAccessMutex_);
     conf.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));

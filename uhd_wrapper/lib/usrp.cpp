@@ -23,7 +23,8 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr,
                    const double fpgaTimeThreadStart) {
     try {
-        std::vector<RxStreamingConfig> rxStreamingConfigs = rxStreamingConfigs_;
+        std::vector<RxStreamingConfig> rxStreamingConfigs =
+            std::move(rxStreamingConfigs_);
         rxStreamingConfigs_ = {};
         for (size_t configIdx = 0; configIdx < rxStreamingConfigs.size();
              configIdx++) {
@@ -75,7 +76,8 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
                     const double fpgaTimeThreadStart) {
     try {
         // copy tx streaming configs for exception safety
-        std::vector<TxStreamingConfig> txStreamingConfigs = txStreamingConfigs_;
+        std::vector<TxStreamingConfig> txStreamingConfigs =
+            std::move(txStreamingConfigs_);
         txStreamingConfigs_ = {};
         for (auto &txStreamingConfig : txStreamingConfigs) {
             // add helpers

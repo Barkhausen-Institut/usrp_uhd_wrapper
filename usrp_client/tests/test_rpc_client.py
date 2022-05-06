@@ -77,12 +77,10 @@ class TestUsrpClient(unittest.TestCase):
         self.assertAlmostEqual(self.usrpClient.getCurrentSystemTime(), TIME)
 
     def test_getMasterClockRate_functionGetsCalled(self) -> None:
-        self.usrpClient.getSupportedDecimationRatios = lambda: np.array([1.0])  # type: ignore
         _ = self.usrpClient.getMasterClockRate()
         self.mockRpcClient.getMasterClockRate.assert_called_once()
 
     def test_supportedSamplingRates_queriesMasterClockRate(self) -> None:
-        self.usrpClient.getSupportedDecimationRatios = lambda: np.array([1.0])  # type: ignore
         _ = self.usrpClient.getSupportedSamplingRates()
         self.mockRpcClient.getMasterClockRate.assert_called_once()
 

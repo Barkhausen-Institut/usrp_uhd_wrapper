@@ -68,6 +68,7 @@ class SystemMockFactory:
     def __mockFunctions(self, usrpClientMock: Mock) -> Mock:
         usrpClientMock.getCurrentFpgaTime.return_value = 3.0
         usrpClientMock.getRfConfig.return_value = RfConfig()
+        usrpClientMock.getMasterClockRate.return_value = 400e6
         return usrpClientMock
 
 
@@ -179,3 +180,12 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
         self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
         self.assertRaises(ValueError, lambda: self.system.execute())
+
+    def test_getSamplingRates(self) -> None:
+        supportedSamplingRates = np.array([200e6])
+        self.mockUsrps[
+            0
+        ].getSupportedSamplingRates.return_value = supportedSamplingRates
+        actualSamplingRates = self.system.getSupportedSamplingRates(usrpName="usrp1")
+
+        npt.assert_array_equal(actualSamplingRates, supportedSamplingRates)

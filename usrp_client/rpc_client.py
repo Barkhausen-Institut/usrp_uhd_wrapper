@@ -83,3 +83,16 @@ class UsrpClient:
     def getRfConfig(self) -> RfConfig:
         """Queries RfConfig from RPC server and deserializes it."""
         return deserializeRfConfig(self.__rpcClient.getRfConfig())
+
+    def getMasterClockRate(self) -> float:
+        """Queries the master clock rate of the USRP."""
+        return self.__rpcClient.getMasterClockRate()
+
+    def getSupportedDecimationRatios(self) -> np.ndarray:
+        """Returns the supported decimation ratios."""
+        decimationRatios = np.append(np.array([1]), np.arange(start=2, stop=57, step=2))
+        return decimationRatios
+
+    def getSupportedSamplingRates(self) -> np.ndarray:
+        """Queries USRP for the supported sampling rates."""
+        return self.getMasterClockRate() / self.getSupportedDecimationRatios()

@@ -16,7 +16,9 @@ from uhd_wrapper.utils.serialization import serializeComplexArray, serializeRfCo
 
 class TestUsrpClient(unittest.TestCase):
     def setUp(self) -> None:
+        self.masterClockRate = 400e6
         self.mockRpcClient = Mock()
+        self.mockRpcClient.getMasterClockRate.return_value = self.masterClockRate
         self.usrpClient = UsrpClient(self.mockRpcClient)
 
     def test_configureRxSerializesCorrectly(self) -> None:
@@ -73,3 +75,21 @@ class TestUsrpClient(unittest.TestCase):
         TIME = 3
         self.mockRpcClient.getCurrentSystemTime.return_value = TIME
         self.assertAlmostEqual(self.usrpClient.getCurrentSystemTime(), TIME)
+
+    def test_getMasterClockRate_functionGetsCalled(self) -> None:
+        _ = self.usrpClient.getMasterClockRate()
+        self.mockRpcClient.getMasterClockRate.assert_called_once()
+
+    def test_supportedSamplingRates_queriesMasterClockRate(self) -> None:
+        _ = self.usrpClient.getSupportedSamplingRates()
+        self.mockRpcClient.getMasterClockRate.assert_called_once()
+
+    def test_supportedSamplingRates(self) -> None:
+        supportedDecimationRatios = np.array([1, 2])
+        self.usrpClient.getSupportedDecimationRatios = (  # type: ignore
+            lambda: supportedDecimationRatios
+        )
+        npt.assert_array_almost_equal(
+            self.masterClockRate / supportedDecimationRatios,
+            self.usrpClient.getSupportedSamplingRates(),
+        )

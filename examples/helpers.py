@@ -4,6 +4,8 @@ import argparse
 import numpy as np
 import matplotlib.pyplot as plt
 
+from uhd_wrapper.utils.config import MimoSignal
+
 
 def readArgs() -> Any:
     parser = argparse.ArgumentParser()
@@ -38,14 +40,12 @@ def findFirstSampleInFrameOfSignal(
     return np.argsort(correlation)[-1], correlation
 
 
-def printDelays(
-    samples: Dict[str, List[List[np.ndarray]]], txSignal: np.ndarray
-) -> None:
+def printDelays(samples: Dict[str, List[MimoSignal]], txSignal: np.ndarray) -> None:
     txSignalStartUsrp2, _ = findFirstSampleInFrameOfSignal(
-        samples["usrp2"][0][0], txSignal
+        samples["usrp2"][0].signals[0], txSignal
     )
     txSignalStartUsrp1, _ = findFirstSampleInFrameOfSignal(
-        samples["usrp1"][0][0], txSignal
+        samples["usrp1"][0].signals[0], txSignal
     )
 
     print(f"Sent chirp from usrp2 starts at sample {txSignalStartUsrp1} in usrp1")
@@ -56,20 +56,21 @@ def db(data: np.ndarray) -> np.ndarray:
     return 20 * np.log10(np.abs(data))
 
 
-def plot(samples: Dict[str, List[List[np.ndarray]]]) -> None:
-    noRxSamples = samples["usrp1"][0][0].size
-    rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samples["usrp1"][0][0]))
+def plot(samples: Dict[str, List[MimoSignal]]) -> None:
+    samplesUsrp1 = samples["usrp1"][0].signals[0]
+    samplesUsrp2 = samples["usrp2"][0].signals[0]
+    rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samplesUsrp1))
 
-    rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samples["usrp2"][0][0]))
-    freq = np.linspace(-0.5, 0.5, noRxSamples, endpoint=False)
+    rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samplesUsrp2))
+    freq = np.linspace(-0.5, 0.5, samplesUsrp1.size, endpoint=False)
     plt.subplot(221)
-    plt.plot(np.arange(noRxSamples), samples["usrp1"][0][0])
+    plt.plot(np.arange(samplesUsrp1.size), samplesUsrp1)
     plt.xlabel("Samples [#]")
     plt.ylabel("Value")
     plt.title("Usrp1, received samples, time")
 
     plt.subplot(222)
-    plt.plot(np.arange(noRxSamples), samples["usrp2"][0][0])
+    plt.plot(np.arange(samplesUsrp1.size), samplesUsrp2)
     plt.xlabel("Samples [#]")
     plt.ylabel("Value")
     plt.title("Usrp2, received samples, time")

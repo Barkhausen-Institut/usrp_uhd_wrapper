@@ -58,4 +58,11 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb);
 void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate);
 
+void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+                                  const TxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs);
+
+void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+                                  const RxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs);
 }  // namespace bi

@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <mutex>
 #include <thread>
 
 #include "config.hpp"
@@ -31,10 +32,13 @@ class Usrp : public UsrpInterface {
     std::vector<MimoSignal> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
-    RfConfig getRfConfig() const;
+    RfConfig getRfConfig();
     void reset();
 
    private:
+    // constants
+    const double GUARD_OFFSET_S_ = 0.05;
+
     // variables
     uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
@@ -45,25 +49,25 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
+    std::mutex fpgaAccessMutex_;
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
+    RfConfig rfConfig_;
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
     bool subdevSpecSet_ = false;
+
     // functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate);
-    void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
-                  const double fpgaTimeThreadStart);
+    void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
     void receive(const float baseTime, std::vector<MimoSignal>& buffers,
-                 std::exception_ptr& exceptionPtr,
-                 const double fpgaTimeThreadStart);
+                 std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
     void processRxStreamingConfig(const RxStreamingConfig& config,
-                                  MimoSignal& buffer, const double baseTime,
-                                  const double fpgaTimeThreadStart);
+                                  MimoSignal& buffer, const double baseTime);
 };
 
 }  // namespace bi

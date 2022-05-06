@@ -4,8 +4,9 @@
 
 namespace bi {
 
-RfConfig Usrp::getRfConfig() const {
+RfConfig Usrp::getRfConfig() {
     RfConfig conf;
+    std::scoped_lock lock(fpgaAccessMutex_);
     conf.txCarrierFrequency.push_back(usrpDevice_->get_tx_freq(0));
     conf.txGain.push_back(usrpDevice_->get_tx_gain(0));
     conf.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
@@ -20,8 +21,7 @@ RfConfig Usrp::getRfConfig() const {
 }
 
 void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
-                   std::exception_ptr &exceptionPtr,
-                   const double fpgaTimeThreadStart) {
+                   std::exception_ptr &exceptionPtr) {
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
             std::move(rxStreamingConfigs_);
@@ -29,8 +29,7 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
         for (size_t configIdx = 0; configIdx < rxStreamingConfigs.size();
              configIdx++) {
             processRxStreamingConfig(rxStreamingConfigs[configIdx],
-                                     buffers[configIdx], baseTime,
-                                     fpgaTimeThreadStart);
+                                     buffers[configIdx], baseTime);
         }
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
@@ -38,8 +37,7 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
 }
 
 void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
-                                    MimoSignal &buffer, const double baseTime,
-                                    const double fpgaTimeThreadStart) {
+                                    MimoSignal &buffer, const double baseTime) {
     buffer[0].resize(config.noSamples);
 
     size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
@@ -55,7 +53,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
 
     uhd::rx_metadata_t mdRx;
     double timeout =
-        (baseTime + config.receiveTimeOffset) - fpgaTimeThreadStart + 0.2;
+        (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         rxStreamer_->recv({buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
                           packageIdx == (noPackages - 1) ? noSamplesLastBuffer
@@ -72,8 +70,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
         throw UsrpException("I did not receive an end_of_burst.");
 }
 
-void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
-                    const double fpgaTimeThreadStart) {
+void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
     try {
         // copy tx streaming configs for exception safety
         std::vector<TxStreamingConfig> txStreamingConfigs =
@@ -113,6 +110,7 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
     }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
+    std::scoped_lock lock(fpgaAccessMutex_);
     // configure transmitter
     setTxSamplingRate(conf.txSamplingRate);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
@@ -143,13 +141,21 @@ void Usrp::setRfConfig(const RfConfig &conf) {
         rxStreamArgs.channels = std::vector<size_t>({0});
         rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
     }
+
+    rfConfig_ = getRfConfig();
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
+    if (txStreamingConfigs_.size() > 0)
+        assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
+                                     GUARD_OFFSET_S_, rfConfig_.txSamplingRate);
     txStreamingConfigs_.push_back(conf);
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {
+    if (rxStreamingConfigs_.size() > 0)
+        assertValidRxStreamingConfig(rxStreamingConfigs_.back(), conf,
+                                     GUARD_OFFSET_S_, rfConfig_.rxSamplingRate);
     rxStreamingConfigs_.push_back(conf);
 }
 
@@ -165,6 +171,7 @@ void Usrp::setTimeToZeroNextPps() {
 }
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {
+    std::scoped_lock lock(fpgaAccessMutex_);
     ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
@@ -183,6 +190,7 @@ uint64_t Usrp::getCurrentSystemTime() {
 }
 
 double Usrp::getCurrentFpgaTime() {
+    std::scoped_lock lock(fpgaAccessMutex_);
     if (!ppsSetToZero_) {
         setTimeToZeroNextPpsThread_.join();
     }
@@ -190,16 +198,15 @@ double Usrp::getCurrentFpgaTime() {
 }
 
 void Usrp::execute(const float baseTime) {
-    const double fpgaTimeThreadStart = getCurrentFpgaTime();
+    // const double fpgaTimeThreadStart = getCurrentFpgaTime();
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
         transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
-                                      std::ref(transmitThreadException_),
-                                      fpgaTimeThreadStart);
-        receiveThread_ = std::thread(
-            &Usrp::receive, this, baseTime, std::ref(receivedSamples_),
-            std::ref(receiveThreadException_), fpgaTimeThreadStart);
+                                      std::ref(transmitThreadException_));
+        receiveThread_ = std::thread(&Usrp::receive, this, baseTime,
+                                     std::ref(receivedSamples_),
+                                     std::ref(receiveThreadException_));
     }
 }
 

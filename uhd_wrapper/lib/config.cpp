@@ -48,4 +48,25 @@ void assertSamplingRate(const double actualSamplingRate,
         throw UsrpException("Sampling rate must be an even fraction of " +
                             std::to_string(masterClockRate));
 }
+
+void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+                                  const TxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs) {
+    double minimumRequiredOffset = prevConfig.sendTimeOffset + guardOffset +
+                                   prevConfig.samples[0].size() / fs;
+    if (newConfig.sendTimeOffset < minimumRequiredOffset)
+        throw UsrpException(
+            "Invalid TX streaming config: the offset of the new config is too "
+            "small.");
+}
+void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+                                  const RxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs) {
+    double minimumRequiredOffset =
+        prevConfig.receiveTimeOffset + guardOffset + prevConfig.noSamples / fs;
+    if (newConfig.receiveTimeOffset < minimumRequiredOffset)
+        throw UsrpException(
+            "Invalid TX streaming config: the offset of the new config is too "
+            "small.");
+}
 }  // namespace bi

@@ -71,31 +71,6 @@ namespace pybind11 { namespace detail {
 }}
 
 
-/*  A very basic fake Usrp with minimal functionality. It is used to test, if the data conversion between Python and C++ works as expected.
- */
-class FakeUsrp : public bi::UsrpInterface {
-public:
-    FakeUsrp() = default;
-    virtual void setRfConfig(const bi::RfConfig& value) { rfConfig_ = value; }
-    virtual void setTxConfig(const bi::TxStreamingConfig& conf) { lastTxConfig_ = conf; }
-    virtual void setRxConfig(const bi::RxStreamingConfig& conf) { lastRxConfig_ = conf; }
-    virtual void setTimeToZeroNextPps() { }
-    virtual uint64_t getCurrentSystemTime() { return -1; }
-    virtual double getCurrentFpgaTime() { return -2; }
-    virtual void execute(const float baseTime) { }
-    virtual std::vector<bi::MimoSignal> collect() { return { nextCollectSignal_}; }
-    virtual void reset() { }
-    virtual double getMasterClockRate() const { return 5; }
-    virtual bi::RfConfig getRfConfig() const { return rfConfig_; }
-
-    bi::RfConfig rfConfig_;
-    bi::TxStreamingConfig lastTxConfig_;
-    bi::RxStreamingConfig lastRxConfig_;
-
-    bi::MimoSignal nextCollectSignal_ = { {1, 2, 3, 4}, {5, 6, 7, 8} };
-};
-
-
 PYBIND11_MODULE(usrp_pybinding, m) {
     // factory function
     m.def("createUsrp", &bi::createUsrp);

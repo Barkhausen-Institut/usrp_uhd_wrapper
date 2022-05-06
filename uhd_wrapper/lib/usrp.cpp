@@ -26,27 +26,29 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
         size_t configIdx = 0;
         std::vector<RxStreamingConfig> rxStreamingConfigs = rxStreamingConfigs_;
         rxStreamingConfigs_ = {};
-        while (rxStreamingConfigs.size() != 0) {
-            RxStreamingConfig rxStreamingConfig = rxStreamingConfigs[0];
-            rxStreamingConfigs.erase(rxStreamingConfigs.begin());
-            buffers[configIdx][0].resize(rxStreamingConfig.noSamples);
+        for (size_t configIdx = 0; configIdx < rxStreamingConfigs.size();
+             configIdx++) {
+            RxStreamingConfig &currRxStreamingConfig =
+                rxStreamingConfigs[configIdx];
+            buffers[configIdx][0].resize(currRxStreamingConfig.noSamples);
 
-            size_t noPackages =
-                calcNoPackages(rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
+            size_t noPackages = calcNoPackages(currRxStreamingConfig.noSamples,
+                                               SAMPLES_PER_BUFFER);
             size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
-                rxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
+                currRxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
 
             uhd::stream_cmd_t streamCmd =
                 uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
             streamCmd.time_spec = uhd::time_spec_t(
-                baseTime + rxStreamingConfig.receiveTimeOffset);
-            streamCmd.num_samps = rxStreamingConfig.noSamples;
+                baseTime + currRxStreamingConfig.receiveTimeOffset);
+            streamCmd.num_samps = currRxStreamingConfig.noSamples;
             streamCmd.stream_now = false;
             rxStreamer_->issue_stream_cmd(streamCmd);
 
             uhd::rx_metadata_t mdRx;
-            double timeout = (baseTime + rxStreamingConfig.receiveTimeOffset) -
-                             fpgaTimeThreadStart + 0.2;
+            double timeout =
+                (baseTime + currRxStreamingConfig.receiveTimeOffset) -
+                fpgaTimeThreadStart + 0.2;
             for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
                 rxStreamer_->recv({buffers[configIdx][0].data() +
                                    packageIdx * SAMPLES_PER_BUFFER},
@@ -63,7 +65,6 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
             }
             if (!mdRx.end_of_burst)
                 throw UsrpException("I did not receive an end_of_burst.");
-            rxStreamingConfigs_.erase(rxStreamingConfigs_.begin());
         }
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
@@ -76,10 +77,8 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,
         // copy tx streaming configs for exception safety
         std::vector<TxStreamingConfig> txStreamingConfigs = txStreamingConfigs_;
         txStreamingConfigs_ = {};
-        while (txStreamingConfigs.size() != 0) {
+        for (auto &txStreamingConfig : txStreamingConfigs) {
             // add helpers
-            TxStreamingConfig txStreamingConfig = txStreamingConfigs[0];
-            txStreamingConfigs.erase(txStreamingConfigs.begin());
             size_t noPackages = calcNoPackages(
                 txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
             size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(

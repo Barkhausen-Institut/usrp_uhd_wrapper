@@ -11,7 +11,7 @@ from uhd_wrapper.utils.config import (
     RxStreamingConfig,
     fillDummyRfConfig,
 )
-from uhd_wrapper.utils.serialization import serializeComplexArray, serializeRfConfig
+from uhd_wrapper.utils.serialization import serializeComplexArray
 
 
 class TestUsrpClient(unittest.TestCase):
@@ -62,7 +62,7 @@ class TestUsrpClient(unittest.TestCase):
     def test_getRfConfigReturnsSerializedRfConfig(self) -> None:
         usrpRfConf = fillDummyRfConfig(RfConfig())
 
-        self.mockRpcClient.getRfConfig.return_value = serializeRfConfig(usrpRfConf)
+        self.mockRpcClient.getRfConfig.return_value = usrpRfConf.serialize()
         recvRfConfig = self.usrpClient.getRfConfig()
 
         self.assertEqual(recvRfConfig, usrpRfConf)
@@ -71,7 +71,7 @@ class TestUsrpClient(unittest.TestCase):
         c = fillDummyRfConfig(RfConfig())
 
         self.usrpClient.configureRfConfig(rfConfig=c)
-        self.mockRpcClient.configureRfConfig.assert_called_with(serializeRfConfig(c))
+        self.mockRpcClient.configureRfConfig.assert_called_with(c.serialize())
 
     def test_setTimeToZeroPpsGetsCalled(self) -> None:
         self.usrpClient.setTimeToZeroNextPps()

@@ -6,8 +6,6 @@ import numpy as np
 from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
-    deserializeRfConfig,
-    serializeRfConfig,
 )
 from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
 
@@ -71,7 +69,7 @@ class UsrpClient:
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:
         """Serialize `rfConfig` and request configuration on RPC server."""
-        self.__rpcClient.configureRfConfig(serializeRfConfig(rfConfig))
+        self.__rpcClient.configureRfConfig(rfConfig.serialize())
 
     def setTimeToZeroNextPps(self) -> None:
         """Sets the time to zero on the next PPS edge."""
@@ -87,4 +85,4 @@ class UsrpClient:
 
     def getRfConfig(self) -> RfConfig:
         """Queries RfConfig from RPC server and deserializes it."""
-        return deserializeRfConfig(self.__rpcClient.getRfConfig())
+        return RfConfig.deserialize(self.__rpcClient.getRfConfig())

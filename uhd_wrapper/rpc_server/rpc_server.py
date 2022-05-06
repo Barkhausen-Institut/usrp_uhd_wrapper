@@ -5,8 +5,6 @@ from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
     SerializedComplexArray,
-    serializeRfConfig,
-    deserializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
@@ -41,6 +39,7 @@ class UsrpServer:
     def configureTx(
         self, sendTimeOffset: float, samples: List[SerializedComplexArray]
     ) -> None:
+        # TODO: Use MImoSignal serialize/deserialize functionality.
         self.__usrp.setTxConfig(
             TxStreamingConfig(
                 samples=[deserializeComplexArray(frame) for frame in samples],
@@ -55,7 +54,7 @@ class UsrpServer:
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
         self.__usrp.setRfConfig(
-            RfConfigToBinding(deserializeRfConfig(serializedRfConfig))
+            RfConfigToBinding(RfConfig.deserialize(serializedRfConfig))
         )
 
     def execute(self, baseTime: float) -> None:
@@ -66,6 +65,8 @@ class UsrpServer:
 
     def collect(self) -> List[List[SerializedComplexArray]]:
         configSamples = self.__usrp.collect()
+        # TODO: here, immediately convert to config.MimoSignal, and
+        # use its serialization method for below's loop.
         return [
             [serializeComplexArray(frame) for frame in samplesInFpgaPerConfig]
             for samplesInFpgaPerConfig in configSamples
@@ -78,4 +79,4 @@ class UsrpServer:
         return self.__usrp.getCurrentSystemTime()
 
     def getRfConfig(self) -> str:
-        return serializeRfConfig(RfConfigFromBinding(self.__usrp.getRfConfig()))
+        return RfConfigFromBinding(self.__usrp.getRfConfig()).serialize()

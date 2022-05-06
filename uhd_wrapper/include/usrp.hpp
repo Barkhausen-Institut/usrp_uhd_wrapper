@@ -61,6 +61,9 @@ class Usrp : public UsrpInterface {
                  std::exception_ptr& exceptionPtr,
                  const double fpgaTimeThreadStart);
     void setTimeToZeroNextPpsThreadFunction();
+    void processRxStreamingConfig(const RxStreamingConfig& config,
+                                  MimoSignal& buffer, const double baseTime,
+                                  const double fpgaTimeThreadStart);
 };
 
 }  // namespace bi

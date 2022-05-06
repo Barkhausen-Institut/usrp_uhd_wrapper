@@ -27,47 +27,48 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
         rxStreamingConfigs_ = {};
         for (size_t configIdx = 0; configIdx < rxStreamingConfigs.size();
              configIdx++) {
-            RxStreamingConfig &currRxStreamingConfig =
-                rxStreamingConfigs[configIdx];
-            buffers[configIdx][0].resize(currRxStreamingConfig.noSamples);
-
-            size_t noPackages = calcNoPackages(currRxStreamingConfig.noSamples,
-                                               SAMPLES_PER_BUFFER);
-            size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
-                currRxStreamingConfig.noSamples, SAMPLES_PER_BUFFER);
-
-            uhd::stream_cmd_t streamCmd =
-                uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
-            streamCmd.time_spec = uhd::time_spec_t(
-                baseTime + currRxStreamingConfig.receiveTimeOffset);
-            streamCmd.num_samps = currRxStreamingConfig.noSamples;
-            streamCmd.stream_now = false;
-            rxStreamer_->issue_stream_cmd(streamCmd);
-
-            uhd::rx_metadata_t mdRx;
-            double timeout =
-                (baseTime + currRxStreamingConfig.receiveTimeOffset) -
-                fpgaTimeThreadStart + 0.2;
-            for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-                rxStreamer_->recv({buffers[configIdx][0].data() +
-                                   packageIdx * SAMPLES_PER_BUFFER},
-                                  packageIdx == (noPackages - 1)
-                                      ? noSamplesLastBuffer
-                                      : SAMPLES_PER_BUFFER,
-                                  mdRx, timeout);
-
-                timeout = 0.1f;
-                if (mdRx.error_code !=
-                    uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
-                    throw UsrpException("error occurred on the receiver: " +
-                                        mdRx.strerror());
-            }
-            if (!mdRx.end_of_burst)
-                throw UsrpException("I did not receive an end_of_burst.");
+            processRxStreamingConfig(rxStreamingConfigs[configIdx],
+                                     buffers[configIdx], baseTime,
+                                     fpgaTimeThreadStart);
         }
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }
+}
+
+void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
+                                    MimoSignal &buffer, const double baseTime,
+                                    const double fpgaTimeThreadStart) {
+    buffer[0].resize(config.noSamples);
+
+    size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
+    size_t noSamplesLastBuffer =
+        calcNoSamplesLastBuffer(config.noSamples, SAMPLES_PER_BUFFER);
+
+    uhd::stream_cmd_t streamCmd =
+        uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
+    streamCmd.time_spec = uhd::time_spec_t(baseTime + config.receiveTimeOffset);
+    streamCmd.num_samps = config.noSamples;
+    streamCmd.stream_now = false;
+    rxStreamer_->issue_stream_cmd(streamCmd);
+
+    uhd::rx_metadata_t mdRx;
+    double timeout =
+        (baseTime + config.receiveTimeOffset) - fpgaTimeThreadStart + 0.2;
+    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+        rxStreamer_->recv({buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
+                          packageIdx == (noPackages - 1) ? noSamplesLastBuffer
+                                                         : SAMPLES_PER_BUFFER,
+                          mdRx, timeout);
+
+        timeout = 0.1f;
+        if (mdRx.error_code !=
+            uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
+            throw UsrpException("error occurred on the receiver: " +
+                                mdRx.strerror());
+    }
+    if (!mdRx.end_of_burst)
+        throw UsrpException("I did not receive an end_of_burst.");
 }
 
 void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr,

@@ -202,3 +202,10 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         actualSamplingRates = self.system.getSupportedSamplingRates(usrpName="usrp1")
 
         npt.assert_array_equal(actualSamplingRates, supportedSamplingRates)
+
+    def test_signalContainsClippedValues(self) -> None:
+        self.mockUsrps[0].collect.return_value = [
+            MimoSignal(signals=[np.ones(10, dtype=np.complex64)])
+        ]
+
+        self.assertRaises(ValueError, lambda: self.system.collect())

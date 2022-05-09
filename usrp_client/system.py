@@ -1,4 +1,5 @@
 import logging
+from multiprocessing.sharedctypes import Value
 from typing import Dict, List
 import time
 from collections import namedtuple
@@ -8,6 +9,7 @@ import numpy as np
 
 from uhd_wrapper.utils.config import (
     MimoSignal,
+    containsClippedValue,
     RfConfig,
     RxStreamingConfig,
     TxStreamingConfig,
@@ -190,7 +192,11 @@ class System:
                 Dictionary containing the samples received.
                 The key represents the usrp identifier.
         """
-        return {key: item.client.collect() for key, item in self.__usrpClients.items()}
+        samples = {
+            key: item.client.collect() for key, item in self.__usrpClients.items()
+        }
+        self.__assertNoClippedValues(samples)
+        return samples
 
     def getSupportedSamplingRates(self, usrpName: str) -> np.ndarray:
         """Returns supported sampling rates.
@@ -202,3 +208,12 @@ class System:
             np.ndarray: Array of supported sampling rates.
         """
         return self.__usrpClients[usrpName].client.getSupportedSamplingRates()
+
+    def __assertNoClippedValues(self, samples: Dict[str, List[MimoSignal]]) -> None:
+        for usrpName, usrpConfigSamples in samples.items():
+            if np.all(
+                [containsClippedValue(mimoSignal) for mimoSignal in usrpConfigSamples]
+            ):
+                raise ValueError(
+                    f"USRP {usrpName} contains clipped values. Please check your gains."
+                )

@@ -32,8 +32,7 @@ struct RfConfig {
 
 struct TxStreamingConfig {
     TxStreamingConfig() {}
-    TxStreamingConfig(const MimoSignal& _samples,
-                      const float _sendTimeOffset)
+    TxStreamingConfig(const MimoSignal& _samples, const float _sendTimeOffset)
         : samples(_samples), sendTimeOffset(_sendTimeOffset) {}
     MimoSignal samples;
     float sendTimeOffset;
@@ -65,4 +64,6 @@ void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
 void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
                                   const RxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
+
+void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples);
 }  // namespace bi

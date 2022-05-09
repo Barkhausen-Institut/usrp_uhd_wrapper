@@ -58,8 +58,6 @@ class System:
         zeroRpcClient.connect(f"tcp://{ip}:5555")
         return UsrpClient(rpcClient=zeroRpcClient)
 
-        # patch in test and check if called
-
     def addUsrp(
         self,
         rfConfig: RfConfig,
@@ -135,7 +133,6 @@ class System:
 
         Samples are buffered, timeouts are calculated, Usrps are synchronized...
         """
-        print("Synchronizing...")
         self.__synchronizeUsrps()
         baseTimeSec = self.__calculateBaseTimeSec()
         logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
@@ -144,9 +141,9 @@ class System:
 
     def __synchronizeUsrps(self) -> None:
         if not self.__usrpsSynced:
+            logging.info("Synchronizing...")
             for _ in range(System.syncAttempts):
                 self.__setTimeToZeroNextPps()
-                time.sleep(1.1)
                 if self.__synchronisationValid():
                     self.__usrpsSynced = True
                     break
@@ -168,6 +165,7 @@ class System:
         for usrp in self.__usrpClients.keys():
             self.__usrpClients[usrp].client.setTimeToZeroNextPps()
             logging.info("Set time to zero for PPS.")
+        time.sleep(1.1)
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()

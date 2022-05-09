@@ -151,9 +151,13 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.mockUsrps[1].getCurrentFpgaTime.return_value = fpgaTimeUsrp2
         self.assertRaises(RuntimeError, lambda: self.system.execute())
 
-    def test_threeTimesSync(self) -> None:
-        self.mockUsrps[0].getCurrentFpgaTime.side_effect = [1.0, 1.2, 1.4]
-        self.mockUsrps[1].getCurrentFpgaTime.side_effect = [2.0, 2.2, 2, 4]
+    def test_threeTimesSyncRaisesError(self) -> None:
+        self.mockUsrps[0].getCurrentFpgaTime.side_effect = [1.0, 1.5, 2.0]
+        self.mockUsrps[1].getCurrentFpgaTime.side_effect = [
+            1.0 + System.syncThresholdSec + 1.0,
+            1.0 + System.syncThresholdSec + 1.5,
+            1.0 + System.syncThresholdSec + 2.0,
+        ]
 
         self.assertRaises(RuntimeError, lambda: self.system.execute())
         self.assertEqual(self.mockUsrps[0].getCurrentFpgaTime.call_count, 3)
@@ -192,7 +196,7 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
 
         self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
         self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
-        self.assertRaises(ValueError, lambda: self.system.execute())
+        self.assertRaises(RuntimeError, lambda: self.system.execute())
 
     def test_getSamplingRates(self) -> None:
         supportedSamplingRates = np.array([200e6])

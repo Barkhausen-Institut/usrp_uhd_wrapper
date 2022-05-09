@@ -153,8 +153,24 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         ]
 
         self.assertRaises(RuntimeError, lambda: self.system.execute())
-        self.assertEqual(self.mockUsrps[0].getCurrentFpgaTime.call_count, 3)
-        self.assertEqual(self.mockUsrps[1].getCurrentFpgaTime.call_count, 3)
+        self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 3)
+        self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 3)
+
+    def test_syncValidAfterSecondAttempt(self) -> None:
+        self.mockUsrps[0].getCurrentFpgaTime.side_effect = [
+            1.0,
+            1.5,
+            1.6,
+        ]
+        self.mockUsrps[1].getCurrentFpgaTime.side_effect = [
+            1.0 + System.syncThresholdSec + 0.1,
+            1.5 + System.syncThresholdSec,
+            1.6 + 0.01,
+        ]
+
+        self.system.execute()
+        self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 2)
+        self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 2)
 
 
 class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):

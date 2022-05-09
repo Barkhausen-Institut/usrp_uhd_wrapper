@@ -32,10 +32,14 @@ class System:
             synchronized. Default value: 0.2s.
         baseTimeOffsetSec(float): This value is taken for setting the same base time for all
             USRPs. For development use mainly. Do not change. Default value: 0.2s.
+        syncAttempts (int): Specifies number of synchronization attemps for USRP system.
+        timeBetweenSyncAttempts (float): Sleep time between two synchronisation attempts in s.
     """
 
     syncThresholdSec = 0.2
     baseTimeOffsetSec = 0.2
+    syncAttempts = 3
+    timeBetweenSyncAttempts = 0.3
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
@@ -53,8 +57,6 @@ class System:
         zeroRpcClient = zerorpc.Client()
         zeroRpcClient.connect(f"tcp://{ip}:5555")
         return UsrpClient(rpcClient=zeroRpcClient)
-
-        # patch in test and check if called
 
     def addUsrp(
         self,
@@ -140,13 +142,40 @@ class System:
 
         Samples are buffered, timeouts are calculated, Usrps are synchronized...
         """
-        print("Synchronizing...")
         self.__synchronizeUsrps()
         self.__assertSynchronisationValid()
         baseTimeSec = self.__calculateBaseTimeSec()
         logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
         for usrpName in self.__usrpClients.keys():
             self.__usrpClients[usrpName].client.execute(baseTimeSec)
+
+    def __synchronizeUsrps(self) -> None:
+        if not self.__usrpsSynced:
+            logging.info("Synchronizing...")
+            for _ in range(System.syncAttempts):
+                self.__setTimeToZeroNextPps()
+                if self.__synchronisationValid():
+                    self.__usrpsSynced = True
+                    break
+                else:
+                    time.sleep(System.timeBetweenSyncAttempts)
+
+        if not self.__usrpsSynced:
+            raise RuntimeError("Could not synchronize. Tried three times...")
+
+    def __synchronisationValid(self) -> bool:
+        logging.info("Successfully synchronised USRPs...")
+        currentFpgaTimes = self.__getCurrentFpgaTimes()
+        return (
+            np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
+            < System.syncThresholdSec
+        )
+
+    def __setTimeToZeroNextPps(self) -> None:
+        for usrp in self.__usrpClients.keys():
+            self.__usrpClients[usrp].client.setTimeToZeroNextPps()
+            logging.info("Set time to zero for PPS.")
+        time.sleep(1.1)
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()

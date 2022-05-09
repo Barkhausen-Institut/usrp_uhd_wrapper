@@ -10,17 +10,15 @@ from uhd_wrapper.rpc_server.rpc_server import (
     RfConfigToBinding,
 )
 from uhd_wrapper.utils.serialization import (
-    deserializeRfConfig,
     serializeComplexArray,
     deserializeComplexArray,
-    serializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
     RxStreamingConfig,
     TxStreamingConfig,
 )
-from uhd_wrapper.utils.config import RfConfig, fillDummyRfConfig
+from uhd_wrapper.utils.config import RfConfig, fillDummyRfConfig, MimoSignal
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -64,14 +62,14 @@ class TestDeserializationComplexArr(unittest.TestCase):
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
         self.conf = fillDummyRfConfig(RfConfig())
-        self.serializedRfConf = self.conf.to_json()  # type: ignore
+        self.serializedRfConf = self.conf.serialize()
 
     def test_properRfConfigSerialization(self) -> None:
-        serializedConf = serializeRfConfig(self.conf)
+        serializedConf = self.conf.serialize()
         self.assertEqual(self.serializedRfConf, serializedConf)
 
     def test_properRfConfigDeSerialization(self) -> None:
-        self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
+        self.assertEqual(self.conf, RfConfig.deserialize(self.serializedRfConf))
 
 
 class TestRfConfigCast(unittest.TestCase):
@@ -117,14 +115,13 @@ class TestUsrpServer(unittest.TestCase):
 
     def test_configureTxCalledWithCorrectArguments(self) -> None:
         TIME_OFFSET = 2.0
-        samples = np.array([2, 3]) + 1j * np.array([0, 1])
-        serializedSamples = serializeComplexArray(samples)
+        signal = MimoSignal(signals=[np.array([2, 3]) + 1j * np.array([0, 1])])
         self.usrpServer.configureTx(
             TIME_OFFSET,
-            [serializedSamples],
+            signal.serialize(),
         )
         self.usrpMock.setTxConfig.assert_called_once_with(
-            TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=[samples])
+            TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=signal.signals)
         )
 
     def test_configureRxCalledWithCorrectArguments(self) -> None:
@@ -141,7 +138,7 @@ class TestUsrpServer(unittest.TestCase):
         from uhd_wrapper.utils.config import RfConfig
 
         c = fillDummyRfConfig(RfConfig())
-        self.usrpServer.configureRfConfig(serializeRfConfig(c))  # type: ignore
+        self.usrpServer.configureRfConfig(c.serialize())  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
             fillDummyRfConfig(RfConfigBinding())
@@ -154,7 +151,7 @@ class TestUsrpServer(unittest.TestCase):
         c = RfConfigFromBinding(usrpRfConfig)
 
         self.usrpMock.getRfConfig.return_value = usrpRfConfig
-        self.assertEqual(serializeRfConfig(c), self.usrpServer.getRfConfig())
+        self.assertEqual(c.serialize(), self.usrpServer.getRfConfig())
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0
@@ -167,16 +164,23 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.setTimeToZeroNextPps.assert_called_once()
 
     def test_collectGetsCalled(self) -> None:
-        self.usrpMock.collect.return_value = [np.arange(10)]
+        signal = MimoSignal(signals=[np.arange(10)])
+        self.usrpMock.collect.return_value = [signal.signals]
         _ = self.usrpServer.collect()
         self.usrpMock.collect.assert_called_once()
 
     def test_collectReturnsSerializedVersion(self) -> None:
-        receivedSamplesInFpga = np.arange(10)
-        self.usrpMock.collect.return_value = [receivedSamplesInFpga]
+        signal = MimoSignal(signals=[np.arange(10)])
+        self.usrpMock.collect.return_value = [signal.signals]
+
+        self.assertListEqual([signal.serialize()], self.usrpServer.collect())
+
+    def test_collectReturnsSerializedVersion_twoConfigs(self) -> None:
+        signal = MimoSignal(signals=[np.arange(10)])
+        self.usrpMock.collect.return_value = [signal.signals, signal.signals]
 
         self.assertListEqual(
-            [serializeComplexArray(receivedSamplesInFpga)], self.usrpServer.collect()
+            [signal.serialize(), signal.serialize()], self.usrpServer.collect()
         )
 
     def test_usrpIsResetAtDestruction(self) -> None:

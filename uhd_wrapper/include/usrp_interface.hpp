@@ -4,6 +4,7 @@
 #include "config.hpp"
 
 namespace bi {
+
 class UsrpInterface {
    public:
     virtual void setRfConfig(const RfConfig&) = 0;
@@ -13,7 +14,7 @@ class UsrpInterface {
     virtual uint64_t getCurrentSystemTime() = 0;
     virtual double getCurrentFpgaTime() = 0;
     virtual void execute(const float baseTime) = 0;
-    virtual std::vector<samples_vec> collect() = 0;
+    virtual std::vector<MimoSignal> collect() = 0;
     virtual void reset() = 0;
     virtual double getMasterClockRate() const = 0;
     virtual RfConfig getRfConfig() const = 0;

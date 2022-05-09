@@ -6,7 +6,6 @@ Since we use zerorpc for RPC, we need to serialize non-pythonic datatypes.
 from typing import List, Tuple
 import numpy as np
 
-from uhd_wrapper.utils.config import RfConfig
 
 SerializedComplexArray = Tuple[List, List]
 """Tuple containing real samples as `List` as first element
@@ -50,11 +49,3 @@ def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
         )
     arr = np.array(data[0]) + 1j * np.array(data[1])
     return arr
-
-
-def serializeRfConfig(conf: RfConfig) -> str:
-    return conf.to_json()  # type: ignore
-
-
-def deserializeRfConfig(serializedConf: str) -> RfConfig:
-    return RfConfig.from_json(serializedConf)  # type: ignore

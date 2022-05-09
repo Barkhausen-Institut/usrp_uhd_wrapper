@@ -3,7 +3,12 @@ from typing import Dict, Tuple
 import numpy as np
 
 from usrp_client.system import System
-from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
+from uhd_wrapper.utils.config import (
+    RfConfig,
+    TxStreamingConfig,
+    RxStreamingConfig,
+    MimoSignal,
+)
 from examples.helpers import createRandom, printDelays, plot, readArgs
 
 
@@ -31,12 +36,16 @@ def createStreamingConfigs(
     txSignal: np.ndarray, noRxSamples: float
 ) -> Dict[str, Tuple[RxStreamingConfig, TxStreamingConfig]]:
 
-    txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=0.0, samples=[txSignal])
+    txStreamingConfig1 = TxStreamingConfig(
+        sendTimeOffset=0.0, samples=MimoSignal(signals=[txSignal])
+    )
     rxStreamingConfig1 = RxStreamingConfig(
         receiveTimeOffset=0.1, noSamples=int(noRxSamples)
     )
 
-    txStreamingConfig2 = TxStreamingConfig(sendTimeOffset=0.1, samples=[txSignal])
+    txStreamingConfig2 = TxStreamingConfig(
+        sendTimeOffset=0.1, samples=MimoSignal(signals=[txSignal])
+    )
     rxStreamingConfig2 = RxStreamingConfig(
         receiveTimeOffset=0.0, noSamples=int(noRxSamples)
     )

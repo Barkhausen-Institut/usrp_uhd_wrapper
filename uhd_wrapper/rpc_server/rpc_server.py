@@ -2,11 +2,7 @@ from dataclasses import fields
 from typing import List
 
 from uhd_wrapper.utils.serialization import (
-    serializeComplexArray,
-    deserializeComplexArray,
     SerializedComplexArray,
-    serializeRfConfig,
-    deserializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
@@ -14,7 +10,7 @@ from uhd_wrapper.usrp_pybinding import (
     RxStreamingConfig,
 )
 from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
-from uhd_wrapper.utils.config import RfConfig
+from uhd_wrapper.utils.config import RfConfig, MimoSignal
 
 
 def RfConfigFromBinding(rfConfigBinding: RfConfigBinding) -> RfConfig:
@@ -41,9 +37,10 @@ class UsrpServer:
     def configureTx(
         self, sendTimeOffset: float, samples: List[SerializedComplexArray]
     ) -> None:
+        mimoSignal = MimoSignal.deserialize(samples)
         self.__usrp.setTxConfig(
             TxStreamingConfig(
-                samples=[deserializeComplexArray(frame) for frame in samples],
+                samples=mimoSignal.signals,
                 sendTimeOffset=sendTimeOffset,
             )
         )
@@ -55,7 +52,7 @@ class UsrpServer:
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
         self.__usrp.setRfConfig(
-            RfConfigToBinding(deserializeRfConfig(serializedRfConfig))
+            RfConfigToBinding(RfConfig.deserialize(serializedRfConfig))
         )
 
     def execute(self, baseTime: float) -> None:
@@ -64,9 +61,9 @@ class UsrpServer:
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
 
-    def collect(self) -> List[SerializedComplexArray]:
-        samplesInFpga = self.__usrp.collect()
-        return [serializeComplexArray(frame) for frame in samplesInFpga]
+    def collect(self) -> List[List[SerializedComplexArray]]:
+        mimoSignals = [MimoSignal(signals=c) for c in self.__usrp.collect()]
+        return [s.serialize() for s in mimoSignals]
 
     def getCurrentFpgaTime(self) -> int:
         return self.__usrp.getCurrentFpgaTime()
@@ -75,7 +72,7 @@ class UsrpServer:
         return self.__usrp.getCurrentSystemTime()
 
     def getRfConfig(self) -> str:
-        return serializeRfConfig(RfConfigFromBinding(self.__usrp.getRfConfig()))
+        return RfConfigFromBinding(self.__usrp.getRfConfig()).serialize()
 
     def getMasterClockRate(self) -> float:
         return self.__usrp.getMasterClockRate()

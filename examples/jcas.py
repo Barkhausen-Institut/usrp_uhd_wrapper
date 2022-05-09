@@ -3,7 +3,12 @@ from typing import Tuple
 import numpy as np
 
 from usrp_client.system import System
-from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
+from uhd_wrapper.utils.config import (
+    RfConfig,
+    TxStreamingConfig,
+    RxStreamingConfig,
+    MimoSignal,
+)
 from examples.helpers import createRandom, printDelays, plot, readArgs
 
 
@@ -49,7 +54,7 @@ def createStreamingConfigs(
     Further, you can define the samples to send and the number of samples to receive.
     """
     txStreamingConfig1 = TxStreamingConfig(
-        sendTimeOffset=streamingOffset, samples=[txSignal]
+        sendTimeOffset=streamingOffset, samples=MimoSignal(signals=[txSignal])
     )
     rxStreamingConfig1 = RxStreamingConfig(
         receiveTimeOffset=streamingOffset, noSamples=int(noRxSamples)

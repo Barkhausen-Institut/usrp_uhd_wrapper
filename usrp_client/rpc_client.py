@@ -1,15 +1,14 @@
 from typing import List
-
-import zerorpc
 import numpy as np
 
-from uhd_wrapper.utils.serialization import (
-    serializeComplexArray,
-    deserializeComplexArray,
-    deserializeRfConfig,
-    serializeRfConfig,
+import zerorpc
+
+from uhd_wrapper.utils.config import (
+    RxStreamingConfig,
+    TxStreamingConfig,
+    RfConfig,
+    MimoSignal,
 )
-from uhd_wrapper.utils.config import RxStreamingConfig, TxStreamingConfig, RfConfig
 
 
 class UsrpClient:
@@ -41,7 +40,7 @@ class UsrpClient:
         """Call `configureTx` on server and serialize `txConfig`."""
         self.__rpcClient.configureTx(
             txConfig.sendTimeOffset,
-            [serializeComplexArray(antSignal) for antSignal in txConfig.samples],
+            txConfig.samples.serialize(),
         )
 
     def execute(self, baseTime: float) -> None:
@@ -54,19 +53,18 @@ class UsrpClient:
         """
         self.__rpcClient.execute(baseTime)
 
-    def collect(self) -> List[np.ndarray]:
+    def collect(self) -> List[MimoSignal]:
         """Collect samples from RPC server and deserialize them.
 
         Returns:
-            List[np.ndarray]:
-                Each list item corresponds to the samples of one antenna.
-                Samples are of type np.complex64.
+            List[MimoSignal]:
+                Each list item corresponds to the samples of one streaming configuration.
         """
-        return [deserializeComplexArray(frame) for frame in self.__rpcClient.collect()]
+        return [MimoSignal.deserialize(c) for c in self.__rpcClient.collect()]
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:
         """Serialize `rfConfig` and request configuration on RPC server."""
-        self.__rpcClient.configureRfConfig(serializeRfConfig(rfConfig))
+        self.__rpcClient.configureRfConfig(rfConfig.serialize())
 
     def setTimeToZeroNextPps(self) -> None:
         """Sets the time to zero on the next PPS edge."""
@@ -82,7 +80,7 @@ class UsrpClient:
 
     def getRfConfig(self) -> RfConfig:
         """Queries RfConfig from RPC server and deserializes it."""
-        return deserializeRfConfig(self.__rpcClient.getRfConfig())
+        return RfConfig.deserialize(self.__rpcClient.getRfConfig())
 
     def getMasterClockRate(self) -> float:
         """Queries the master clock rate of the USRP."""

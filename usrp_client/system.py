@@ -6,7 +6,12 @@ from collections import namedtuple
 import zerorpc
 import numpy as np
 
-from uhd_wrapper.utils.config import RfConfig, RxStreamingConfig, TxStreamingConfig
+from uhd_wrapper.utils.config import (
+    MimoSignal,
+    RfConfig,
+    RxStreamingConfig,
+    TxStreamingConfig,
+)
 from usrp_client.rpc_client import UsrpClient
 
 
@@ -164,7 +169,7 @@ class System:
         ) > System.syncThresholdSec:
             raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
-    def collect(self) -> Dict[str, List[np.ndarray]]:
+    def collect(self) -> Dict[str, List[MimoSignal]]:
         """Collects the samples at each USRP.
 
         This is a blocking call. In the streaming configurations, the user defined when to send
@@ -172,7 +177,7 @@ class System:
         received (hence blocking) and returns them.
 
         Returns:
-            Dict[str, List[np.ndarray]]:
+            Dict[str, List[MimoSignal]]:
                 Dictionary containing the samples received.
                 The key represents the usrp identifier.
         """

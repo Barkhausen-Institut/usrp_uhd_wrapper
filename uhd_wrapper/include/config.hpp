@@ -6,6 +6,7 @@ namespace bi {
 const int SAMPLES_PER_BUFFER = 2000;
 typedef std::complex<float> sample;
 typedef std::vector<sample> samples_vec;
+typedef std::vector<samples_vec> MimoSignal;
 
 struct RfConfig {
     RfConfig() {}
@@ -31,10 +32,10 @@ struct RfConfig {
 
 struct TxStreamingConfig {
     TxStreamingConfig() {}
-    TxStreamingConfig(const std::vector<samples_vec>& _samples,
+    TxStreamingConfig(const MimoSignal& _samples,
                       const float _sendTimeOffset)
         : samples(_samples), sendTimeOffset(_sendTimeOffset) {}
-    std::vector<samples_vec> samples;
+    MimoSignal samples;
     float sendTimeOffset;
 };
 
@@ -57,4 +58,11 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb);
 void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate);
 
+void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+                                  const TxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs);
+
+void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+                                  const RxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs);
 }  // namespace bi

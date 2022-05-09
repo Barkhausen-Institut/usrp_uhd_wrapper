@@ -6,8 +6,8 @@
 
 #include "config.hpp"
 
-void dumpSamples(const std::vector<bi::samples_vec> &samples,
-                 std::ofstream &stream) {
+void dumpSamplesFirstConfig(const bi::MimoSignal &samples,
+                            std::ofstream &stream) {
     size_t noChannels = samples.size();
     for (size_t chIdx = 0; chIdx < noChannels; chIdx++) {
         for (size_t sampleIdx = 0; sampleIdx < samples[chIdx].size();

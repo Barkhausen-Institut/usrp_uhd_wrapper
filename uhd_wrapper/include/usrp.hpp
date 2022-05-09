@@ -38,6 +38,7 @@ class Usrp : public UsrpInterface {
    private:
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
+    const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)64e3;
 
     // variables
     uhd::usrp::multi_usrp::sptr usrpDevice_;

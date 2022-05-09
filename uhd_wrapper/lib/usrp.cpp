@@ -77,7 +77,8 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
             std::move(txStreamingConfigs_);
         txStreamingConfigs_ = {};
         for (auto &txStreamingConfig : txStreamingConfigs) {
-            // add helpers
+            assertValidTxSignal(txStreamingConfig.samples,
+                                MAX_SAMPLES_TX_SIGNAL);
             processTxStremaingConfig(txStreamingConfig, baseTime);
         }
     } catch (const std::exception &ex) {

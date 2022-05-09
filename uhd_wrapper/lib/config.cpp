@@ -66,7 +66,7 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
         prevConfig.receiveTimeOffset + guardOffset + prevConfig.noSamples / fs;
     if (newConfig.receiveTimeOffset < minimumRequiredOffset)
         throw UsrpException(
-            "Invalid TX streaming config: the offset of the new config is too "
+            "Invalid RX streaming config: the offset of the new config is too "
             "small.");
 }
 }  // namespace bi

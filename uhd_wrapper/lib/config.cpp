@@ -69,4 +69,14 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
             "Invalid RX streaming config: the offset of the new config is too "
             "small.");
 }
+
+void assertValidTxSignal(const MimoSignal& antSamples,
+                         const size_t maxSamples) {
+    for (const auto& antSignal : antSamples) {
+        if (antSignal.size() > maxSamples)
+            throw UsrpException(
+                "Transmitted signal length must not be larger than " +
+                std::to_string(maxSamples));
+    }
+}
 }  // namespace bi

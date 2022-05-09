@@ -33,11 +33,13 @@ class System:
         baseTimeOffsetSec(float): This value is taken for setting the same base time for all
             USRPs. For development use mainly. Do not change. Default value: 0.2s.
         syncAttempts (int): Specifies number of synchronization attemps for USRP system.
+        timeBetweenSyncAttempts (float): Sleep time between two synchronisation attempts in s.
     """
 
     syncThresholdSec = 0.2
     baseTimeOffsetSec = 0.2
     syncAttempts = 3
+    timeBetweenSyncAttempts = 0.3
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
@@ -149,7 +151,7 @@ class System:
                     self.__usrpsSynced = True
                     break
                 else:
-                    time.sleep(0.3)
+                    time.sleep(System.timeBetweenSyncAttempts)
 
         if not self.__usrpsSynced:
             raise RuntimeError("Could not synchronize. Tried three times...")

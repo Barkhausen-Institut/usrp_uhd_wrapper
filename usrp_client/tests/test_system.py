@@ -15,7 +15,11 @@ from uhd_wrapper.utils.config import (
     RxStreamingConfig,
 )
 
-from usrp_client.tests.hardware_setups import LocalTransmissionHWSetup, P2PHardwareSetup
+from usrp_client.tests.hardware_setups import (
+    LocalTransmissionHWSetup,
+    P2PHardwareSetup,
+    configure,
+)
 
 
 class TestSystemInitialization(unittest.TestCase):
@@ -255,30 +259,18 @@ class TestHardwareSystemTests(unittest.TestCase):
         return np.argsort(correlation)[-1]
 
     def test_p2pTransmission(self) -> None:
-        hardwareSetup = P2PHardwareSetup()
-        self.system = hardwareSetup.createSystem()
-        txStreamingConfig, rxStreamingConfig = hardwareSetup.createStreamingConfigs(
-            self.randomSignal
-        )
-        self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
-        self.system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig)
-        self.system.execute()
-        samples = self.system.collect()
+        system = configure(P2PHardwareSetup(), self.randomSignal)
+        system.execute()
+        samples = system.collect()
         signalStartSample = self.findFirstSampleInFrameOfSignal(
             samples["usrp2"][0].signals[0], self.randomSignal
         )
         self.assertTrue(290 <= signalStartSample <= 310)
 
     def test_localTransmission(self) -> None:
-        hardwareSetup = LocalTransmissionHWSetup()
-        self.system = hardwareSetup.createSystem()
-        txStreamingConfig, rxStreamingConfig = hardwareSetup.createStreamingConfigs(
-            self.randomSignal
-        )
-        self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
-        self.system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig)
-        self.system.execute()
-        samples = self.system.collect()
+        system = configure(LocalTransmissionHWSetup(), self.randomSignal)
+        system.execute()
+        samples = system.collect()
         signalStartSample = self.findFirstSampleInFrameOfSignal(
             samples["usrp1"][0].signals[0], self.randomSignal
         )

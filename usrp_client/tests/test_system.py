@@ -16,6 +16,7 @@ from uhd_wrapper.utils.config import (
 )
 
 from usrp_client.tests.hardware_setups import (
+    JcasHardwareSetup,
     LocalTransmissionHardwareSetup,
     P2pHardwareSetup,
     configure,
@@ -279,5 +280,23 @@ class TestHardwareSystemTests(unittest.TestCase):
         self.assertTrue(
             self.signalStartsInFrameInSampleInterval(
                 rxSamplesUsrp1, self.randomSignal, (290, 310)
+            )
+        )
+
+    def test_jcas(self) -> None:
+        system = configure(JcasHardwareSetup(), self.randomSignal)
+        system.execute()
+        samplesSystem = system.collect()
+        rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
+        rxSamplesUsrp2 = samplesSystem["usrp2"][0].signals[0]
+
+        self.assertTrue(
+            self.signalStartsInFrameInSampleInterval(
+                rxSamplesUsrp1, self.randomSignal, (290, 310)
+            )
+        )
+        self.assertTrue(
+            self.signalStartsInFrameInSampleInterval(
+                rxSamplesUsrp2, self.randomSignal, (290, 310)
             )
         )

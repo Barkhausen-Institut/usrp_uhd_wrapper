@@ -135,7 +135,6 @@ class System:
         Samples are buffered, timeouts are calculated, Usrps are synchronized...
         """
         self.__synchronizeUsrps()
-        self.__assertSynchronisationValid()
         baseTimeSec = self.__calculateBaseTimeSec()
         logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
         for usrpName in self.__usrpClients.keys():

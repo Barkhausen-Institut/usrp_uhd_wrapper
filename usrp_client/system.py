@@ -201,8 +201,8 @@ class System:
 
     def __assertNoClippedValues(self, samples: Dict[str, List[MimoSignal]]) -> None:
         for usrpName, usrpConfigSamples in samples.items():
-            if np.any(
-                [containsClippedValue(mimoSignal) for mimoSignal in usrpConfigSamples]
+            if any(
+                containsClippedValue(mimoSignal) for mimoSignal in usrpConfigSamples
             ):
                 raise ValueError(
                     f"USRP {usrpName} contains clipped values. Please check your gains."

@@ -240,22 +240,18 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
 class HardwareSetup:
     def createP2PSystem(
         self,
-        fc: float,
-        fs: float,
-        txGain: float,
-        rxGain: float,
         ipUsrp1: str,
         ipUsrp2: str,
     ) -> System:
         rfConfig = RfConfig()
         rfConfig.rxAnalogFilterBw = 400e6
         rfConfig.txAnalogFilterBw = 400e6
-        rfConfig.rxSamplingRate = fs
-        rfConfig.txSamplingRate = fs
-        rfConfig.rxGain = [rxGain]
-        rfConfig.txGain = [txGain]
-        rfConfig.rxCarrierFrequency = [fc]
-        rfConfig.txCarrierFrequency = [fc]
+        rfConfig.rxSamplingRate = 245.76e6
+        rfConfig.txSamplingRate = 245.76e6
+        rfConfig.rxGain = [35]
+        rfConfig.txGain = [35]
+        rfConfig.rxCarrierFrequency = [2e9]
+        rfConfig.txCarrierFrequency = [2e9]
 
         system = System()
         system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
@@ -294,10 +290,6 @@ class TestHardwareSystemTests(unittest.TestCase, HardwareSetup):
 
     def test_p2pTransmission(self) -> None:
         self.system = self.createP2PSystem(
-            fc=2e9,
-            fs=245e6,
-            txGain=35,
-            rxGain=35,
             ipUsrp1="192.168.189.132",
             ipUsrp2="192.168.189.133",
         )

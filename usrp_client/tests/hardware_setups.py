@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
-from typing import Any, Tuple
+from typing import Tuple
+import os
 
 import numpy as np
 
@@ -25,6 +26,14 @@ class HardwareSetup(ABC):
     def performConfiguration(self) -> None:
         pass
 
+    def getUsrpIps(self) -> Tuple[str, str]:
+        envVariables = os.environ.keys()
+        if "USRP1_IP" not in envVariables or "USRP2_IP" not in envVariables:
+            raise RuntimeError(
+                "Environment variables USRP1_IP/USRP2_IP must be defined."
+            )
+        return (os.environ["USRP1_IP"], os.environ["USRP2_IP"])
+
 
 def configure(hwSetup: HardwareSetup, txSignal: np.ndarray) -> System:
     hwSetup.createSystem()
@@ -44,10 +53,11 @@ class P2pHardwareSetup(HardwareSetup):
         rfConfig.txGain = [35]
         rfConfig.rxCarrierFrequency = [2e9]
         rfConfig.txCarrierFrequency = [2e9]
+        usrpIps = self.getUsrpIps()
 
         self.system = System()
-        self.system.addUsrp(rfConfig=rfConfig, ip="192.168.189.132", usrpName="usrp1")
-        self.system.addUsrp(rfConfig=rfConfig, ip="192.168.189.133", usrpName="usrp2")
+        self.system.addUsrp(rfConfig=rfConfig, ip=usrpIps[0], usrpName="usrp1")
+        self.system.addUsrp(rfConfig=rfConfig, ip=usrpIps[1], usrpName="usrp2")
 
     def createStreamingConfigs(self, txSignal: np.ndarray) -> None:
         self.txStreamingConfig1 = TxStreamingConfig(
@@ -77,9 +87,10 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         rfConfig.txGain = [35]
         rfConfig.rxCarrierFrequency = [2e9]
         rfConfig.txCarrierFrequency = [2e9]
+        usrpIps = self.getUsrpIps()
 
         self.system = System()
-        self.system.addUsrp(rfConfig=rfConfig, ip="192.168.189.132", usrpName="usrp1")
+        self.system.addUsrp(rfConfig=rfConfig, ip=usrpIps[0], usrpName="usrp1")
 
     def createStreamingConfigs(self, txSignal: np.ndarray) -> None:
         self.txStreamingConfig1 = TxStreamingConfig(
@@ -109,10 +120,11 @@ class JcasHardwareSetup(HardwareSetup):
         rfConfig.txGain = [35]
         rfConfig.rxCarrierFrequency = [2e9]
         rfConfig.txCarrierFrequency = [2e9]
+        usrpIps = self.getUsrpIps()
 
         self.system = System()
-        self.system.addUsrp(rfConfig=rfConfig, ip="192.168.189.132", usrpName="usrp1")
-        self.system.addUsrp(rfConfig=rfConfig, ip="192.168.189.133", usrpName="usrp2")
+        self.system.addUsrp(rfConfig=rfConfig, ip=usrpIps[0], usrpName="usrp1")
+        self.system.addUsrp(rfConfig=rfConfig, ip=usrpIps[1], usrpName="usrp2")
 
     def createStreamingConfigs(self, txSignal: np.ndarray) -> None:
         self.txStreamingConfig1 = TxStreamingConfig(

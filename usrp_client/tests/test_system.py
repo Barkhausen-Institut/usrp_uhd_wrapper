@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 from typing import List
+import pytest
 
 import numpy as np
 import numpy.testing as npt
@@ -234,3 +235,9 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         ]
 
         self.assertRaises(ValueError, lambda: self.system.collect())
+
+
+@pytest.mark.hardware
+class TestHardwareFullFledged(unittest.TestCase):
+    def test_dummy(self) -> None:
+        self.assertTrue(1 == 1)

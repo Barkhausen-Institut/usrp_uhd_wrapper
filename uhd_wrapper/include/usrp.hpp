@@ -32,7 +32,7 @@ class Usrp : public UsrpInterface {
     std::vector<MimoSignal> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
-    RfConfig getRfConfig();
+    RfConfig getRfConfig() const;
     void reset();
 
    private:
@@ -49,7 +49,7 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
-    std::recursive_mutex fpgaAccessMutex_;
+    mutable std::recursive_mutex fpgaAccessMutex_;
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;

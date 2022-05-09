@@ -141,25 +141,23 @@ class System:
             self.__usrpClients[usrpName].client.execute(baseTimeSec)
 
     def __synchronizeUsrps(self) -> None:
-        for _ in range(System.syncAttempts):
-            if not self.__usrpsSynced:
+        if not self.__usrpsSynced:
+            for _ in range(System.syncAttempts):
                 for usrp in self.__usrpClients.keys():
                     self.__usrpClients[usrp].client.setTimeToZeroNextPps()
                     print("Set time to zero for PPS.")
                 time.sleep(1.1)
                 if self.__synchronisationValid():
                     self.__usrpsSynced = True
-                    logging.info("Successfully synchronised USRPs...")
                     break
                 else:
                     time.sleep(0.3)
-            else:
-                break
 
         if not self.__usrpsSynced:
             raise RuntimeError("Could not synchronize. Tried three times...")
 
     def __synchronisationValid(self) -> bool:
+        logging.info("Successfully synchronised USRPs...")
         currentFpgaTimes = self.__getCurrentFpgaTimes()
         return (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)

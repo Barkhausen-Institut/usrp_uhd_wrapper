@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import Mock
 
 import numpy as np
+import numpy.testing as npt
 
 from usrp_client.rpc_client import UsrpClient
 from uhd_wrapper.utils.config import (

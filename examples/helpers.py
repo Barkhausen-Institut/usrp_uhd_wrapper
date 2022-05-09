@@ -9,10 +9,13 @@ from uhd_wrapper.utils.config import MimoSignal
 
 def readArgs() -> Any:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--usrp1-ip", type=str, help="IP of first USRP")
-    parser.add_argument("--usrp2-ip", type=str, help="IP of second USRP")
+    parser.add_argument("--usrp1-ip", type=str, help="IP of first USRP", required=True)
+    parser.add_argument("--usrp2-ip", type=str, help="IP of second USRP", required=True)
     parser.add_argument(
-        "--carrier-frequency", type=float, help="Carrier frequency of sent signal"
+        "--carrier-frequency",
+        type=float,
+        help="Carrier frequency of sent signal",
+        required=True,
     )
     parser.add_argument(
         "--plot",

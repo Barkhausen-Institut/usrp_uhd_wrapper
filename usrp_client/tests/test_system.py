@@ -149,7 +149,7 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         fpgaTimeUsrp2 = fpgaTimeUsrp1 + System.syncThresholdSec + 1.0
         self.mockUsrps[0].getCurrentFpgaTime.return_value = fpgaTimeUsrp1
         self.mockUsrps[1].getCurrentFpgaTime.return_value = fpgaTimeUsrp2
-        self.assertRaises(RuntimeError, lambda: self.system.execute())
+        self.assertRaises(ValueError, lambda: self.system.execute())
 
 
 class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):

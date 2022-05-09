@@ -239,16 +239,6 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
 
 
 class HardwareSetup(ABC):
-    def createRandom(self, noSamples: int, zeropad: int = 0) -> np.ndarray:
-        return np.hstack(
-            [
-                np.zeros(zeropad, dtype=complex),
-                2
-                * (np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,)))
-                - (1 + 1j),
-            ]
-        )
-
     @abstractmethod
     def createSystem(self) -> System:
         pass
@@ -287,8 +277,43 @@ class P2PHardwareSetup(HardwareSetup):
         return txStreamingConfig1, rxStreamingConfig2
 
 
+class LocalTransmissionHWSetup(HardwareSetup):
+    def createSystem(self) -> System:
+        rfConfig = RfConfig()
+        rfConfig.rxAnalogFilterBw = 400e6
+        rfConfig.txAnalogFilterBw = 400e6
+        rfConfig.rxSamplingRate = 245.76e6
+        rfConfig.txSamplingRate = 245.76e6
+        rfConfig.rxGain = [35]
+        rfConfig.txGain = [35]
+        rfConfig.rxCarrierFrequency = [2e9]
+        rfConfig.txCarrierFrequency = [2e9]
+
+        system = System()
+        system.addUsrp(rfConfig=rfConfig, ip="192.168.189.132", usrpName="usrp1")
+        return system
+
+    def createStreamingConfigs(
+        self, txSignal: np.ndarray
+    ) -> Tuple[TxStreamingConfig, RxStreamingConfig]:
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0, samples=MimoSignal(signals=[txSignal])
+        )
+        rxStreamingConfig1 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+        return txStreamingConfig1, rxStreamingConfig1
+
+
 @pytest.mark.hardware
 class TestHardwareSystemTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.noSamples = int(20e3)
+        self.randomSignal = (
+            np.random.sample((self.noSamples,))
+            + 1j * np.random.sample((self.noSamples,))
+        ) - (0.5 + 0.5j)
+
     def findFirstSampleInFrameOfSignal(
         self, frame: np.ndarray, txSignal: np.ndarray
     ) -> int:
@@ -298,16 +323,29 @@ class TestHardwareSystemTests(unittest.TestCase):
     def test_p2pTransmission(self) -> None:
         hardwareSetup = P2PHardwareSetup()
         self.system = hardwareSetup.createSystem()
-        signal = hardwareSetup.createRandom(noSamples=int(20e3))
         txStreamingConfig, rxStreamingConfig = hardwareSetup.createStreamingConfigs(
-            signal
+            self.randomSignal
         )
         self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
         self.system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig)
         self.system.execute()
         samples = self.system.collect()
         signalStartSample = self.findFirstSampleInFrameOfSignal(
-            samples["usrp2"][0].signals[0], signal
+            samples["usrp2"][0].signals[0], self.randomSignal
         )
-        print(signalStartSample)
+        self.assertTrue(290 <= signalStartSample <= 310)
+
+    def test_localTransmission(self) -> None:
+        hardwareSetup = LocalTransmissionHWSetup()
+        self.system = hardwareSetup.createSystem()
+        txStreamingConfig, rxStreamingConfig = hardwareSetup.createStreamingConfigs(
+            self.randomSignal
+        )
+        self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
+        self.system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig)
+        self.system.execute()
+        samples = self.system.collect()
+        signalStartSample = self.findFirstSampleInFrameOfSignal(
+            samples["usrp1"][0].signals[0], self.randomSignal
+        )
         self.assertTrue(290 <= signalStartSample <= 310)

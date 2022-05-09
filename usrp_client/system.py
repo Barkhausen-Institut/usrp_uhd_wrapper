@@ -90,6 +90,15 @@ class System:
             if self.__usrpClients[usrp].ip == ip:
                 raise ValueError("Connection to USRP already exists!")
 
+    def __synchronizeUsrps(self) -> None:
+        if not self.__usrpsSynced:
+            for usrp in self.__usrpClients.keys():
+                self.__usrpClients[usrp].client.setTimeToZeroNextPps()
+                print("Set time to zero for PPS.")
+            time.sleep(1.1)
+            self.__usrpsSynced = True
+            logging.info("Successfully synchronised USRPs...")
+
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
         """Configure transmitter streaming.
 
@@ -134,36 +143,11 @@ class System:
         """
         print("Synchronizing...")
         self.__synchronizeUsrps()
+        self.__assertSynchronisationValid()
         baseTimeSec = self.__calculateBaseTimeSec()
         logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
         for usrpName in self.__usrpClients.keys():
             self.__usrpClients[usrpName].client.execute(baseTimeSec)
-
-    def __synchronizeUsrps(self) -> None:
-        for _ in range(3):
-            if not self.__usrpsSynced:
-                for usrp in self.__usrpClients.keys():
-                    self.__usrpClients[usrp].client.setTimeToZeroNextPps()
-                    print("Set time to zero for PPS.")
-                time.sleep(1.1)
-                if self.__synchronisationValid():
-                    self.__usrpsSynced = True
-                    logging.info("Successfully synchronised USRPs...")
-                    break
-                else:
-                    time.sleep(0.3)
-            else:
-                break
-
-        if not self.__usrpsSynced:
-            raise RuntimeError("Could not synchronize. Tried three times...")
-
-    def __synchronisationValid(self) -> bool:
-        currentFpgaTimes = self.__getCurrentFpgaTimes()
-        return (
-            np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
-            < System.syncThresholdSec
-        )
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()
@@ -178,6 +162,13 @@ class System:
         return [
             item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]
+
+    def __assertSynchronisationValid(self) -> None:
+        currentFpgaTimes = self.__getCurrentFpgaTimes()
+        if (
+            np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
+        ) > System.syncThresholdSec:
+            raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
 
     def collect(self) -> Dict[str, List[MimoSignal]]:
         """Collects the samples at each USRP.

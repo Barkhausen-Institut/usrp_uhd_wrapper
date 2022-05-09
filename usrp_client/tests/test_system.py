@@ -144,13 +144,6 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
         mockedUsrp.setTimeToZeroNextPps.assert_called_once()
 
-    def test_throwExceptionIfSyncIsInvalid(self) -> None:
-        fpgaTimeUsrp1 = 3.0
-        fpgaTimeUsrp2 = fpgaTimeUsrp1 + System.syncThresholdSec + 1.0
-        self.mockUsrps[0].getCurrentFpgaTime.return_value = fpgaTimeUsrp1
-        self.mockUsrps[1].getCurrentFpgaTime.return_value = fpgaTimeUsrp2
-        self.assertRaises(RuntimeError, lambda: self.system.execute())
-
     def test_threeTimesSyncRaisesError(self) -> None:
         self.mockUsrps[0].getCurrentFpgaTime.side_effect = [1.0, 1.5, 2.0]
         self.mockUsrps[1].getCurrentFpgaTime.side_effect = [

@@ -92,15 +92,6 @@ class System:
             if self.__usrpClients[usrp].ip == ip:
                 raise ValueError("Connection to USRP already exists!")
 
-    def __synchronizeUsrps(self) -> None:
-        if not self.__usrpsSynced:
-            for usrp in self.__usrpClients.keys():
-                self.__usrpClients[usrp].client.setTimeToZeroNextPps()
-                print("Set time to zero for PPS.")
-            time.sleep(1.1)
-            self.__usrpsSynced = True
-            logging.info("Successfully synchronised USRPs...")
-
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
         """Configure transmitter streaming.
 

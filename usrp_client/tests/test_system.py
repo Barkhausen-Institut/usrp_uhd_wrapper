@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import Mock, patch
-from typing import List
+from typing import List, Tuple
 import pytest
 
 import numpy as np
@@ -252,26 +252,32 @@ class TestHardwareSystemTests(unittest.TestCase):
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
 
-    def findFirstSampleInFrameOfSignal(
-        self, frame: np.ndarray, txSignal: np.ndarray
+    def signalStartsInFrameInSampleInterval(
+        self, frame: np.ndarray, txSignal: np.ndarray, sampleInterval: Tuple[int, int]
     ) -> int:
         correlation = np.abs(np.correlate(frame, txSignal))
-        return np.argsort(correlation)[-1]
+        return sampleInterval[0] <= np.argsort(correlation)[-1] <= sampleInterval[1]
 
     def test_p2pTransmission(self) -> None:
         system = configure(P2pHardwareSetup(), self.randomSignal)
         system.execute()
-        samples = system.collect()
-        signalStartSample = self.findFirstSampleInFrameOfSignal(
-            samples["usrp2"][0].signals[0], self.randomSignal
+        samplesSystems = system.collect()
+        rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
+
+        self.assertTrue(
+            self.signalStartsInFrameInSampleInterval(
+                rxSamplesUsrp2, self.randomSignal, (290, 310)
+            )
         )
-        self.assertTrue(290 <= signalStartSample <= 310)
 
     def test_localTransmission(self) -> None:
         system = configure(LocalTransmissionHardwareSetup(), self.randomSignal)
         system.execute()
-        samples = system.collect()
-        signalStartSample = self.findFirstSampleInFrameOfSignal(
-            samples["usrp1"][0].signals[0], self.randomSignal
+        samplesSystem = system.collect()
+        rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
+
+        self.assertTrue(
+            self.signalStartsInFrameInSampleInterval(
+                rxSamplesUsrp1, self.randomSignal, (290, 310)
+            )
         )
-        self.assertTrue(290 <= signalStartSample <= 310)

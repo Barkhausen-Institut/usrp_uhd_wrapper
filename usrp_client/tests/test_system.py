@@ -1,12 +1,13 @@
 import unittest
 from unittest.mock import Mock, patch
-from typing import List, Tuple
+from typing import List, Tuple, Any
 import pytest
+from abc import ABC, abstractmethod
 
 import numpy as np
 import numpy.testing as npt
-from usrp_client.rpc_client import UsrpClient
 
+from usrp_client.rpc_client import UsrpClient
 from usrp_client.system import System
 from uhd_wrapper.utils.config import (
     MimoSignal,
@@ -237,12 +238,28 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         self.assertRaises(ValueError, lambda: self.system.collect())
 
 
-class HardwareSetup:
-    def createP2PSystem(
-        self,
-        ipUsrp1: str,
-        ipUsrp2: str,
-    ) -> System:
+class HardwareSetup(ABC):
+    def createRandom(self, noSamples: int, zeropad: int = 0) -> np.ndarray:
+        return np.hstack(
+            [
+                np.zeros(zeropad, dtype=complex),
+                2
+                * (np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,)))
+                - (1 + 1j),
+            ]
+        )
+
+    @abstractmethod
+    def createSystem(self) -> System:
+        pass
+
+    @abstractmethod
+    def createStreamingConfigs(self, txSignal: np.ndarray) -> Any:
+        pass
+
+
+class P2PHardwareSetup(HardwareSetup):
+    def createSystem(self) -> System:
         rfConfig = RfConfig()
         rfConfig.rxAnalogFilterBw = 400e6
         rfConfig.txAnalogFilterBw = 400e6
@@ -254,11 +271,11 @@ class HardwareSetup:
         rfConfig.txCarrierFrequency = [2e9]
 
         system = System()
-        system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
-        system.addUsrp(rfConfig=rfConfig, ip=ipUsrp2, usrpName="usrp2")
+        system.addUsrp(rfConfig=rfConfig, ip="192.168.189.132", usrpName="usrp1")
+        system.addUsrp(rfConfig=rfConfig, ip="192.168.189.133", usrpName="usrp2")
         return system
 
-    def createP2PStreamingConfigs(
+    def createStreamingConfigs(
         self, txSignal: np.ndarray
     ) -> Tuple[TxStreamingConfig, RxStreamingConfig]:
         txStreamingConfig1 = TxStreamingConfig(
@@ -269,19 +286,9 @@ class HardwareSetup:
         )
         return txStreamingConfig1, rxStreamingConfig2
 
-    def createRandom(self, noSamples: int, zeropad: int = 0) -> np.ndarray:
-        return np.hstack(
-            [
-                np.zeros(zeropad, dtype=complex),
-                2
-                * (np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,)))
-                - (1 + 1j),
-            ]
-        )
-
 
 @pytest.mark.hardware
-class TestHardwareSystemTests(unittest.TestCase, HardwareSetup):
+class TestHardwareSystemTests(unittest.TestCase):
     def findFirstSampleInFrameOfSignal(
         self, frame: np.ndarray, txSignal: np.ndarray
     ) -> int:
@@ -289,12 +296,12 @@ class TestHardwareSystemTests(unittest.TestCase, HardwareSetup):
         return np.argsort(correlation)[-1]
 
     def test_p2pTransmission(self) -> None:
-        self.system = self.createP2PSystem(
-            ipUsrp1="192.168.189.132",
-            ipUsrp2="192.168.189.133",
+        hardwareSetup = P2PHardwareSetup()
+        self.system = hardwareSetup.createSystem()
+        signal = hardwareSetup.createRandom(noSamples=int(20e3))
+        txStreamingConfig, rxStreamingConfig = hardwareSetup.createStreamingConfigs(
+            signal
         )
-        signal = self.createRandom(noSamples=int(20e3))
-        txStreamingConfig, rxStreamingConfig = self.createP2PStreamingConfigs(signal)
         self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
         self.system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig)
         self.system.execute()

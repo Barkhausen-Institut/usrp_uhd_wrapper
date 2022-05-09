@@ -192,7 +192,7 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
 
         self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
         self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
-        self.assertRaises(ValueError, lambda: self.system.execute())
+        self.assertRaises(RuntimeError, lambda: self.system.execute())
 
     def test_getSamplingRates(self) -> None:
         supportedSamplingRates = np.array([200e6])

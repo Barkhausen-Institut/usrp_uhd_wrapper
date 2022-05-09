@@ -1,5 +1,4 @@
 import logging
-from multiprocessing.sharedctypes import Value
 from typing import Dict, List
 import time
 from collections import namedtuple

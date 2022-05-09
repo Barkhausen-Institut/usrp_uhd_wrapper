@@ -84,7 +84,7 @@ class TestStreamingConfiguration(unittest.TestCase, SystemMockFactory):
 
     def test_configureTxCallsFunctionInRpcClient(self) -> None:
         txStreamingConfig = TxStreamingConfig(
-            sendTimeOffset=2.0, samples=MimoSignal(signals=[np.ones(int(20e3))])
+            sendTimeOffset=2.0, samples=MimoSignal(signals=[0.2 * np.ones(int(20e3))])
         )
         self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
         self.mockUsrps[0].configureTx.assert_called_once_with(txStreamingConfig)
@@ -166,8 +166,8 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         self.mockUsrps = self.mockSystem(self.system, 2)
 
     def test_collectCallsCollectFromUsrpClient(self) -> None:
-        samplesUsrp1 = MimoSignal(signals=[np.ones(10)])
-        samplesUsrp2 = MimoSignal(signals=[2 * np.ones(10)])
+        samplesUsrp1 = MimoSignal(signals=[0.5 * np.ones(10)])
+        samplesUsrp2 = MimoSignal(signals=[0.1 * np.ones(10)])
 
         self.mockUsrps[0].collect.return_value = [samplesUsrp1]
         self.mockUsrps[1].collect.return_value = [samplesUsrp2]

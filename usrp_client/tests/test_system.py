@@ -201,3 +201,15 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         ]
 
         self.assertRaises(ValueError, lambda: self.system.collect())
+
+    def test_signalContainsTwoParts_oneContainsClippedValues_oneNot(self) -> None:
+        self.mockUsrps[0].collect.return_value = [
+            MimoSignal(
+                signals=[
+                    np.ones(10, dtype=np.complex64),
+                    np.zeros(10, dtype=np.complex64),
+                ]
+            )
+        ]
+
+        self.assertRaises(ValueError, lambda: self.system.collect())

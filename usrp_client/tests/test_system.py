@@ -16,8 +16,8 @@ from uhd_wrapper.utils.config import (
 )
 
 from usrp_client.tests.hardware_setups import (
-    LocalTransmissionHWSetup,
-    P2PHardwareSetup,
+    LocalTransmissionHardwareSetup,
+    P2pHardwareSetup,
     configure,
 )
 
@@ -259,7 +259,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         return np.argsort(correlation)[-1]
 
     def test_p2pTransmission(self) -> None:
-        system = configure(P2PHardwareSetup(), self.randomSignal)
+        system = configure(P2pHardwareSetup(), self.randomSignal)
         system.execute()
         samples = system.collect()
         signalStartSample = self.findFirstSampleInFrameOfSignal(
@@ -268,7 +268,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         self.assertTrue(290 <= signalStartSample <= 310)
 
     def test_localTransmission(self) -> None:
-        system = configure(LocalTransmissionHWSetup(), self.randomSignal)
+        system = configure(LocalTransmissionHardwareSetup(), self.randomSignal)
         system.execute()
         samples = system.collect()
         signalStartSample = self.findFirstSampleInFrameOfSignal(

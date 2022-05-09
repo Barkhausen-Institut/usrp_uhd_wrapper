@@ -33,7 +33,7 @@ def configure(hwSetup: HardwareSetup, txSignal: np.ndarray) -> System:
     return hwSetup.system  # type: ignore
 
 
-class P2PHardwareSetup(HardwareSetup):
+class P2pHardwareSetup(HardwareSetup):
     def createSystem(self) -> None:
         rfConfig = RfConfig()
         rfConfig.rxAnalogFilterBw = 400e6
@@ -66,7 +66,7 @@ class P2PHardwareSetup(HardwareSetup):
         )
 
 
-class LocalTransmissionHWSetup(HardwareSetup):
+class LocalTransmissionHardwareSetup(HardwareSetup):
     def createSystem(self) -> None:
         rfConfig = RfConfig()
         rfConfig.rxAnalogFilterBw = 400e6
@@ -98,7 +98,7 @@ class LocalTransmissionHWSetup(HardwareSetup):
         )
 
 
-class JcasSetup(HardwareSetup):
+class JcasHardwareSetup(HardwareSetup):
     def createSystem(self) -> None:
         rfConfig = RfConfig()
         rfConfig.rxAnalogFilterBw = 400e6

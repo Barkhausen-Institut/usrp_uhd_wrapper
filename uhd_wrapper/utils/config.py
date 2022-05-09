@@ -55,6 +55,13 @@ class MimoSignal:
             return np.sum([(a == b) for a, b in zip(self.signals, other.signals)])
 
 
+def containsClippedValue(mimoSignal: MimoSignal) -> bool:
+    for s in mimoSignal.signals:
+        if np.any(np.abs(np.real(s)) >= 1.0) or np.any(np.abs(np.imag(s)) >= 1.0):
+            return True
+    return False
+
+
 @dataclass
 class TxStreamingConfig:
     sendTimeOffset: float = 0.0

@@ -58,7 +58,9 @@ class MimoSignal:
 @dataclass
 class TxStreamingConfig:
     sendTimeOffset: float = 0.0
-    samples: MimoSignal = field(default_factory=list)  # type: ignore
+    samples: MimoSignal = field(  # type: ignore
+        default_factory=lambda: [MimoSignal(signals=[])]
+    )
 
 
 def fillDummyRfConfig(conf: Any) -> Any:

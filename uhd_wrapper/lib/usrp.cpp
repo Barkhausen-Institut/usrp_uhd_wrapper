@@ -78,36 +78,39 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
         txStreamingConfigs_ = {};
         for (auto &txStreamingConfig : txStreamingConfigs) {
             // add helpers
-            size_t noPackages = calcNoPackages(
-                txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
-            size_t noSamplesLastBuffer = calcNoSamplesLastBuffer(
-                txStreamingConfig.samples[0].size(), SAMPLES_PER_BUFFER);
-
-            // specifiy on specifications of how to stream the command
-            uhd::tx_metadata_t mdTx;
-            mdTx.start_of_burst = false;
-            mdTx.end_of_burst = false;
-            mdTx.has_time_spec = true;
-
-            mdTx.time_spec =
-                uhd::time_spec_t(baseTime + txStreamingConfig.sendTimeOffset);
-
-            for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-                txStreamer_->send({txStreamingConfig.samples[0].data() +
-                                   packageIdx * SAMPLES_PER_BUFFER},
-                                  packageIdx == (noPackages - 1)
-                                      ? noSamplesLastBuffer
-                                      : SAMPLES_PER_BUFFER,
-                                  mdTx, 0.1f);
-                // mdTx.start_of_burst = false;
-                mdTx.has_time_spec = false;
-            }
-            mdTx.end_of_burst = true;
-            txStreamer_->send("", 0, mdTx);
+            processTxStremaingConfig(txStreamingConfig, baseTime);
         }
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }
+}
+
+void Usrp::processTxStremaingConfig(const TxStreamingConfig &conf,
+                                    const double baseTime) {
+    size_t noPackages =
+        calcNoPackages(conf.samples[0].size(), SAMPLES_PER_BUFFER);
+    size_t noSamplesLastBuffer =
+        calcNoSamplesLastBuffer(conf.samples[0].size(), SAMPLES_PER_BUFFER);
+
+    // specifiy on specifications of how to stream the command
+    uhd::tx_metadata_t mdTx;
+    mdTx.start_of_burst = false;
+    mdTx.end_of_burst = false;
+    mdTx.has_time_spec = true;
+
+    mdTx.time_spec = uhd::time_spec_t(baseTime + conf.sendTimeOffset);
+
+    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+        txStreamer_->send(
+            {conf.samples[0].data() + packageIdx * SAMPLES_PER_BUFFER},
+            packageIdx == (noPackages - 1) ? noSamplesLastBuffer
+                                           : SAMPLES_PER_BUFFER,
+            mdTx, 0.1f);
+        // mdTx.start_of_burst = false;
+        mdTx.has_time_spec = false;
+    }
+    mdTx.end_of_burst = true;
+    txStreamer_->send("", 0, mdTx);
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);

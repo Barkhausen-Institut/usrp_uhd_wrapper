@@ -253,11 +253,9 @@ class TestHardwareSystemTests(unittest.TestCase):
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
 
-    def signalStartsInFrameInSampleInterval(
-        self, frame: np.ndarray, txSignal: np.ndarray, sampleInterval: Tuple[int, int]
-    ) -> int:
+    def findSignalStartsInFrame(self, frame: np.ndarray, txSignal: np.ndarray) -> int:
         correlation = np.abs(np.correlate(frame, txSignal))
-        return sampleInterval[0] <= np.argsort(correlation)[-1] <= sampleInterval[1]
+        return np.argsort(correlation)[-1]
 
     def test_p2pTransmission(self) -> None:
         system = configure(P2pHardwareSetup(), self.randomSignal)
@@ -265,10 +263,10 @@ class TestHardwareSystemTests(unittest.TestCase):
         samplesSystems = system.collect()
         rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
 
-        self.assertTrue(
-            self.signalStartsInFrameInSampleInterval(
-                rxSamplesUsrp2, self.randomSignal, (290, 310)
-            )
+        self.assertAlmostEqual(
+            first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSigna),
+            second=300,
+            delta=10,
         )
 
     def test_localTransmission(self) -> None:
@@ -277,10 +275,10 @@ class TestHardwareSystemTests(unittest.TestCase):
         samplesSystem = system.collect()
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
 
-        self.assertTrue(
-            self.signalStartsInFrameInSampleInterval(
-                rxSamplesUsrp1, self.randomSignal, (290, 310)
-            )
+        self.assertAlmostEqual(
+            first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSigna),
+            second=300,
+            delta=10,
         )
 
     def test_jcas(self) -> None:
@@ -290,13 +288,13 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
         rxSamplesUsrp2 = samplesSystem["usrp2"][0].signals[0]
 
-        self.assertTrue(
-            self.signalStartsInFrameInSampleInterval(
-                rxSamplesUsrp1, self.randomSignal, (290, 310)
-            )
+        self.assertAlmostEqual(
+            first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSigna),
+            second=300,
+            delta=10,
         )
-        self.assertTrue(
-            self.signalStartsInFrameInSampleInterval(
-                rxSamplesUsrp2, self.randomSignal, (290, 310)
-            )
+        self.assertAlmostEqual(
+            first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSigna),
+            second=300,
+            delta=10,
         )

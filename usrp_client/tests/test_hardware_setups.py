@@ -51,7 +51,7 @@ class P2pHardwareSetup(HardwareSetup):
         return self.system
 
 
-class LocalTransmission(HardwareSetup):
+class LocalTransmissionHardwareSetup(HardwareSetup):
     def connectUsrps(self) -> System:
         usrpIps = getUsrpIps()
 

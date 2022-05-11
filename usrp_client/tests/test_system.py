@@ -16,10 +16,8 @@ from uhd_wrapper.utils.config import (
 )
 
 from usrp_client.tests.hardware_setups import (
-    JcasHardwareSetup,
     LocalTransmissionHardwareSetup,
     P2pHardwareSetup,
-    configure,
 )
 
 
@@ -258,7 +256,23 @@ class TestHardwareSystemTests(unittest.TestCase):
         return np.argsort(correlation)[-1]
 
     def test_p2pTransmission(self) -> None:
-        system = configure(P2pHardwareSetup(), self.randomSignal)
+        setup = P2pHardwareSetup(
+            txGain=[35],
+            rxGain=[35],
+            rxSampleRate=245.76e6,
+            txSampleRate=245.76e6,
+            txFc=[2e9],
+            rxFc=[2e9],
+        )
+        system = setup.connectUsrps()
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
+        )
+        rxStreamingConfig2 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
         system.execute()
         samplesSystems = system.collect()
         rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
@@ -270,7 +284,25 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_localTransmission(self) -> None:
-        system = configure(LocalTransmissionHardwareSetup(), self.randomSignal)
+        setup = LocalTransmissionHardwareSetup(
+            txGain=[35],
+            rxGain=[35],
+            rxSampleRate=245.76e6,
+            txSampleRate=245.76e6,
+            txFc=[2e9],
+            rxFc=[2e9],
+        )
+        system = setup.connectUsrps()
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
+        )
+        rxStreamingConfig1 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+
         system.execute()
         samplesSystem = system.collect()
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
@@ -282,19 +314,41 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_jcas(self) -> None:
-        system = configure(JcasHardwareSetup(), self.randomSignal)
+        setup = P2pHardwareSetup(
+            txGain=[35],
+            rxGain=[35],
+            rxSampleRate=245.76e6,
+            txSampleRate=245.76e6,
+            txFc=[2e9],
+            rxFc=[2e9],
+        )
+        system = setup.connectUsrps()
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.1, samples=MimoSignal(signals=[self.randomSignal])
+        )
+        rxStreamingConfig1 = RxStreamingConfig(
+            receiveTimeOffset=0.1, noSamples=int(60e3)
+        )
+        rxStreamingConfig2 = RxStreamingConfig(
+            receiveTimeOffset=0.1, noSamples=int(60e3)
+        )
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+
+        system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
+
         system.execute()
         samplesSystem = system.collect()
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
         rxSamplesUsrp2 = samplesSystem["usrp2"][0].signals[0]
 
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSigna),
+            first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
             second=300,
             delta=10,
         )
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSigna),
+            first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
             second=300,
             delta=10,
         )

@@ -17,14 +17,14 @@ int main() {
     std::string usrpIp = "localhost";
     std::shared_ptr<bi::UsrpInterface> usrpPtr = bi::createUsrp(usrpIp);
     bi::RfConfig rfConfig;
-    rfConfig.txGain = {50};
-    rfConfig.rxGain = {30};
-    rfConfig.txCarrierFrequency = {2e9};
-    rfConfig.rxCarrierFrequency = {2e9};
-    rfConfig.txAnalogFilterBw = 400e6;
-    rfConfig.rxAnalogFilterBw = 400e6;
-    rfConfig.txSamplingRate = 122.88e6;
-    rfConfig.rxSamplingRate = 122.88e6;
+    rfConfig.txGain = {50, 40};
+    rfConfig.rxGain = {30, 40};
+    rfConfig.txCarrierFrequency = {2e9, 2.1e9};
+    rfConfig.rxCarrierFrequency = {2e9, 2.2e9};
+    rfConfig.txAnalogFilterBw = {400e6, 300e6};
+    rfConfig.rxAnalogFilterBw = {400e6, 300e6};
+    rfConfig.txSamplingRate = {122.88e6, 245.76e6};
+    rfConfig.rxSamplingRate = {122.88e6, 245.76e6};
 
     bi::TxStreamingConfig txStreamingConfig;
     txStreamingConfig.samples = createDummySamples(NO_TX_SAMPLES);
@@ -38,12 +38,14 @@ int main() {
     usrpPtr->setRfConfig(rfConfig);
     usrpPtr->setTxConfig(txStreamingConfig);
     usrpPtr->setRxConfig(rxStreamingConfig);
-    std::cout << "Setting time to zero..." << std::endl;
+    bi::RfConfig conf = usrpPtr->getRfConfig();
+    std::cout << conf << std::endl;
+    /*std::cout << "Setting time to zero..." << std::endl;
     usrpPtr->setTimeToZeroNextPps();
     std::cout << "Current Time " << usrpPtr->getCurrentFpgaTime() << std::endl;
     usrpPtr->execute(0.f);
     std::vector<bi::MimoSignal> samples = usrpPtr->collect();
     std::ofstream csvFile = createCsv("rxSamples.csv", 1);
-    dumpSamplesFirstConfig(samples[0], csvFile);
+    dumpSamplesFirstConfig(samples[0], csvFile);*/
     return 0;
 }

@@ -182,13 +182,6 @@ class System:
             item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]
 
-    def __assertSynchronisationValid(self) -> None:
-        currentFpgaTimes = self.__getCurrentFpgaTimes()
-        if (
-            np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
-        ) > System.syncThresholdSec:
-            raise ValueError("Fpga Times of USRPs mismatch... Synchronisation invalid.")
-
     def collect(self) -> Dict[str, List[MimoSignal]]:
         """Collects the samples at each USRP.
 

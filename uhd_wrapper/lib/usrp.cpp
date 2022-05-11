@@ -242,7 +242,8 @@ void Usrp::setTxSamplingRate(const double samplingRate) {
     assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
 void Usrp::setRxSamplingRate(const double samplingRate) {
-    for (size_t idxRxAntenna = 0; idxRxAntenna < noRxAntennas_; idxRxAntenna) {
+    for (size_t idxRxAntenna = 0; idxRxAntenna < noRxAntennas_;
+         idxRxAntenna++) {
         usrpDevice_->set_rx_rate(samplingRate, idxRxAntenna);
         double actualSamplingRate = usrpDevice_->get_rx_rate();
         assertSamplingRate(actualSamplingRate, masterClockRate_);

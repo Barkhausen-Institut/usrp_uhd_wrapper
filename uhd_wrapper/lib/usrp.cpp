@@ -1,4 +1,5 @@
 #include <cmath>
+#include <numeric>
 
 #include "usrp.hpp"
 
@@ -113,6 +114,7 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);
+    noRxAntennas_ = conf.rxCarrierFrequency.size();
     // configure transmitter
     setTxSamplingRate(conf.txSamplingRate);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
@@ -122,13 +124,18 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
     // configure receiver
     setRxSamplingRate(conf.rxSamplingRate);
-    uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency[0]);
-    usrpDevice_->set_rx_freq(rxTuneRequest, 0);
-    usrpDevice_->set_rx_gain(conf.rxGain[0], 0);
+    for (size_t idxRxAntenna = 0; idxRxAntenna < noRxAntennas_;
+         idxRxAntenna++) {
+        uhd::tune_request_t rxTuneRequest(
+            conf.rxCarrierFrequency[idxRxAntenna]);
+        usrpDevice_->set_rx_freq(rxTuneRequest, idxRxAntenna);
+        usrpDevice_->set_rx_gain(conf.rxGain[idxRxAntenna], idxRxAntenna);
+    }
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, 0);
 
     if (!subdevSpecSet_) {
-        usrpDevice_->set_rx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+        usrpDevice_->set_rx_subdev_spec(
+            uhd::usrp::subdev_spec_t(SUBDEV_SPECS[noRxAntennas_ - 1]), 0);
         usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
         subdevSpecSet_ = true;
     }
@@ -140,7 +147,9 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     }
     if (!rxStreamer_) {
         uhd::stream_args_t rxStreamArgs("fc32", "sc16");
-        rxStreamArgs.channels = std::vector<size_t>({0});
+        rxStreamArgs.channels = std::vector<size_t>(noRxAntennas_, 0);
+        std::iota(rxStreamArgs.channels.begin(), rxStreamArgs.channels.end(),
+                  0);
         rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
     }
 

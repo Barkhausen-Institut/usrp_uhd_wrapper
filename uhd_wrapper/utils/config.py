@@ -14,14 +14,16 @@ from .serialization import (
 @dataclass_json
 @dataclass
 class RfConfig:
-    txAnalogFilterBw: List[float] = field(default_factory=lambda: [0.0])
-    rxAnalogFilterBw: List[float] = field(default_factory=lambda: [0.0])
-    txSamplingRate: List[float] = field(default_factory=lambda: [0.0])
-    rxSamplingRate: List[float] = field(default_factory=lambda: [0.0])
-    txGain: List[float] = field(default_factory=lambda: [0.0])
-    rxGain: List[float] = field(default_factory=lambda: [0.0])
-    txCarrierFrequency: List[float] = field(default_factory=lambda: [0.0])
-    rxCarrierFrequency: List[float] = field(default_factory=lambda: [0.0])
+    txAnalogFilterBw: float = 0.0
+    rxAnalogFilterBw: float = 0.0
+    txSamplingRate: float = 0.0
+    rxSamplingRate: float = 0.0
+    txGain: float = 0.0
+    rxGain: float = 0.0
+    txCarrierFrequency: float = 0.0
+    rxCarrierFrequency: float = 0.0
+    noTxAntennas: int = 1
+    noRxAntennas: int = 1
 
     def serialize(self) -> str:
         return self.to_json()  # type: ignore
@@ -71,13 +73,13 @@ class TxStreamingConfig:
 
 
 def fillDummyRfConfig(conf: Any) -> Any:
-    conf.txCarrierFrequency = [2e9]
-    conf.txGain = [30]
+    conf.txCarrierFrequency = 2e9
+    conf.txGain = 30
     conf.txAnalogFilterBw = 200e6
     conf.txSamplingRate = 20e6
 
-    conf.rxCarrierFrequency = [2.5e9]
-    conf.rxGain = [40]
+    conf.rxCarrierFrequency = 2.5e9
+    conf.rxGain = 40
     conf.rxAnalogFilterBw = 100e6
     conf.rxSamplingRate = 30e6
     return conf

@@ -79,14 +79,14 @@ class TestRfConfigCast(unittest.TestCase):
         cBinding = fillDummyRfConfig(RfConfigBinding())
 
         c = RfConfigFromBinding(cBinding)
-        self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
-        self.assertListEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
         self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
         self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
         self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
         self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
-        self.assertListEqual(cBinding.txGain, c.txGain)
-        self.assertListEqual(cBinding.rxGain, c.rxGain)
+        self.assertEqual(cBinding.txGain, c.txGain)
+        self.assertEqual(cBinding.rxGain, c.rxGain)
 
     def test_castConfigToBinding(self) -> None:
         from uhd_wrapper.utils.config import RfConfig
@@ -94,14 +94,14 @@ class TestRfConfigCast(unittest.TestCase):
         cBinding = fillDummyRfConfig(RfConfig())
 
         c = RfConfigToBinding(cBinding)
-        self.assertListEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
-        self.assertListEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
         self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
         self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
         self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
         self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
-        self.assertListEqual(cBinding.txGain, c.txGain)
-        self.assertListEqual(cBinding.rxGain, c.rxGain)
+        self.assertEqual(cBinding.txGain, c.txGain)
+        self.assertEqual(cBinding.rxGain, c.rxGain)
 
 
 class TestUsrpServer(unittest.TestCase):

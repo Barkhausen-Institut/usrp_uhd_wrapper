@@ -10,14 +10,11 @@ typedef std::vector<samples_vec> MimoSignal;
 
 struct RfConfig {
     RfConfig() {}
-    RfConfig(const std::vector<float>& _txGain,
-             const std::vector<float>& _rxGain,
-             const std::vector<float>& _txCarrierFrequency,
-             const std::vector<float>& _rxCarrierFrequency,
-             const std::vector<float>& _txAnalogFilterBw,
-             const std::vector<float> _rxAnalogFilterBw,
-             const std::vector<float> _txSamplingRate,
-             const std::vector<float> _rxSamplingRate)
+    RfConfig(const float _txGain, const float _rxGain,
+             const float _txCarrierFrequency, const float _rxCarrierFrequency,
+             const float _txAnalogFilterBw, const float _rxAnalogFilterBw,
+             const float _txSamplingRate, const float _rxSamplingRate,
+             const int _noTxAntennas, const int _noRxAntennas)
         : txGain(_txGain),
           rxGain(_rxGain),
           txCarrierFrequency(_txCarrierFrequency),
@@ -25,11 +22,14 @@ struct RfConfig {
           txAnalogFilterBw(_txAnalogFilterBw),
           rxAnalogFilterBw(_rxAnalogFilterBw),
           txSamplingRate(_txSamplingRate),
-          rxSamplingRate(_rxSamplingRate) {}
-    std::vector<float> txGain, rxGain;
-    std::vector<float> txCarrierFrequency, rxCarrierFrequency;
-    std::vector<float> txAnalogFilterBw, rxAnalogFilterBw;
-    std::vector<float> txSamplingRate, rxSamplingRate;
+          rxSamplingRate(_rxSamplingRate),
+          noTxAntennas(_noTxAntennas),
+          noRxAntennas(_noRxAntennas) {}
+    float txGain, rxGain;
+    float txCarrierFrequency, rxCarrierFrequency;
+    float txAnalogFilterBw, rxAnalogFilterBw;
+    float txSamplingRate, rxSamplingRate;
+    int noTxAntennas, noRxAntennas;
 };
 
 struct TxStreamingConfig {
@@ -69,13 +69,5 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
 
 void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples);
 
-template<typename T>
-std::string toString(const std::vector<T>& data) {
-    std::stringstream res;
-    for (auto el : data) {
-        res << el << ", ";
-    }
-    return res.str();
-}
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf);
 }  // namespace bi

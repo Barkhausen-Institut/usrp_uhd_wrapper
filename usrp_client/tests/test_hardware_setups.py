@@ -24,16 +24,16 @@ def getUsrpIps() -> Tuple[str, str]:
 class HardwareSetup:
     def __init__(
         self,
-        txGain: List[float] = [35],
-        rxGain: List[float] = [35],
-        rxSampleRate: List[float] = [245.76e6],
-        txSampleRate: List[float] = [245.76e6],
-        txFc: List[float] = [2e9],
-        rxFc: List[float] = [2e9],
+        txGain: float = 35,
+        rxGain: float = 35,
+        rxSampleRate: float = 245.76e6,
+        txSampleRate: float = 245.76e6,
+        txFc: float = 2e9,
+        rxFc: float = 2e9,
     ) -> None:
         self.rfConfig = RfConfig()
-        self.rfConfig.rxAnalogFilterBw = [400e6]
-        self.rfConfig.txAnalogFilterBw = [400e6]
+        self.rfConfig.rxAnalogFilterBw = 400e6
+        self.rfConfig.txAnalogFilterBw = 400e6
         self.rfConfig.rxSamplingRate = rxSampleRate
         self.rfConfig.txSamplingRate = txSampleRate
         self.rfConfig.rxGain = rxGain

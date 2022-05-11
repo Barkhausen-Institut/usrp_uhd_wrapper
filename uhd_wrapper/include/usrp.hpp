@@ -60,7 +60,6 @@ class Usrp : public UsrpInterface {
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
     bool subdevSpecSet_ = false;
-    size_t noRxAntennas_;
 
     // functions
     void setTxSamplingRate(const double samplingRate);

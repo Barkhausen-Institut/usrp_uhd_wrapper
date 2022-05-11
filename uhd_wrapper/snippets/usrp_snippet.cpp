@@ -17,14 +17,14 @@ int main() {
     std::string usrpIp = "localhost";
     std::shared_ptr<bi::UsrpInterface> usrpPtr = bi::createUsrp(usrpIp);
     bi::RfConfig rfConfig;
-    rfConfig.txGain = {50, 40};
-    rfConfig.rxGain = {30, 40};
-    rfConfig.txCarrierFrequency = {2e9, 2.1e9};
-    rfConfig.rxCarrierFrequency = {2e9, 2.2e9};
-    rfConfig.txAnalogFilterBw = {400e6, 300e6};
-    rfConfig.rxAnalogFilterBw = {400e6, 300e6};
-    rfConfig.txSamplingRate = {122.88e6, 245.76e6};
-    rfConfig.rxSamplingRate = {122.88e6, 245.76e6};
+    rfConfig.txGain = 50;
+    rfConfig.rxGain = 30;
+    rfConfig.txCarrierFrequency = 2e9;
+    rfConfig.rxCarrierFrequency = 2e9;
+    rfConfig.txAnalogFilterBw = 400e6;
+    rfConfig.rxAnalogFilterBw = 400e6;
+    rfConfig.txSamplingRate = 122.88e6;
+    rfConfig.rxSamplingRate = 122.88e6;
 
     bi::TxStreamingConfig txStreamingConfig;
     txStreamingConfig.samples = createDummySamples(NO_TX_SAMPLES);

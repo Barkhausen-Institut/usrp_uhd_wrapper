@@ -82,14 +82,14 @@ PYBIND11_MODULE(usrp_pybinding, m) {
     // wrap object
     py::class_<bi::RfConfig>(m, "RfConfig")
         .def(py::init())
-        .def(py::init<const std::vector<float>&, const std::vector<float>&,
-                      const std::vector<float>&, const std::vector<float>&,
-                      const std::vector<float>&, const std::vector<float>&,
-                      const std::vector<float>&, const std::vector<float>&>(),
+        .def(py::init<const float, const float, const float, const float,
+                      const float, const float, const float, const float,
+                      const int, const int>(),
              py::arg("txGain"), py::arg("rxGain"),
              py::arg("rxCarrierFrequency"), py::arg("txCarrierFrequency"),
              py::arg("txAnalogFilterBw"), py::arg("rxAnalogFilterBw"),
-             py::arg("txSamplingRate"), py::arg("rxSamplingRate"))
+             py::arg("txSamplingRate"), py::arg("rxSamplingRate"),
+             py::arg("noRxAntennas"), py::arg("noTxAntennas"))
         .def_readwrite("txSamplingRate", &bi::RfConfig::txSamplingRate)
         .def_readwrite("rxSamplingRate", &bi::RfConfig::rxSamplingRate)
         .def_readwrite("txAnalogFilterBw", &bi::RfConfig::txAnalogFilterBw)
@@ -98,6 +98,8 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("rxGain", &bi::RfConfig::rxGain)
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency)
+        .def_readwrite("norxAntennas", &bi::RfConfig::noRxAntennas)
+        .def_readwrite("noTxAntennas", &bi::RfConfig::noTxAntennas)
         .def(py::self == py::self);
 
     py::class_<bi::UsrpException>(m, "UsrpException");

@@ -21,7 +21,7 @@ def getUsrpIps() -> Tuple[str, str]:
     return (os.environ["USRP1_IP"], os.environ["USRP2_IP"])
 
 
-class P2pHardwareSetup:
+class HardwareSetup:
     def __init__(
         self,
         txGain: List[float],
@@ -41,35 +41,17 @@ class P2pHardwareSetup:
         self.rfConfig.rxCarrierFrequency = rxFc
         self.rfConfig.txCarrierFrequency = txFc
 
+
+class P2pHardwareSetup(HardwareSetup):
     def connectUsrps(self) -> System:
         usrpIps = getUsrpIps()
-
         self.system = System()
         self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[0], usrpName="usrp1")
         self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[1], usrpName="usrp2")
         return self.system
 
 
-class LocalTransmissionHardwareSetup:
-    def __init__(
-        self,
-        txGain: List[float],
-        rxGain: List[float],
-        rxSampleRate: float,
-        txSampleRate: float,
-        txFc: List[float],
-        rxFc: List[float],
-    ) -> None:
-        self.rfConfig = RfConfig()
-        self.rfConfig.rxAnalogFilterBw = 400e6
-        self.rfConfig.txAnalogFilterBw = 400e6
-        self.rfConfig.rxSamplingRate = rxSampleRate
-        self.rfConfig.txSamplingRate = txSampleRate
-        self.rfConfig.rxGain = rxGain
-        self.rfConfig.txGain = txGain
-        self.rfConfig.rxCarrierFrequency = rxFc
-        self.rfConfig.txCarrierFrequency = txFc
-
+class LocalTransmission(HardwareSetup):
     def connectUsrps(self) -> System:
         usrpIps = getUsrpIps()
 

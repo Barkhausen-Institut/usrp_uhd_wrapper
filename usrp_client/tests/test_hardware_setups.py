@@ -24,12 +24,12 @@ def getUsrpIps() -> Tuple[str, str]:
 class HardwareSetup:
     def __init__(
         self,
-        txGain: List[float],
-        rxGain: List[float],
-        rxSampleRate: float,
-        txSampleRate: float,
-        txFc: List[float],
-        rxFc: List[float],
+        txGain: List[float] = [35],
+        rxGain: List[float] = [35],
+        rxSampleRate: float = 245.76e6,
+        txSampleRate: float = 245.76e6,
+        txFc: List[float] = [2e9],
+        rxFc: List[float] = [2e9],
     ) -> None:
         self.rfConfig = RfConfig()
         self.rfConfig.rxAnalogFilterBw = 400e6
@@ -74,14 +74,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         return np.argsort(correlation)[-1]
 
     def test_p2pTransmission(self) -> None:
-        setup = P2pHardwareSetup(
-            txGain=[35],
-            rxGain=[35],
-            rxSampleRate=245.76e6,
-            txSampleRate=245.76e6,
-            txFc=[2e9],
-            rxFc=[2e9],
-        )
+        setup = P2pHardwareSetup()
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -102,14 +95,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_localTransmission(self) -> None:
-        setup = LocalTransmissionHardwareSetup(
-            txGain=[35],
-            rxGain=[35],
-            rxSampleRate=245.76e6,
-            txSampleRate=245.76e6,
-            txFc=[2e9],
-            rxFc=[2e9],
-        )
+        setup = LocalTransmissionHardwareSetup()
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -132,14 +118,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_jcas(self) -> None:
-        setup = P2pHardwareSetup(
-            txGain=[35],
-            rxGain=[35],
-            rxSampleRate=245.76e6,
-            txSampleRate=245.76e6,
-            txFc=[2e9],
-            rxFc=[2e9],
-        )
+        setup = P2pHardwareSetup()
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.1, samples=MimoSignal(signals=[self.randomSignal])

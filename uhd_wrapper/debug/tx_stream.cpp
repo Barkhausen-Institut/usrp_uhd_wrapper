@@ -48,12 +48,12 @@ void transmit(const float timeOffset, uhd::tx_streamer::sptr txStreamer) {
 void setRfConfig(const bi::RfConfig &conf,
                  uhd::usrp::multi_usrp::sptr usrpDevice) {
     // configure transmitter
-    usrpDevice->set_tx_rate(conf.txSamplingRate);
+    usrpDevice->set_tx_rate(conf.txSamplingRate[0]);
     usrpDevice->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency[0]);
     usrpDevice->set_tx_freq(txTuneRequest, 0);
     usrpDevice->set_tx_gain(conf.txGain[0], 0);
-    usrpDevice->set_tx_bandwidth(conf.txAnalogFilterBw, 0);
+    usrpDevice->set_tx_bandwidth(conf.txAnalogFilterBw[0], 0);
 }
 int main() {
     std::signal(SIGINT, &sig_int_handler);
@@ -61,8 +61,8 @@ int main() {
     bi::RfConfig rfConfig;
     rfConfig.txGain = {30};
     rfConfig.txCarrierFrequency = {2e9};
-    rfConfig.txAnalogFilterBw = 400e6;
-    rfConfig.txSamplingRate = 50e6;
+    rfConfig.txAnalogFilterBw = {400e6};
+    rfConfig.txSamplingRate = {50e6};
     uhd::usrp::multi_usrp::sptr usrpDevice =
         uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=localhost"));
 

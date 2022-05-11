@@ -64,7 +64,9 @@ class Usrp : public UsrpInterface {
 
     // functions
     void setTxSamplingRate(const double samplingRate);
-    void setRxSamplingRate(const std::vector<float>& samplingRate);
+    void setRxSamplingRate(const double samplingRate, size_t rxAntennaIdx);
+
+    void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
     void receive(const float baseTime, std::vector<MimoSignal>& buffers,
                  std::exception_ptr& exceptionPtr);

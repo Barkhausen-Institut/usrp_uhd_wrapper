@@ -129,15 +129,9 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw[0], 0);
 
     // configure receiver
-    setRxSamplingRate(conf.rxSamplingRate);
     for (size_t idxRxAntenna = 0; idxRxAntenna < noRxAntennas_;
          idxRxAntenna++) {
-        uhd::tune_request_t rxTuneRequest(
-            conf.rxCarrierFrequency[idxRxAntenna]);
-        usrpDevice_->set_rx_freq(rxTuneRequest, idxRxAntenna);
-        usrpDevice_->set_rx_gain(conf.rxGain[idxRxAntenna], idxRxAntenna);
-        usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw[idxRxAntenna],
-                                      idxRxAntenna);
+        setRfConfigForRxAntenna(conf, idxRxAntenna);
     }
 
     if (!subdevSpecSet_) {
@@ -163,18 +157,29 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     rfConfig_ = getRfConfig();
 }
 
+void Usrp::setRfConfigForRxAntenna(const RfConfig &conf, size_t rxAntennaIdx) {
+    setRxSamplingRate(conf.rxSamplingRate[rxAntennaIdx], rxAntennaIdx);
+    uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency[rxAntennaIdx]);
+    usrpDevice_->set_rx_freq(rxTuneRequest, rxAntennaIdx);
+    usrpDevice_->set_rx_gain(conf.rxGain[rxAntennaIdx], rxAntennaIdx);
+    usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw[rxAntennaIdx],
+                                  rxAntennaIdx);
+}
+
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
     assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL);
     if (txStreamingConfigs_.size() > 0)
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_.txSamplingRate);
+                                     GUARD_OFFSET_S_,
+                                     rfConfig_.txSamplingRate[0]);
     txStreamingConfigs_.push_back(conf);
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {
     if (rxStreamingConfigs_.size() > 0)
         assertValidRxStreamingConfig(rxStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_.rxSamplingRate);
+                                     GUARD_OFFSET_S_,
+                                     rfConfig_.rxSamplingRate[0]);
     rxStreamingConfigs_.push_back(conf);
 }
 
@@ -248,13 +253,10 @@ void Usrp::setTxSamplingRate(const double samplingRate) {
     double actualSamplingRate = usrpDevice_->get_tx_rate();
     assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
-void Usrp::setRxSamplingRate(const std::vector<float> &samplingRate) {
-    for (size_t idxRxAntenna = 0; idxRxAntenna < noRxAntennas_;
-         idxRxAntenna++) {
-        usrpDevice_->set_rx_rate(samplingRate[idxRxAntenna], idxRxAntenna);
-        double actualSamplingRate = usrpDevice_->get_rx_rate(idxRxAntenna);
-        assertSamplingRate(actualSamplingRate, masterClockRate_);
-    }
+void Usrp::setRxSamplingRate(const double samplingRate, size_t idxRxAntenna) {
+    usrpDevice_->set_rx_rate(samplingRate, idxRxAntenna);
+    double actualSamplingRate = usrpDevice_->get_rx_rate(idxRxAntenna);
+    assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
 
 }  // namespace bi

@@ -77,14 +77,14 @@ void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
             std::move(txStreamingConfigs_);
         txStreamingConfigs_ = {};
         for (auto &txStreamingConfig : txStreamingConfigs) {
-            processTxStremaingConfig(txStreamingConfig, baseTime);
+            processTxStreamingConfig(txStreamingConfig, baseTime);
         }
     } catch (const std::exception &ex) {
         exceptionPtr = std::current_exception();
     }
 }
 
-void Usrp::processTxStremaingConfig(const TxStreamingConfig &conf,
+void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
                                     const double baseTime) {
     size_t noPackages =
         calcNoPackages(conf.samples[0].size(), SAMPLES_PER_BUFFER);

@@ -26,7 +26,7 @@ build_test:
     - make && make install
     - ctest -V
     - cd ../../
-    - pytest
+    - pytest . -m "not hardware"
 
 pages:
   stage: pages

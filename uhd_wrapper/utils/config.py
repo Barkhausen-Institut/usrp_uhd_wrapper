@@ -14,10 +14,10 @@ from .serialization import (
 @dataclass_json
 @dataclass
 class RfConfig:
-    txAnalogFilterBw: float = 0.0
-    rxAnalogFilterBw: float = 0.0
-    txSamplingRate: float = 0.0
-    rxSamplingRate: float = 0.0
+    txAnalogFilterBw: List[float] = field(default_factory=lambda: [0.0])
+    rxAnalogFilterBw: List[float] = field(default_factory=lambda: [0.0])
+    txSamplingRate: List[float] = field(default_factory=lambda: [0.0])
+    rxSamplingRate: List[float] = field(default_factory=lambda: [0.0])
     txGain: List[float] = field(default_factory=lambda: [0.0])
     rxGain: List[float] = field(default_factory=lambda: [0.0])
     txCarrierFrequency: List[float] = field(default_factory=lambda: [0.0])

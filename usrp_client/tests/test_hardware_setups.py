@@ -26,14 +26,14 @@ class HardwareSetup:
         self,
         txGain: List[float] = [35],
         rxGain: List[float] = [35],
-        rxSampleRate: float = 245.76e6,
-        txSampleRate: float = 245.76e6,
+        rxSampleRate: List[float] = [245.76e6],
+        txSampleRate: List[float] = [245.76e6],
         txFc: List[float] = [2e9],
         rxFc: List[float] = [2e9],
     ) -> None:
         self.rfConfig = RfConfig()
-        self.rfConfig.rxAnalogFilterBw = 400e6
-        self.rfConfig.txAnalogFilterBw = 400e6
+        self.rfConfig.rxAnalogFilterBw = [400e6]
+        self.rfConfig.txAnalogFilterBw = [400e6]
         self.rfConfig.rxSamplingRate = rxSampleRate
         self.rfConfig.txSamplingRate = txSampleRate
         self.rfConfig.rxGain = rxGain

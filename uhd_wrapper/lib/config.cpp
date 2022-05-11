@@ -96,4 +96,5 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     os << "RX Sampling Rate: " << toString(conf.rxSamplingRate) << std::endl;
     return os;
 }
+
 }  // namespace bi

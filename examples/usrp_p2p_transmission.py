@@ -16,10 +16,10 @@ def createSystem(
     fc: float, fs: float, txGain: float, rxGain: float, ipUsrp1: str, ipUsrp2: str
 ) -> System:
     rfConfig = RfConfig()
-    rfConfig.rxAnalogFilterBw = 400e6
-    rfConfig.txAnalogFilterBw = 400e6
-    rfConfig.rxSamplingRate = fs
-    rfConfig.txSamplingRate = fs
+    rfConfig.rxAnalogFilterBw = [400e6]
+    rfConfig.txAnalogFilterBw = [400e6]
+    rfConfig.rxSamplingRate = [fs]
+    rfConfig.txSamplingRate = [fs]
     rfConfig.rxGain = [rxGain]
     rfConfig.txGain = [txGain]
     rfConfig.rxCarrierFrequency = [fc]

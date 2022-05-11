@@ -79,4 +79,21 @@ void assertValidTxSignal(const MimoSignal& antSamples,
                 std::to_string(maxSamples));
     }
 }
+
+std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
+    os << "TxGain: " << toString(conf.txGain) << std::endl;
+    os << "RxGain: " << toString(conf.rxGain) << std::endl;
+
+    os << "TxCarrierFrequency: " << toString(conf.txCarrierFrequency)
+       << std::endl;
+    os << "RxCarrierFrequency: " << toString(conf.rxCarrierFrequency)
+       << std::endl;
+
+    os << "TxAnalogFilterBW: " << toString(conf.txAnalogFilterBw) << std::endl;
+    os << "RxAnalogFilterBW: " << toString(conf.rxAnalogFilterBw) << std::endl;
+
+    os << "TX Sampling Rate: " << toString(conf.txSamplingRate) << std::endl;
+    os << "RX Sampling Rate: " << toString(conf.rxSamplingRate) << std::endl;
+    return os;
+}
 }  // namespace bi

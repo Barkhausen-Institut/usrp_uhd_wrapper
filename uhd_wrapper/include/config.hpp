@@ -68,4 +68,14 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
                                   const double guardOffset, const double fs);
 
 void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples);
+
+template<typename T>
+std::string toString(const std::vector<T>& data) {
+    std::stringstream res;
+    for (auto el : data) {
+        res << el << ", ";
+    }
+    return res.str();
+}
+std::ostream& operator<<(std::ostream& os, const RfConfig& conf);
 }  // namespace bi

@@ -98,7 +98,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("rxGain", &bi::RfConfig::rxGain)
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency)
-        .def_readwrite("norxAntennas", &bi::RfConfig::noRxAntennas)
+        .def_readwrite("noRxAntennas", &bi::RfConfig::noRxAntennas)
         .def_readwrite("noTxAntennas", &bi::RfConfig::noTxAntennas)
         .def(py::self == py::self);
 

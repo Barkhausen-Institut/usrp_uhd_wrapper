@@ -69,7 +69,7 @@ class Usrp : public UsrpInterface {
     void setTimeToZeroNextPpsThreadFunction();
     void processRxStreamingConfig(const RxStreamingConfig& config,
                                   MimoSignal& buffer, const double baseTime);
-    void processTxStremaingConfig(const TxStreamingConfig& config,
+    void processTxStreamingConfig(const TxStreamingConfig& config,
                                   const double baseTime);
 };
 

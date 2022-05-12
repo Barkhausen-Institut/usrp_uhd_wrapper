@@ -27,11 +27,11 @@ class HardwareSetup:
         self,
         txGain: float = 35,
         rxGain: float = 35,
-        rxSampleRate: float = 245.76e6,
-        txSampleRate: float = 245.76e6,
+        rxSampleRate: float = 122.88e6,
+        txSampleRate: float = 122.88e6,
         txFc: float = 2e9,
         rxFc: float = 2e9,
-        noRxAntennas: int = 1,
+        noRxAntennas: int = 2,
         noTxAntennas: int = 1,
     ) -> None:
         self.rfConfig = RfConfig()
@@ -79,7 +79,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         return np.argsort(correlation)[-1]
 
     def test_oneTxAntennaTwoRxAntennas_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=2)
+        setup = LocalTransmissionHardwareSetup()
         system = setup.connectUsrps()
         rxStreamingConfig1 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)
@@ -117,7 +117,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
-            second=300,
+            second=170,
             delta=10,
         )
 
@@ -140,7 +140,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=300,
+            second=170,
             delta=10,
         )
 
@@ -168,11 +168,11 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=300,
+            second=170,
             delta=10,
         )
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
-            second=300,
+            second=170,
             delta=10,
         )

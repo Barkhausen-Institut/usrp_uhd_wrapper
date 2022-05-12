@@ -40,7 +40,10 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
 
 void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                                     MimoSignal &buffer, const double baseTime) {
-    buffer[0].resize(config.noSamples);
+    for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
+         rxAntennaIdx++) {
+        buffer[rxAntennaIdx].resize(config.noSamples);
+    }
 
     size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
     size_t noSamplesLastBuffer =

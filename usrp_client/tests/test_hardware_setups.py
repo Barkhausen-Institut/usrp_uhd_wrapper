@@ -30,6 +30,8 @@ class HardwareSetup:
         txSampleRate: float = 245.76e6,
         txFc: float = 2e9,
         rxFc: float = 2e9,
+        noRxAntennas: int = 1,
+        noTxAntennas: int = 1,
     ) -> None:
         self.rfConfig = RfConfig()
         self.rfConfig.rxAnalogFilterBw = 400e6
@@ -40,6 +42,8 @@ class HardwareSetup:
         self.rfConfig.txGain = txGain
         self.rfConfig.rxCarrierFrequency = rxFc
         self.rfConfig.txCarrierFrequency = txFc
+        self.rfConfig.noRxAntennas = noRxAntennas
+        self.rfConfig.noTxAntennas = noTxAntennas
 
 
 class P2pHardwareSetup(HardwareSetup):
@@ -72,6 +76,28 @@ class TestHardwareSystemTests(unittest.TestCase):
     def findSignalStartsInFrame(self, frame: np.ndarray, txSignal: np.ndarray) -> int:
         correlation = np.abs(np.correlate(frame, txSignal))
         return np.argsort(correlation)[-1]
+
+    def test_oneTxAntennaTwoRxAntennas_localhost(self) -> None:
+        setup = LocalTransmissionHardwareSetup()
+        setup.rfConfig.noRxAntennas = 4
+        system = setup.connectUsrps()
+        rxStreamingConfig1 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
+        )
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.execute()
+        samplesSystem = system.collect()
+        rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
+        rxSamplesUsrpAnt2 = samplesSystem["usrp1"][0].signals[1]
+        self.assertAlmostEqual(
+            first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+            second=self.findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),
+            delta=1,
+        )
 
     def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup()

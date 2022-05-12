@@ -39,7 +39,8 @@ class Usrp : public UsrpInterface {
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
     const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)64e3;
-
+    const std::vector<std::string> SUBDEV_SPECS = {
+        "A:0", "A:0 A:1", "A:0 A:1 B:0", "A:0 A:1 B:0 B:1"};
     // variables
     uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
@@ -62,7 +63,9 @@ class Usrp : public UsrpInterface {
 
     // functions
     void setTxSamplingRate(const double samplingRate);
-    void setRxSamplingRate(const double samplingRate);
+    void setRxSamplingRate(const double samplingRate, size_t rxAntennaIdx);
+
+    void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
     void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
     void receive(const float baseTime, std::vector<MimoSignal>& buffers,
                  std::exception_ptr& exceptionPtr);

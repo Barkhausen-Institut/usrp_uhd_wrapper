@@ -1,4 +1,4 @@
-from typing import Tuple, List
+from typing import Tuple
 import unittest
 import pytest
 import os
@@ -24,12 +24,12 @@ def getUsrpIps() -> Tuple[str, str]:
 class HardwareSetup:
     def __init__(
         self,
-        txGain: List[float] = [35],
-        rxGain: List[float] = [35],
+        txGain: float = 35,
+        rxGain: float = 35,
         rxSampleRate: float = 245.76e6,
         txSampleRate: float = 245.76e6,
-        txFc: List[float] = [2e9],
-        rxFc: List[float] = [2e9],
+        txFc: float = 2e9,
+        rxFc: float = 2e9,
     ) -> None:
         self.rfConfig = RfConfig()
         self.rfConfig.rxAnalogFilterBw = 400e6

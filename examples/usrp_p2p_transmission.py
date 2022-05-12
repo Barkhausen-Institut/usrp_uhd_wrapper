@@ -20,10 +20,10 @@ def createSystem(
     rfConfig.txAnalogFilterBw = 400e6
     rfConfig.rxSamplingRate = fs
     rfConfig.txSamplingRate = fs
-    rfConfig.rxGain = [rxGain]
-    rfConfig.txGain = [txGain]
-    rfConfig.rxCarrierFrequency = [fc]
-    rfConfig.txCarrierFrequency = [fc]
+    rfConfig.rxGain = rxGain
+    rfConfig.txGain = txGain
+    rfConfig.rxCarrierFrequency = fc
+    rfConfig.txCarrierFrequency = fc
 
     # ceate system
     system = System()

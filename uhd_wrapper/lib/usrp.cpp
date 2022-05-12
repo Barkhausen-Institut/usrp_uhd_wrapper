@@ -62,9 +62,9 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
 
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         std::vector<sample *> buffers;
-        for (int rxAntennaIdx = 0; rxAntennaIdx > rfConfig_.noRxAntennas;
+        for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
              rxAntennaIdx++) {
-            buffers.push_back(buffer[packageIdx].data() +
+            buffers.push_back(buffer[rxAntennaIdx].data() +
                               packageIdx * SAMPLES_PER_BUFFER);
         }
         rxStreamer_->recv(buffers,

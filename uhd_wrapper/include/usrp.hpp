@@ -74,8 +74,6 @@ class Usrp : public UsrpInterface {
                                   MimoSignal& buffer, const double baseTime);
     void processTxStreamingConfig(const TxStreamingConfig& config,
                                   const double baseTime);
-    void initializeRxBuffers(const RxStreamingConfig& config,
-                             MimoSignal& buffer);
 };
 
 }  // namespace bi

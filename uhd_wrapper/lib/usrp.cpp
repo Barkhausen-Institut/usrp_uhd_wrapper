@@ -31,8 +31,8 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
         rxStreamingConfigs_ = {};
         for (size_t configIdx = 0; configIdx < rxStreamingConfigs.size();
              configIdx++) {
-            initializeRxBuffers(rxStreamingConfigs[configIdx],
-                                buffers[configIdx]);
+            buffers[configIdx] =
+                MimoSignal((size_t)rfConfig_.noRxAntennas, bi::samples_vec({}));
             processRxStreamingConfig(rxStreamingConfigs[configIdx],
                                      buffers[configIdx], baseTime);
         }
@@ -41,14 +41,6 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
     }
 }
 
-void Usrp::initializeRxBuffers(const RxStreamingConfig &config,
-                               MimoSignal &buffer) {
-    buffer = MimoSignal((size_t)rfConfig_.noRxAntennas, bi::samples_vec({}));
-    for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
-         rxAntennaIdx++) {
-        buffer[rxAntennaIdx].resize(config.noSamples);
-    }
-}
 void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                                     MimoSignal &buffer, const double baseTime) {
     for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;

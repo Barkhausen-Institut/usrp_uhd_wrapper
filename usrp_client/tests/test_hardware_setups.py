@@ -4,6 +4,7 @@ import pytest
 import os
 
 import numpy as np
+import numpy.testing as npt
 
 from uhd_wrapper.utils.config import (
     RfConfig,
@@ -78,8 +79,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         return np.argsort(correlation)[-1]
 
     def test_oneTxAntennaTwoRxAntennas_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup()
-        setup.rfConfig.noRxAntennas = 4
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=2)
         system = setup.connectUsrps()
         rxStreamingConfig1 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)
@@ -98,6 +98,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             second=self.findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),
             delta=1,
         )
+        self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt2)), 1)
 
     def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup()

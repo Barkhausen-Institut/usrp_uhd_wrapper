@@ -18,7 +18,8 @@ RfConfig Usrp::getRfConfig() const {
     conf.rxGain = usrpDevice_->get_rx_gain(0);
     conf.rxAnalogFilterBw = usrpDevice_->get_rx_bandwidth(0);
     conf.rxSamplingRate = usrpDevice_->get_rx_rate(0);
-
+    conf.noRxAntennas = usrpDevice_->get_rx_subdev_spec().size();
+    conf.noTxAntennas = usrpDevice_->get_tx_subdev_spec().size();
     return conf;
 }
 
@@ -40,10 +41,8 @@ void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
 
 void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                                     MimoSignal &buffer, const double baseTime) {
-    for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
-         rxAntennaIdx++) {
-        buffer[rxAntennaIdx].resize(config.noSamples);
-    }
+    buffer = MimoSignal((size_t)rfConfig_.noRxAntennas,
+                        samples_vec((size_t)config.noSamples, sample(0, 0)));
 
     size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
     size_t noSamplesLastBuffer =

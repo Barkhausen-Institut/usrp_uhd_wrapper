@@ -59,8 +59,15 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
     uhd::rx_metadata_t mdRx;
     double timeout =
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
+
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-        rxStreamer_->recv({buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
+        std::vector<sample *> buffers;
+        for (int rxAntennaIdx = 0; rxAntennaIdx > rfConfig_.noRxAntennas;
+             rxAntennaIdx++) {
+            buffers.push_back(buffer[packageIdx].data() +
+                              packageIdx * SAMPLES_PER_BUFFER);
+        }
+        rxStreamer_->recv(buffers,
                           packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                                          : SAMPLES_PER_BUFFER,
                           mdRx, timeout);

@@ -217,6 +217,7 @@ void Usrp::execute(const float baseTime) {
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
+        receivedSamples_ = {{{}}};
         transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
                                       std::ref(transmitThreadException_));
         receiveThread_ = std::thread(&Usrp::receive, this, baseTime,

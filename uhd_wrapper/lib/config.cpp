@@ -69,4 +69,33 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
             "Invalid RX streaming config: the offset of the new config is too "
             "small.");
 }
+
+void assertValidTxSignal(const MimoSignal& antSamples,
+                         const size_t maxSamples) {
+    for (const auto& antSignal : antSamples) {
+        if (antSignal.size() > maxSamples)
+            throw UsrpException(
+                "Transmitted signal length must not be larger than " +
+                std::to_string(maxSamples));
+    }
+}
+
+std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
+    os << "TxGain: " << conf.txGain << std::endl;
+    os << "RxGain: " << conf.rxGain << std::endl;
+
+    os << "TxCarrierFrequency: " << conf.txCarrierFrequency << std::endl;
+    os << "RxCarrierFrequency: " << conf.rxCarrierFrequency << std::endl;
+
+    os << "TxAnalogFilterBW: " << conf.txAnalogFilterBw << std::endl;
+    os << "RxAnalogFilterBW: " << conf.rxAnalogFilterBw << std::endl;
+
+    os << "TX Sampling Rate: " << conf.txSamplingRate << std::endl;
+    os << "RX Sampling Rate: " << conf.rxSamplingRate << std::endl;
+
+    os << "Number of Tx antennas: " << conf.noTxAntennas << std::endl;
+    os << "Number of rx antenans: " << conf.noRxAntennas << std::endl;
+    return os;
+}
+
 }  // namespace bi

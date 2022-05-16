@@ -120,4 +120,24 @@ TEST_CASE("[ValidRxStreamingConfig]") {
                           UsrpException);
     }
 }
+
+TEST_CASE("[ValidTxSignal]") {
+    TxStreamingConfig conf;
+    const size_t MAX_NUM_SAMPLES = (size_t)64e3;
+    SECTION("SignalTooLong") {
+        conf.samples = {samples_vec((size_t)65e3, sample(0, 0))};
+        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES),
+                          UsrpException);
+    }
+    SECTION("OneSignalTooLong_TheOtherAreFine") {
+        conf.samples = {samples_vec((size_t)65e3, sample(0, 0)),
+                        samples_vec(10, sample(0, 0))};
+        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES),
+                          UsrpException);
+    }
+    SECTION("SignalShorterThanMaxNumberSamples") {
+        conf.samples = {samples_vec((size_t)10, sample(0, 0))};
+        REQUIRE_NOTHROW(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES));
+    }
+}
 }  // namespace bi

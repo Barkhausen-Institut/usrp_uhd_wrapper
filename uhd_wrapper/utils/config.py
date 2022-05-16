@@ -18,10 +18,12 @@ class RfConfig:
     rxAnalogFilterBw: float = 0.0
     txSamplingRate: float = 0.0
     rxSamplingRate: float = 0.0
-    txGain: List[float] = field(default_factory=lambda: [0.0])
-    rxGain: List[float] = field(default_factory=lambda: [0.0])
-    txCarrierFrequency: List[float] = field(default_factory=lambda: [0.0])
-    rxCarrierFrequency: List[float] = field(default_factory=lambda: [0.0])
+    txGain: float = 0.0
+    rxGain: float = 0.0
+    txCarrierFrequency: float = 0.0
+    rxCarrierFrequency: float = 0.0
+    noTxAntennas: int = 1
+    noRxAntennas: int = 1
 
     def serialize(self) -> str:
         return self.to_json()  # type: ignore
@@ -55,6 +57,13 @@ class MimoSignal:
             return np.sum([(a == b) for a, b in zip(self.signals, other.signals)])
 
 
+def containsClippedValue(mimoSignal: MimoSignal) -> bool:
+    for s in mimoSignal.signals:
+        if np.any(np.abs(np.real(s)) >= 1.0) or np.any(np.abs(np.imag(s)) >= 1.0):
+            return True
+    return False
+
+
 @dataclass
 class TxStreamingConfig:
     sendTimeOffset: float = 0.0
@@ -64,13 +73,13 @@ class TxStreamingConfig:
 
 
 def fillDummyRfConfig(conf: Any) -> Any:
-    conf.txCarrierFrequency = [2e9]
-    conf.txGain = [30]
+    conf.txCarrierFrequency = 2e9
+    conf.txGain = 30
     conf.txAnalogFilterBw = 200e6
     conf.txSamplingRate = 20e6
 
-    conf.rxCarrierFrequency = [2.5e9]
-    conf.rxGain = [40]
+    conf.rxCarrierFrequency = 2.5e9
+    conf.rxGain = 40
     conf.rxAnalogFilterBw = 100e6
     conf.rxSamplingRate = 30e6
     return conf

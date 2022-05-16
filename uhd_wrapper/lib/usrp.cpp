@@ -99,19 +99,34 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     mdTx.end_of_burst = false;
     mdTx.has_time_spec = true;
 
-    mdTx.time_spec = uhd::time_spec_t(baseTime + conf.sendTimeOffset);
+    //usrpDevice_->set_time_now(uhd::time_spec_t(0.0));
+    float bt = baseTime;
+
+    std::cout << "target time" << bt + conf.sendTimeOffset << std::endl;
+    std::cout << "FPGA-time" << getCurrentFpgaTime() << std::endl;
+    mdTx.time_spec = uhd::time_spec_t(bt + conf.sendTimeOffset);
+    float timeout = bt + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
+    std::cout << "timeout " << timeout << std::endl;
 
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+	    std::cout << "Streamer: " << txStreamer_.get() << std::endl;
         txStreamer_->send(
             {conf.samples[0].data() + packageIdx * SAMPLES_PER_BUFFER},
             packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                            : SAMPLES_PER_BUFFER,
-            mdTx, 0.1f);
+            mdTx, timeout);
         // mdTx.start_of_burst = false;
         mdTx.has_time_spec = false;
     }
     mdTx.end_of_burst = true;
     txStreamer_->send("", 0, mdTx);
+
+    std::cout << std::endl << "Waiting for async burst ACK... " << std::flush;
+    uhd::async_metadata_t async_md;
+    // loop through all messages for the ACK packet (may have underflow messages in queue)
+    while (txStreamer_->recv_async_msg(async_md, timeout)) {
+	    std::cout << "async msg: " << async_md.event_code << std::endl;
+    }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);
@@ -130,7 +145,7 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
     if (!subdevSpecSet_) {
         usrpDevice_->set_rx_subdev_spec(
-            uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
+			uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
         usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
         subdevSpecSet_ = true;
     }
@@ -207,7 +222,7 @@ uint64_t Usrp::getCurrentSystemTime() {
 double Usrp::getCurrentFpgaTime() {
     std::scoped_lock lock(fpgaAccessMutex_);
     if (!ppsSetToZero_) {
-        setTimeToZeroNextPpsThread_.join();
+	 setTimeToZeroNextPpsThread_.join();
     }
     return usrpDevice_->get_time_now().get_real_secs();
 }

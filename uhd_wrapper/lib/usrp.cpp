@@ -99,8 +99,14 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     mdTx.end_of_burst = false;
     mdTx.has_time_spec = true;
 
-    //usrpDevice_->set_time_now(uhd::time_spec_t(0.0));
-    float bt = baseTime;
+    usrpDevice_->set_time_now(uhd::time_spec_t(0.0));
+    //usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.0));
+    //setTimeToZeroNextPps();
+    //setTimeToZeroNextPpsThread_.join();
+    //std::this_thread::sleep_for(std::chrono::seconds(2));
+
+    // change below to float bt = ... and it will trigger many Late-errors.
+    double bt = getCurrentFpgaTime();
 
     std::cout << "target time" << bt + conf.sendTimeOffset << std::endl;
     std::cout << "FPGA-time" << getCurrentFpgaTime() << std::endl;
@@ -109,7 +115,6 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     std::cout << "timeout " << timeout << std::endl;
 
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-	    std::cout << "Streamer: " << txStreamer_.get() << std::endl;
         txStreamer_->send(
             {conf.samples[0].data() + packageIdx * SAMPLES_PER_BUFFER},
             packageIdx == (noPackages - 1) ? noSamplesLastBuffer
@@ -205,9 +210,11 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
-    const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
-    while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
-    }
+    //const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    //while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
+    //}
+    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ppsSetToZero_ = true;
 }
 

@@ -217,7 +217,6 @@ void Usrp::execute(const float baseTime) {
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
-        receivedSamples_ = {{{}}};
         transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
                                       std::ref(transmitThreadException_));
         receiveThread_ = std::thread(&Usrp::receive, this, baseTime,
@@ -239,7 +238,12 @@ std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
     return std::make_unique<Usrp>(ip);
 }
 
-void Usrp::reset() { usrpDevice_->set_sync_source("internal", "internal"); }
+void Usrp::reset() {
+    usrpDevice_->set_sync_source("internal", "internal");
+    txStreamingConfigs_ = {};
+    rxStreamingConfigs_ = {};
+    receivedSamples_ = {{{}}};
+}
 void Usrp::setTxSamplingRate(const double samplingRate) {
     usrpDevice_->set_tx_rate(samplingRate);
     double actualSamplingRate = usrpDevice_->get_tx_rate();

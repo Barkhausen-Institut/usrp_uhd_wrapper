@@ -73,10 +73,6 @@ class TestHardwareSystemTests(unittest.TestCase):
         correlation = np.abs(np.correlate(frame, txSignal))
         return np.argsort(correlation)[-1]
 
-    def findFirstSampleAboveMean(self, frame: np.ndarray, txSignal: np.ndarray) -> int:
-        meanPowerFrame = np.mean(np.abs(frame))
-        return np.where(txSignal > meanPowerFrame)
-
     def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup()
         system = setup.connectUsrps()
@@ -99,7 +95,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_localTransmission(self) -> None:
-        setup = LocalTransmissionHardwareSetup(rxGain=30, txGain=30)
+        setup = LocalTransmissionHardwareSetup()
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -115,14 +111,6 @@ class TestHardwareSystemTests(unittest.TestCase):
         samplesSystem = system.collect()
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
 
-        import matplotlib.pyplot as plt
-
-        plt.plot(
-            np.arange(self.randomSignal.size), self.randomSignal, label="tx samples"
-        )
-        plt.plot(np.arange(rxSamplesUsrp1.size), rxSamplesUsrp1, label="rx samples")
-        plt.legend()
-        plt.show()
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
             second=300,

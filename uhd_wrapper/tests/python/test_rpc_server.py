@@ -202,3 +202,7 @@ class TestUsrpServer(unittest.TestCase):
     def test_getMasterClockRate_functionGetsCalled(self) -> None:
         _ = self.usrpServer.getMasterClockRate()
         self.usrpMock.getMasterClockRate.assert_called_once()
+
+    def test_reset_functionsGetsCalled(self) -> None:
+        self.usrpServer.reset()
+        self.usrpMock.reset.assert_called_once()

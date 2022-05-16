@@ -94,3 +94,7 @@ class UsrpClient:
     def getSupportedSamplingRates(self) -> np.ndarray:
         """Queries USRP for the supported sampling rates."""
         return self.getMasterClockRate() / self.getSupportedDecimationRatios()
+
+    def reset(self) -> None:
+        """Tells USRP to reset."""
+        self.__rpcClient.reset()

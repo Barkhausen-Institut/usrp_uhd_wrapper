@@ -102,3 +102,7 @@ class TestUsrpClient(unittest.TestCase):
             self.masterClockRate / supportedDecimationRatios,
             self.usrpClient.getSupportedSamplingRates(),
         )
+
+    def test_rpcClientKillForcesResetsUsrp(self) -> None:
+        self.usrpClient.reset()
+        self.mockRpcClient.reset.assert_called_once()

@@ -173,6 +173,15 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 2)
 
 
+class TestSystemTearDown(unittest.TestCase, SystemMockFactory):
+    def test_deletionCallsResetOfUsrp(self) -> None:
+        self.system = System()
+        self.mockUsrps = self.mockSystem(self.system, 2)
+        del self.system
+        self.mockUsrps[0].reset.assert_called_once()
+        self.mockUsrps[1].reset.assert_called_once()
+
+
 class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
     def setUp(self) -> None:
         self.system = System()

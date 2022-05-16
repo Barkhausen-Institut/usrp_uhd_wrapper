@@ -182,6 +182,10 @@ class System:
             item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]
 
+    def __del__(self) -> None:
+        for _, labeledClient in self.__usrpClients.items():
+            labeledClient.client.reset()
+
     def collect(self) -> Dict[str, List[MimoSignal]]:
         """Collects the samples at each USRP.
 

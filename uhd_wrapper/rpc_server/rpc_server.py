@@ -76,3 +76,6 @@ class UsrpServer:
 
     def getMasterClockRate(self) -> float:
         return self.__usrp.getMasterClockRate()
+
+    def reset(self) -> None:
+        self.__usrp.reset()

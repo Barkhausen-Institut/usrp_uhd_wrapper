@@ -186,6 +186,7 @@ class TestUsrpServer(unittest.TestCase):
     def test_usrpIsResetAtDestruction(self) -> None:
         del self.usrpServer
         self.usrpMock.reset.assert_called_once()
+        self.usrpMock.resetSyncSources.assert_called_once()
 
     def test_getCurrentFpgaTime_functionGetsCalled(self) -> None:
         TIME = 10

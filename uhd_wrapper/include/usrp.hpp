@@ -34,6 +34,7 @@ class Usrp : public UsrpInterface {
     double getMasterClockRate() const { return masterClockRate_; }
     RfConfig getRfConfig() const;
     void reset();
+    void resetSyncSources();
 
    private:
     // constants

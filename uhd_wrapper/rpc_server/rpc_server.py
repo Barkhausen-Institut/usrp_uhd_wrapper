@@ -32,6 +32,7 @@ class UsrpServer:
         self.__usrp = usrp
 
     def __del__(self) -> None:
+        self.__usrp.resetSyncSources()
         self.__usrp.reset()
 
     def configureTx(

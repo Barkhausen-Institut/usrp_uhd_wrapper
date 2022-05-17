@@ -55,10 +55,13 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
     streamCmd.stream_now = false;
     rxStreamer_->issue_stream_cmd(streamCmd);
 
+    std::cout << "config.noSamples: " << config.noSamples << std::endl;
+    std::cout << "noSamplesLastBuffer: " << noSamplesLastBuffer << std::endl;
     uhd::rx_metadata_t mdRx;
     double timeout =
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
 
+    size_t totalSamplesRecvd = 0;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         std::vector<sample *> buffers;
         for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
@@ -66,10 +69,15 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
             buffers.push_back(buffer[rxAntennaIdx].data() +
                               packageIdx * SAMPLES_PER_BUFFER);
         }
-        rxStreamer_->recv(buffers,
-                          packageIdx == (noPackages - 1) ? noSamplesLastBuffer
-                                                         : SAMPLES_PER_BUFFER,
+	size_t samplesCurrentPkg = (noPackages - 1) ? noSamplesLastBuffer : SAMPLES_PER_BUFFER;
+        size_t noSamplesRcvd = rxStreamer_->recv(buffers,
+                          samplesCurrentPkg,
                           mdRx, timeout);
+	std::cout << "Samples curren tpkg: " << samplesCurrentPkg << std::endl;
+
+	totalSamplesRecvd += noSamplesRcvd;
+	std::cout << "Package: " << packageIdx << ", with " << noSamplesRcvd << " samples";
+	std::cout << "total samples recvd: " << totalSamplesRecvd << std::endl;
 
         timeout = 0.1f;
         if (mdRx.error_code !=

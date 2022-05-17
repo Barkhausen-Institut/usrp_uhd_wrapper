@@ -22,8 +22,7 @@ RfConfig Usrp::getRfConfig() const {
     return conf;
 }
 
-void Usrp::receive(const double baseTime,
-                   std::vector<MimoSignal> &buffers,
+void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
@@ -40,8 +39,7 @@ void Usrp::receive(const double baseTime,
 }
 
 void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
-                                    MimoSignal &buffer,
-                                    const double baseTime) {
+                                    MimoSignal &buffer, const double baseTime) {
     buffer[0].resize(config.noSamples);
 
     size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
@@ -74,8 +72,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
         throw UsrpException("I did not receive an end_of_burst.");
 }
 
-void Usrp::transmit(const double baseTime,
-                    std::exception_ptr &exceptionPtr) {
+void Usrp::transmit(const double baseTime, std::exception_ptr &exceptionPtr) {
     try {
         // copy tx streaming configs for exception safety
         std::vector<TxStreamingConfig> txStreamingConfigs =
@@ -102,15 +99,9 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     mdTx.end_of_burst = false;
     mdTx.has_time_spec = true;
 
-    // change below to float bt = ... and it will trigger many Late-errors.
-    double bt = baseTime;
-
-    std::cout << "target time" << bt + conf.sendTimeOffset << std::endl;
-    std::cout << "FPGA-time" << getCurrentFpgaTime() << std::endl;
-    mdTx.time_spec = uhd::time_spec_t(bt + conf.sendTimeOffset);
+    mdTx.time_spec = uhd::time_spec_t(baseTime + conf.sendTimeOffset);
     double timeout =
-        bt + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
-    std::cout << "timeout " << timeout << std::endl;
+        baseTime + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
 
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         txStreamer_->send(
@@ -123,14 +114,6 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     }
     mdTx.end_of_burst = true;
     txStreamer_->send("", 0, mdTx);
-
-    std::cout << std::endl << "Waiting for async burst ACK... " << std::flush;
-    uhd::async_metadata_t async_md;
-    // loop through all messages for the ACK packet (may have underflow messages
-    // in queue)
-    while (txStreamer_->recv_async_msg(async_md, timeout)) {
-        std::cout << "async msg: " << async_md.event_code << std::endl;
-    }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);

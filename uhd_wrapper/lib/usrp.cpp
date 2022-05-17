@@ -23,7 +23,7 @@ RfConfig Usrp::getRfConfig() const {
     return conf;
 }
 
-void Usrp::receive(const float baseTime, std::vector<MimoSignal> &buffers,
+void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
@@ -81,7 +81,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
         throw UsrpException("I did not receive an end_of_burst.");
 }
 
-void Usrp::transmit(const float baseTime, std::exception_ptr &exceptionPtr) {
+void Usrp::transmit(const double baseTime, std::exception_ptr &exceptionPtr) {
     try {
         // copy tx streaming configs for exception safety
         std::vector<TxStreamingConfig> txStreamingConfigs =
@@ -109,18 +109,35 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     mdTx.has_time_spec = true;
 
     mdTx.time_spec = uhd::time_spec_t(baseTime + conf.sendTimeOffset);
+    double timeout =
+        baseTime + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
 
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         txStreamer_->send(
             {conf.samples[0].data() + packageIdx * SAMPLES_PER_BUFFER},
             packageIdx == (noPackages - 1) ? noSamplesLastBuffer
                                            : SAMPLES_PER_BUFFER,
-            mdTx, 0.1f);
+            mdTx, timeout);
         // mdTx.start_of_burst = false;
         mdTx.has_time_spec = false;
     }
     mdTx.end_of_burst = true;
     txStreamer_->send("", 0, mdTx);
+    uhd::async_metadata_t asyncMd;
+    // loop through all messages for the ACK packet (may have underflow messages
+    // in queue)
+    uhd::async_metadata_t::event_code_t lastEventCode =
+        uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
+    while (txStreamer_->recv_async_msg(asyncMd, timeout)) {
+        if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
+            lastEventCode = asyncMd.event_code;
+        timeout = 0.1f;
+    }
+
+    if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK) {
+        throw UsrpException("Error occoured at Tx Streamer with event code: " +
+                            std::to_string(lastEventCode));
+    }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);
@@ -221,8 +238,8 @@ double Usrp::getCurrentFpgaTime() {
     return usrpDevice_->get_time_now().get_real_secs();
 }
 
-void Usrp::execute(const float baseTime) {
-    // const double fpgaTimeThreadStart = getCurrentFpgaTime();
+void Usrp::execute(const double baseTime) {
+    receivedSamples_ = {{{}}};
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
@@ -247,7 +264,13 @@ std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
     return std::make_unique<Usrp>(ip);
 }
 
-void Usrp::reset() { usrpDevice_->set_sync_source("internal", "internal"); }
+void Usrp::resetSyncSources() {
+    usrpDevice_->set_sync_source("internal", "internal");
+}
+void Usrp::resetStreamingConfigs() {
+    txStreamingConfigs_ = {};
+    rxStreamingConfigs_ = {};
+}
 void Usrp::setTxSamplingRate(const double samplingRate) {
     usrpDevice_->set_tx_rate(samplingRate);
     double actualSamplingRate = usrpDevice_->get_tx_rate();

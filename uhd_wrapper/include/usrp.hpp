@@ -22,6 +22,7 @@ class Usrp : public UsrpInterface {
         usrpDevice_->set_sync_source("external", "external");
         masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
+    ~Usrp() { resetSyncSources(); }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);

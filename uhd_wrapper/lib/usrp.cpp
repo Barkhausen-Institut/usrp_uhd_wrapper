@@ -230,7 +230,7 @@ double Usrp::getCurrentFpgaTime() {
 }
 
 void Usrp::execute(const double baseTime) {
-    // const double fpgaTimeThreadStart = getCurrentFpgaTime();
+    receivedSamples_ = {{{}}};
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
     } else {
@@ -261,7 +261,6 @@ void Usrp::resetSyncSources() {
 void Usrp::reset() {
     txStreamingConfigs_ = {};
     rxStreamingConfigs_ = {};
-    receivedSamples_ = {{{}}};
 }
 void Usrp::setTxSamplingRate(const double samplingRate) {
     usrpDevice_->set_tx_rate(samplingRate);

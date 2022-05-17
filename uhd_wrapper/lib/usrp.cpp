@@ -44,7 +44,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
     buffer = MimoSignal((size_t)rfConfig_.noRxAntennas,
                         samples_vec((size_t)config.noSamples, sample(0, 0)));
 
-    size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
+    // size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
     size_t noSamplesLastBuffer =
         calcNoSamplesLastBuffer(config.noSamples, SAMPLES_PER_BUFFER);
 
@@ -62,22 +62,24 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
 
     size_t totalSamplesRecvd = 0;
-    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
+    size_t remainingNoSamples = config.noSamples;
+    while (totalSamplesRecvd < config.noSamples) {
         std::vector<sample *> buffers;
         for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
              rxAntennaIdx++) {
-            buffers.push_back(buffer[rxAntennaIdx].data() +
-                              packageIdx * SAMPLES_PER_BUFFER);
+            buffers.push_back(buffer[rxAntennaIdx].data() + totalSamplesRecvd);
         }
-	size_t samplesCurrentPkg = (noPackages - 1) ? noSamplesLastBuffer : SAMPLES_PER_BUFFER;
-        size_t noSamplesRcvd = rxStreamer_->recv(buffers,
-                          samplesCurrentPkg,
-                          mdRx, timeout);
-	std::cout << "Samples curren tpkg: " << samplesCurrentPkg << std::endl;
+        remainingNoSamples = config.noSamples - totalSamplesRecvd;
+        size_t noSamplesNextPkg = remainingNoSamples < SAMPLES_PER_BUFFER
+                                      ? remainingNoSamples
+                                      : SAMPLES_PER_BUFFER;
+        std::cout << "noSamplesNextPkg: " << noSamplesNextPkg << std::endl;
+        size_t noSamplesRcvd =
+            rxStreamer_->recv(buffers, noSamplesNextPkg, mdRx, timeout);
 
-	totalSamplesRecvd += noSamplesRcvd;
-	std::cout << "Package: " << packageIdx << ", with " << noSamplesRcvd << " samples";
-	std::cout << "total samples recvd: " << totalSamplesRecvd << std::endl;
+        totalSamplesRecvd += noSamplesRcvd;
+        std::cout << "New package received with " << noSamplesRcvd
+                  << ", in total we have " << totalSamplesRecvd << std::endl;
 
         timeout = 0.1f;
         if (mdRx.error_code !=

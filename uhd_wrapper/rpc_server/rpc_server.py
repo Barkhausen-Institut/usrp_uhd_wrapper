@@ -31,10 +31,6 @@ class UsrpServer:
     def __init__(self, usrp: Usrp) -> None:
         self.__usrp = usrp
 
-    def __del__(self) -> None:
-        self.__usrp.resetSyncSources()
-        self.__usrp.reset()
-
     def configureTx(
         self, sendTimeOffset: float, samples: List[SerializedComplexArray]
     ) -> None:
@@ -78,5 +74,5 @@ class UsrpServer:
     def getMasterClockRate(self) -> float:
         return self.__usrp.getMasterClockRate()
 
-    def reset(self) -> None:
-        self.__usrp.reset()
+    def resetStreamingConfigs(self) -> None:
+        self.__usrp.resetStreamingConfigs()

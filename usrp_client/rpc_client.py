@@ -95,6 +95,6 @@ class UsrpClient:
         """Queries USRP for the supported sampling rates."""
         return self.getMasterClockRate() / self.getSupportedDecimationRatios()
 
-    def reset(self) -> None:
-        """Tells USRP to reset."""
-        self.__rpcClient.reset()
+    def resetStreamingConfigs(self) -> None:
+        """Tells USRP to reset streaming configs."""
+        self.__rpcClient.resetStreamingConfigs()

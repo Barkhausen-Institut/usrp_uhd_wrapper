@@ -33,7 +33,7 @@ class Usrp : public UsrpInterface {
 
     double getMasterClockRate() const { return masterClockRate_; }
     RfConfig getRfConfig() const;
-    void reset();
+    void resetStreamingConfigs();
     void resetSyncSources();
 
    private:
@@ -67,14 +67,12 @@ class Usrp : public UsrpInterface {
     void setRxSamplingRate(const double samplingRate, size_t rxAntennaIdx);
 
     void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
-    void transmit(const double baseTime,
-                  std::exception_ptr& exceptionPtr);
+    void transmit(const double baseTime, std::exception_ptr& exceptionPtr);
     void receive(const double baseTime, std::vector<MimoSignal>& buffers,
                  std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
     void processRxStreamingConfig(const RxStreamingConfig& config,
-                                  MimoSignal& buffer,
-                                  const double baseTime);
+                                  MimoSignal& buffer, const double baseTime);
     void processTxStreamingConfig(const TxStreamingConfig& config,
                                   const double baseTime);
 };

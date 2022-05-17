@@ -258,7 +258,7 @@ std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
 void Usrp::resetSyncSources() {
     usrpDevice_->set_sync_source("internal", "internal");
 }
-void Usrp::reset() {
+void Usrp::resetStreamingConfigs() {
     txStreamingConfigs_ = {};
     rxStreamingConfigs_ = {};
 }

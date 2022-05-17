@@ -76,6 +76,7 @@ class System:
 
         usrpClient = self.createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
+        usrpClient.resetStreamingConfigs()
         self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
         self.__usrpsSynced = False
 
@@ -181,10 +182,6 @@ class System:
         return [
             item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]
-
-    def __del__(self) -> None:
-        for _, labeledClient in self.__usrpClients.items():
-            labeledClient.client.reset()
 
     def collect(self) -> Dict[str, List[MimoSignal]]:
         """Collects the samples at each USRP.

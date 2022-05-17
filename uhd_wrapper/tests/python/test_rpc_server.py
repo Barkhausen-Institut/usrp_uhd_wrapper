@@ -183,11 +183,6 @@ class TestUsrpServer(unittest.TestCase):
             [signal.serialize(), signal.serialize()], self.usrpServer.collect()
         )
 
-    def test_usrpIsResetAtDestruction(self) -> None:
-        del self.usrpServer
-        self.usrpMock.reset.assert_called_once()
-        self.usrpMock.resetSyncSources.assert_called_once()
-
     def test_getCurrentFpgaTime_functionGetsCalled(self) -> None:
         TIME = 10
         self.usrpMock.getCurrentFpgaTime.return_value = TIME
@@ -204,6 +199,6 @@ class TestUsrpServer(unittest.TestCase):
         _ = self.usrpServer.getMasterClockRate()
         self.usrpMock.getMasterClockRate.assert_called_once()
 
-    def test_reset_functionsGetsCalled(self) -> None:
-        self.usrpServer.reset()
-        self.usrpMock.reset.assert_called_once()
+    def test_resetStreamingConfigs_functionsGetsCalled(self) -> None:
+        self.usrpServer.resetStreamingConfigs()
+        self.usrpMock.resetStreamingConfigs.assert_called_once()

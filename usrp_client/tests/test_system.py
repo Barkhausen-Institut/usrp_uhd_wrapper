@@ -47,6 +47,11 @@ class TestSystemInitialization(unittest.TestCase):
         self.system.addUsrp(c, "localhost", "testusrp")
         self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
 
+    def test_streamingConfigsAreReset(self) -> None:
+        c = RfConfig()
+        self.system.addUsrp(c, "localhost", "testusrp")
+        self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
+
 
 class SystemMockFactory:
     def mockSystem(self, system: System, noMockUsrps: int) -> List[Mock]:
@@ -171,15 +176,6 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.system.execute()
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 2)
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 2)
-
-
-class TestSystemTearDown(unittest.TestCase, SystemMockFactory):
-    def test_deletionCallsResetOfUsrp(self) -> None:
-        self.system = System()
-        self.mockUsrps = self.mockSystem(self.system, 2)
-        del self.system
-        self.mockUsrps[0].reset.assert_called_once()
-        self.mockUsrps[1].reset.assert_called_once()
 
 
 class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):

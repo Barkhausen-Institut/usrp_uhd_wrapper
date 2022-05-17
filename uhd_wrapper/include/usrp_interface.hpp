@@ -15,7 +15,7 @@ class UsrpInterface {
     virtual double getCurrentFpgaTime() = 0;
     virtual void execute(const double baseTime) = 0;
     virtual std::vector<MimoSignal> collect() = 0;
-    virtual void reset() = 0;
+    virtual void resetStreamingConfigs() = 0;
     virtual void resetSyncSources() = 0;
     virtual double getMasterClockRate() const = 0;
     virtual RfConfig getRfConfig() const = 0;

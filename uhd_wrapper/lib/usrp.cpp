@@ -117,13 +117,20 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     uhd::async_metadata_t asyncMd;
     // loop through all messages for the ACK packet (may have underflow messages
     // in queue)
+    uhd::async_metadata_t::event_code_t lastEventCode =
+        uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
     while (txStreamer_->recv_async_msg(asyncMd, timeout)) {
         if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
-            throw UsrpException(
-                "Error occoured at Tx Streamer with event code: " +
-                asyncMd.event_code);
+            lastEventCode = asyncMd.event_code;
+        timeout = 0.1f;
+    }
+
+    if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK) {
+        throw UsrpException("Error occoured at Tx Streamer with event code: " +
+                            std::to_string(lastEventCode));
     }
 }
+}  // namespace bi
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);
     // configure transmitter

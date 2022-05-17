@@ -202,10 +202,8 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
-    // std::this_thread::sleep_for(std::chrono::seconds(1));
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
-    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ppsSetToZero_ = true;
 }
 

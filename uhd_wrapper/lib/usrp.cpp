@@ -22,7 +22,8 @@ RfConfig Usrp::getRfConfig() const {
     return conf;
 }
 
-void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
+void Usrp::receive(const BaseTimeType baseTime,
+                   std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
@@ -39,7 +40,8 @@ void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
 }
 
 void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
-                                    MimoSignal &buffer, const double baseTime) {
+                                    MimoSignal &buffer,
+                                    const BaseTimeType baseTime) {
     buffer[0].resize(config.noSamples);
 
     size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
@@ -54,7 +56,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
     rxStreamer_->issue_stream_cmd(streamCmd);
 
     uhd::rx_metadata_t mdRx;
-    double timeout =
+    BaseTimeType timeout =
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
         rxStreamer_->recv({buffer[0].data() + packageIdx * SAMPLES_PER_BUFFER},
@@ -72,7 +74,8 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
         throw UsrpException("I did not receive an end_of_burst.");
 }
 
-void Usrp::transmit(const double baseTime, std::exception_ptr &exceptionPtr) {
+void Usrp::transmit(const BaseTimeType baseTime,
+                    std::exception_ptr &exceptionPtr) {
     try {
         // copy tx streaming configs for exception safety
         std::vector<TxStreamingConfig> txStreamingConfigs =
@@ -87,7 +90,7 @@ void Usrp::transmit(const double baseTime, std::exception_ptr &exceptionPtr) {
 }
 
 void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
-                                    const double baseTime) {
+                                    const BaseTimeType baseTime) {
     size_t noPackages =
         calcNoPackages(conf.samples[0].size(), SAMPLES_PER_BUFFER);
     size_t noSamplesLastBuffer =
@@ -100,12 +103,13 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     mdTx.has_time_spec = true;
 
     // change below to float bt = ... and it will trigger many Late-errors.
-    double bt = baseTime;
+    BaseTimeType bt = baseTime;
 
     std::cout << "target time" << bt + conf.sendTimeOffset << std::endl;
     std::cout << "FPGA-time" << getCurrentFpgaTime() << std::endl;
     mdTx.time_spec = uhd::time_spec_t(bt + conf.sendTimeOffset);
-    float timeout = bt + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
+    BaseTimeType timeout =
+        bt + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
     std::cout << "timeout " << timeout << std::endl;
 
     for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
@@ -122,9 +126,10 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 
     std::cout << std::endl << "Waiting for async burst ACK... " << std::flush;
     uhd::async_metadata_t async_md;
-    // loop through all messages for the ACK packet (may have underflow messages in queue)
+    // loop through all messages for the ACK packet (may have underflow messages
+    // in queue)
     while (txStreamer_->recv_async_msg(async_md, timeout)) {
-	    std::cout << "async msg: " << async_md.event_code << std::endl;
+        std::cout << "async msg: " << async_md.event_code << std::endl;
     }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
@@ -144,7 +149,7 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
     if (!subdevSpecSet_) {
         usrpDevice_->set_rx_subdev_spec(
-			uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
+            uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
         usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
         subdevSpecSet_ = true;
     }
@@ -205,10 +210,10 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
-    //std::this_thread::sleep_for(std::chrono::seconds(1));
+    // std::this_thread::sleep_for(std::chrono::seconds(1));
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
-    //std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ppsSetToZero_ = true;
 }
 
@@ -223,12 +228,12 @@ uint64_t Usrp::getCurrentSystemTime() {
 double Usrp::getCurrentFpgaTime() {
     std::scoped_lock lock(fpgaAccessMutex_);
     if (!ppsSetToZero_) {
-	 setTimeToZeroNextPpsThread_.join();
+        setTimeToZeroNextPpsThread_.join();
     }
     return usrpDevice_->get_time_now().get_real_secs();
 }
 
-void Usrp::execute(const double baseTime) {
+void Usrp::execute(const BaseTimeType baseTime) {
     // const double fpgaTimeThreadStart = getCurrentFpgaTime();
     if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");

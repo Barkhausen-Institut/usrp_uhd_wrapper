@@ -28,7 +28,7 @@ class Usrp : public UsrpInterface {
     void setTimeToZeroNextPps();
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
-    void execute(const double baseTime);
+    void execute(const BaseTimeType baseTime);
     std::vector<MimoSignal> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
@@ -67,14 +67,16 @@ class Usrp : public UsrpInterface {
     void setRxSamplingRate(const double samplingRate, size_t rxAntennaIdx);
 
     void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
-    void transmit(const double baseTime, std::exception_ptr& exceptionPtr);
-    void receive(const double baseTime, std::vector<MimoSignal>& buffers,
+    void transmit(const BaseTimeType baseTime,
+                  std::exception_ptr& exceptionPtr);
+    void receive(const BaseTimeType baseTime, std::vector<MimoSignal>& buffers,
                  std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
     void processRxStreamingConfig(const RxStreamingConfig& config,
-                                  MimoSignal& buffer, const double baseTime);
+                                  MimoSignal& buffer,
+                                  const BaseTimeType baseTime);
     void processTxStreamingConfig(const TxStreamingConfig& config,
-                                  const double baseTime);
+                                  const BaseTimeType baseTime);
 };
 
 }  // namespace bi

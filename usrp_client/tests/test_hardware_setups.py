@@ -79,7 +79,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         return np.argsort(correlation)[-1]
 
     def test_oneTxAntennaTwoRxAntennas_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup()
+        setup = LocalTransmissionHardwareSetup(txGain=35, rxGain=35)
         system = setup.connectUsrps()
         rxStreamingConfig1 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)
@@ -93,6 +93,14 @@ class TestHardwareSystemTests(unittest.TestCase):
         samplesSystem = system.collect()
         rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
         rxSamplesUsrpAnt2 = samplesSystem["usrp1"][0].signals[1]
+
+        import matplotlib.pyplot as plt
+
+        plt.subplot(121)
+        plt.plot(np.arange(rxSamplesUsrpAnt1.size), rxSamplesUsrpAnt1)
+        plt.subplot(122)
+        plt.plot(np.arange(rxSamplesUsrpAnt2.size), rxSamplesUsrpAnt2)
+        plt.show()
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
             second=self.findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),

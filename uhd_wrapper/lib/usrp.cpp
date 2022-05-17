@@ -130,7 +130,6 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
                             std::to_string(lastEventCode));
     }
 }
-}  // namespace bi
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);
     // configure transmitter

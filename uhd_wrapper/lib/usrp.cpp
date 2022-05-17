@@ -99,7 +99,7 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     mdTx.end_of_burst = false;
     mdTx.has_time_spec = true;
 
-    usrpDevice_->set_time_now(uhd::time_spec_t(0.0));
+    //usrpDevice_->set_time_now(uhd::time_spec_t(0.0));
     //usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.0));
     //setTimeToZeroNextPps();
     //setTimeToZeroNextPpsThread_.join();
@@ -210,10 +210,10 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
     // wait for next pps
-    //const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
-    std::this_thread::sleep_for(std::chrono::seconds(1));
-    //while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
-    //}
+    const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
+    //std::this_thread::sleep_for(std::chrono::seconds(1));
+    while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
+    }
     //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ppsSetToZero_ = true;
 }

@@ -76,7 +76,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                 : rxStreamer_->get_max_num_samps();
         std::cout << "noSamplesNextPkg: " << noSamplesNextPkg << std::endl;
         size_t noSamplesRcvd =
-            rxStreamer_->recv(buffers, noSamplesNextPkg, mdRx, timeout);
+            rxStreamer_->recv(buffers, noSamplesNextPkg, mdRx, timeout, true);
 
         totalSamplesRecvd += noSamplesRcvd;
         std::cout << "New package received with " << noSamplesRcvd

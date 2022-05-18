@@ -7,7 +7,7 @@ namespace bi {
 
 class UsrpInterface {
    public:
-    virtual ~UsrpInterface() = 0;
+    virtual ~UsrpInterface() {}
     virtual void setRfConfig(const RfConfig&) = 0;
     virtual void setTxConfig(const TxStreamingConfig& conf) = 0;
     virtual void setRxConfig(const RxStreamingConfig& conf) = 0;

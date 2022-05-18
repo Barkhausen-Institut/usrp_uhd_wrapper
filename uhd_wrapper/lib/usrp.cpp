@@ -169,13 +169,17 @@ void Usrp::setRfConfig(const RfConfig &conf) {
         txStreamArgs.channels = std::vector<size_t>({0});
         txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
     }
+    configureRxStreamer(conf);
+
+    rfConfig_ = getRfConfig();
+}
+
+void Usrp::configureRxStreamer(const RfConfig &conf) {
     if (rxStreamer_) rxStreamer_.reset();
     uhd::stream_args_t rxStreamArgs("fc32", "sc16");
     rxStreamArgs.channels = std::vector<size_t>(conf.noRxAntennas, 0);
     std::iota(rxStreamArgs.channels.begin(), rxStreamArgs.channels.end(), 0);
     rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
-
-    rfConfig_ = getRfConfig();
 }
 
 void Usrp::setRfConfigForRxAntenna(const RfConfig &conf, size_t rxAntennaIdx) {

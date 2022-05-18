@@ -34,19 +34,19 @@ struct RfConfig {
 
 struct TxStreamingConfig {
     TxStreamingConfig() {}
-    TxStreamingConfig(const MimoSignal& _samples, const float _sendTimeOffset)
+    TxStreamingConfig(const MimoSignal& _samples, const double _sendTimeOffset)
         : samples(_samples), sendTimeOffset(_sendTimeOffset) {}
     MimoSignal samples;
-    float sendTimeOffset;
+    double sendTimeOffset;
 };
 
 struct RxStreamingConfig {
     RxStreamingConfig() {}
     RxStreamingConfig(const unsigned int _noSamples,
-                      const float _receiveTimeOffset)
+                      const double _receiveTimeOffset)
         : noSamples(_noSamples), receiveTimeOffset(_receiveTimeOffset) {}
     unsigned int noSamples;
-    float receiveTimeOffset;
+    double receiveTimeOffset;
 };
 
 // oerpators are overloaded for testing purposes

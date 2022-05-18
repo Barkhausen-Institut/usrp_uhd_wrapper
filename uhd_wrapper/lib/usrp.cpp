@@ -28,9 +28,9 @@ void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
         std::vector<RxStreamingConfig> rxStreamingConfigs =
             std::move(rxStreamingConfigs_);
         rxStreamingConfigs_ = {};
+        buffers.resize(rxStreamingConfigs.size());
         for (size_t configIdx = 0; configIdx < rxStreamingConfigs.size();
              configIdx++) {
-            buffers.resize(rxStreamingConfigs.size());
             processRxStreamingConfig(rxStreamingConfigs[configIdx],
                                      buffers[configIdx], baseTime);
         }

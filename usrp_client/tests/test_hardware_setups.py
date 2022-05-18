@@ -4,7 +4,6 @@ import pytest
 import os
 
 import numpy as np
-import numpy.testing as npt
 
 from uhd_wrapper.utils.config import (
     RfConfig,
@@ -94,13 +93,6 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
         rxSamplesUsrpAnt2 = samplesSystem["usrp1"][0].signals[1]
 
-        import matplotlib.pyplot as plt
-
-        plt.subplot(121)
-        plt.plot(np.arange(rxSamplesUsrpAnt1.size), rxSamplesUsrpAnt1)
-        plt.subplot(122)
-        plt.plot(np.arange(rxSamplesUsrpAnt2.size), rxSamplesUsrpAnt2)
-        plt.show()
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
             second=self.findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),

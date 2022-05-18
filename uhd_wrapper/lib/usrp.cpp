@@ -45,18 +45,18 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                         samples_vec((size_t)config.noSamples, sample(0, 0)));
 
     // size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
-    size_t noSamplesLastBuffer =
-        calcNoSamplesLastBuffer(config.noSamples, SAMPLES_PER_BUFFER);
+    // size_t noSamplesLastBuffer =
+    //    calcNoSamplesLastBuffer(config.noSamples, SAMPLES_PER_BUFFER);
 
     uhd::stream_cmd_t streamCmd =
         uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
-    streamCmd.time_spec = uhd::time_spec_t(baseTime + config.receiveTimeOffset);
     streamCmd.num_samps = config.noSamples;
     streamCmd.stream_now = false;
+    streamCmd.time_spec = uhd::time_spec_t(baseTime + config.receiveTimeOffset);
     rxStreamer_->issue_stream_cmd(streamCmd);
 
     std::cout << "config.noSamples: " << config.noSamples << std::endl;
-    std::cout << "noSamplesLastBuffer: " << noSamplesLastBuffer << std::endl;
+    // std::cout << "noSamplesLastBuffer: " << noSamplesLastBuffer << std::endl;
     uhd::rx_metadata_t mdRx;
     double timeout =
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
@@ -70,9 +70,10 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
             buffers.push_back(buffer[rxAntennaIdx].data() + totalSamplesRecvd);
         }
         remainingNoSamples = config.noSamples - totalSamplesRecvd;
-        size_t noSamplesNextPkg = remainingNoSamples < SAMPLES_PER_BUFFER
-                                      ? remainingNoSamples
-                                      : SAMPLES_PER_BUFFER;
+        size_t noSamplesNextPkg =
+            remainingNoSamples < rxStreamer_->get_max_num_samps()
+                ? remainingNoSamples
+                : rxStreamer_->get_max_num_samps();
         std::cout << "noSamplesNextPkg: " << noSamplesNextPkg << std::endl;
         size_t noSamplesRcvd =
             rxStreamer_->recv(buffers, noSamplesNextPkg, mdRx, timeout);
@@ -165,8 +166,8 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     }
 
     if (!subdevSpecSet_) {
-        usrpDevice_->set_rx_subdev_spec(
-            uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
+        // usrpDevice_->set_rx_subdev_spec(
+        //    uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
         usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
         subdevSpecSet_ = true;
     }
@@ -178,9 +179,9 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     }
     if (!rxStreamer_) {
         uhd::stream_args_t rxStreamArgs("fc32", "sc16");
-        rxStreamArgs.channels = std::vector<size_t>(conf.noRxAntennas, 0);
-        std::iota(rxStreamArgs.channels.begin(), rxStreamArgs.channels.end(),
-                  0);
+        rxStreamArgs.channels = {0, 1};
+        // std::iota(rxStreamArgs.channels.begin(), rxStreamArgs.channels.end(),
+        //          0);
         rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
     }
 

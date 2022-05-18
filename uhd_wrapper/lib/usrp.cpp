@@ -259,8 +259,8 @@ void Usrp::resetSyncSources() {
     usrpDevice_->set_sync_source("internal", "internal");
 }
 void Usrp::resetStreamingConfigs() {
-    txStreamingConfigs_ = {};
-    rxStreamingConfigs_ = {};
+    txStreamingConfigs_.clear();
+    rxStreamingConfigs_.clear();
 }
 void Usrp::setTxSamplingRate(const double samplingRate) {
     usrpDevice_->set_tx_rate(samplingRate);

@@ -44,9 +44,9 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
     buffer = MimoSignal((size_t)rfConfig_.noRxAntennas,
                         samples_vec((size_t)config.noSamples, sample(0, 0)));
 
-    size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
-    size_t noSamplesLastBuffer =
-        calcNoSamplesLastBuffer(config.noSamples, SAMPLES_PER_BUFFER);
+    // size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
+    // size_t noSamplesLastBuffer =
+    //   calcNoSamplesLastBuffer(config.noSamples, SAMPLES_PER_BUFFER);
     uhd::stream_cmd_t streamCmd =
         uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
     streamCmd.num_samps = config.noSamples;

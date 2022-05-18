@@ -173,12 +173,12 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     }
 
     if (!txStreamer_) {
-        uhd::stream_args_t txStreamArgs("fc32", "sc16");
+        uhd::stream_args_t txStreamArgs("fc32", "");
         txStreamArgs.channels = std::vector<size_t>({0});
         txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
     }
     if (!rxStreamer_) {
-        uhd::stream_args_t rxStreamArgs("fc32", "sc16");
+        uhd::stream_args_t rxStreamArgs("fc32", "");
         rxStreamArgs.channels = {0, 1};
         // std::iota(rxStreamArgs.channels.begin(), rxStreamArgs.channels.end(),
         //          0);

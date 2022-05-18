@@ -131,7 +131,6 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("execute", &bi::UsrpInterface::execute)
         .def("collect", &bi::UsrpInterface::collect)
         .def("resetStreamingConfigs", &bi::UsrpInterface::resetStreamingConfigs)
-        .def("resetSyncSources", &bi::UsrpInterface::resetSyncSources)
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig);
 

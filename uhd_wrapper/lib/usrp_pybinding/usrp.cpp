@@ -130,7 +130,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("getCurrentFpgaTime", &bi::UsrpInterface::getCurrentFpgaTime)
         .def("execute", &bi::UsrpInterface::execute)
         .def("collect", &bi::UsrpInterface::collect)
-        .def("reset", &bi::UsrpInterface::reset)
+        .def("resetStreamingConfigs", &bi::UsrpInterface::resetStreamingConfigs)
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig);
 

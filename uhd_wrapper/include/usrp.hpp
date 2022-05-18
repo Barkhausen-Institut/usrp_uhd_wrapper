@@ -22,18 +22,19 @@ class Usrp : public UsrpInterface {
         usrpDevice_->set_sync_source("external", "external");
         masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
+    ~Usrp() { usrpDevice_->set_sync_source("internal", "internal"); }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
     void setTimeToZeroNextPps();
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
-    void execute(const float baseTime);
+    void execute(const double baseTime);
     std::vector<MimoSignal> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
     RfConfig getRfConfig() const;
-    void reset();
+    void resetStreamingConfigs();
 
    private:
     // constants
@@ -66,8 +67,8 @@ class Usrp : public UsrpInterface {
     void setRxSamplingRate(const double samplingRate, size_t rxAntennaIdx);
 
     void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
-    void transmit(const float baseTime, std::exception_ptr& exceptionPtr);
-    void receive(const float baseTime, std::vector<MimoSignal>& buffers,
+    void transmit(const double baseTime, std::exception_ptr& exceptionPtr);
+    void receive(const double baseTime, std::vector<MimoSignal>& buffers,
                  std::exception_ptr& exceptionPtr);
     void setTimeToZeroNextPpsThreadFunction();
     void processRxStreamingConfig(const RxStreamingConfig& config,

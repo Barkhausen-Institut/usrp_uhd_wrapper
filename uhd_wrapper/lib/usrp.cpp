@@ -47,20 +47,22 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
     // size_t noPackages = calcNoPackages(config.noSamples, SAMPLES_PER_BUFFER);
     // size_t noSamplesLastBuffer =
     //    calcNoSamplesLastBuffer(config.noSamples, SAMPLES_PER_BUFFER);
-
+    double secondsInFuture = 0.25;
     uhd::stream_cmd_t streamCmd =
         uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
     streamCmd.num_samps = config.noSamples;
     streamCmd.stream_now = false;
-    streamCmd.time_spec = uhd::time_spec_t(baseTime + config.receiveTimeOffset);
+    // streamCmd.time_spec = uhd::time_spec_t(baseTime +
+    // config.receiveTimeOffset);
+    streamCmd.time_spec = secondsInFuture;
     rxStreamer_->issue_stream_cmd(streamCmd);
 
     std::cout << "config.noSamples: " << config.noSamples << std::endl;
     // std::cout << "noSamplesLastBuffer: " << noSamplesLastBuffer << std::endl;
     uhd::rx_metadata_t mdRx;
-    double timeout =
-        (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
-
+    // double timeout =
+    //    (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
+    double timeout = secondsInFuture + 0.1;
     size_t totalSamplesRecvd = 0;
     size_t remainingNoSamples = config.noSamples;
     size_t noSamplesRcvd = rxStreamer_->get_max_num_samps();
@@ -164,7 +166,7 @@ void Usrp::setRfConfig(const RfConfig &conf) {
          idxRxAntenna++) {
         setRfConfigForRxAntenna(conf, idxRxAntenna);
     }
-
+    usrpDevice_->set_time_now(uhd::time_spec_t(0.0));
     if (!subdevSpecSet_) {
         // usrpDevice_->set_rx_subdev_spec(
         //    uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
@@ -215,6 +217,7 @@ void Usrp::setTimeToZeroNextPps() {
     // join previous thread to make sure it has properly ended. This is also
     // necessary to use op= below (it'll std::terminate() if not joined
     // before)
+    return;
     if (setTimeToZeroNextPpsThread_.joinable())
         setTimeToZeroNextPpsThread_.join();
 

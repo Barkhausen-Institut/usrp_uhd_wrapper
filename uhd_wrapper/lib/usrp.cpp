@@ -157,7 +157,6 @@ void Usrp::setRfConfig(const RfConfig &conf) {
          idxRxAntenna++) {
         setRfConfigForRxAntenna(conf, idxRxAntenna);
     }
-    usrpDevice_->set_time_now(uhd::time_spec_t(0.0));
     if (!subdevSpecSet_) {
         usrpDevice_->set_rx_subdev_spec(
             uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);

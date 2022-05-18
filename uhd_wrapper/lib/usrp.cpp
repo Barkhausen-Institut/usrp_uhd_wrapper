@@ -206,7 +206,6 @@ void Usrp::setTimeToZeroNextPps() {
     // join previous thread to make sure it has properly ended. This is also
     // necessary to use op= below (it'll std::terminate() if not joined
     // before)
-    return;
     if (setTimeToZeroNextPpsThread_.joinable())
         setTimeToZeroNextPpsThread_.join();
 

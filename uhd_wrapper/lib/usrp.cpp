@@ -203,10 +203,8 @@ void Usrp::setTimeToZeroNextPps() {
     // join previous thread to make sure it has properly ended. This is also
     // necessary to use op= below (it'll std::terminate() if not joined
     // before)
-    if (setTimeToZeroNextPpsThread_.joinable()) {
+    if (setTimeToZeroNextPpsThread_.joinable())
         setTimeToZeroNextPpsThread_.join();
-        configureRxStreamer(rfConfig_);
-    }
 
     setTimeToZeroNextPpsThread_ =
         std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
@@ -216,6 +214,7 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     std::scoped_lock lock(fpgaAccessMutex_);
     ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
+    configureRxStreamer(rfConfig_);
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {

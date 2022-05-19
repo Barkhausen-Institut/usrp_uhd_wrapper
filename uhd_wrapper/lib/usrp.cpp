@@ -167,6 +167,7 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 }
 
 void Usrp::configureRxStreamer(const RfConfig &conf) {
+    if (rxStreamer_) rxStreamer_.reset();
     uhd::stream_args_t rxStreamArgs("fc32", "sc16");
     rxStreamArgs.channels = std::vector<size_t>({});
     for (int rxAntennaIdx = 0; rxAntennaIdx < conf.noRxAntennas; rxAntennaIdx++)

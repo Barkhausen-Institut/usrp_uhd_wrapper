@@ -24,13 +24,13 @@ def getUsrpIps() -> Tuple[str, str]:
 class HardwareSetup:
     def __init__(
         self,
-        txGain: float = 35,
-        rxGain: float = 35,
-        rxSampleRate: float = 122.88e6,
-        txSampleRate: float = 122.88e6,
+        txGain: float = 30,
+        rxGain: float = 25,
+        rxSampleRate: float = 12.288e6,
+        txSampleRate: float = 12.288e6,
         txFc: float = 2e9,
         rxFc: float = 2e9,
-        noRxAntennas: int = 2,
+        noRxAntennas: int = 4,
         noTxAntennas: int = 1,
     ) -> None:
         self.rfConfig = RfConfig()
@@ -77,8 +77,8 @@ class TestHardwareSystemTests(unittest.TestCase):
         correlation = np.abs(np.correlate(frame, txSignal))
         return np.argsort(correlation)[-1]
 
-    def test_oneTxAntennaTwoRxAntennas_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup(txGain=35, rxGain=35)
+    def test_oneTxAntennaFourRxAntennas_localhost(self) -> None:
+        setup = LocalTransmissionHardwareSetup()
         system = setup.connectUsrps()
         rxStreamingConfig1 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)
@@ -92,13 +92,27 @@ class TestHardwareSystemTests(unittest.TestCase):
         samplesSystem = system.collect()
         rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
         rxSamplesUsrpAnt2 = samplesSystem["usrp1"][0].signals[1]
+        rxSamplesUsrpAnt3 = samplesSystem["usrp1"][0].signals[2]
+        rxSamplesUsrpAnt4 = samplesSystem["usrp1"][0].signals[3]
 
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
             second=self.findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),
             delta=1,
         )
+        self.assertAlmostEqual(
+            first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+            second=self.findSignalStartsInFrame(rxSamplesUsrpAnt3, self.randomSignal),
+            delta=1,
+        )
+        self.assertAlmostEqual(
+            first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+            second=self.findSignalStartsInFrame(rxSamplesUsrpAnt4, self.randomSignal),
+            delta=1,
+        )
         self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt2)), 1)
+        self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)
+        self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt4)), 1)
 
     def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup()
@@ -117,7 +131,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
-            second=170,
+            second=50,
             delta=10,
         )
 
@@ -140,7 +154,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=170,
+            second=50,
             delta=10,
         )
 
@@ -168,11 +182,11 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=170,
+            second=50,
             delta=10,
         )
         self.assertAlmostEqual(
             first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
-            second=170,
+            second=50,
             delta=10,
         )

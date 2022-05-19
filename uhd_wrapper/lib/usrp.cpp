@@ -56,7 +56,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
     size_t totalSamplesRecvd = 0;
     size_t remainingNoSamples = config.noSamples;
-    size_t noMaxNumSamples = rxStreamer_->get_max_num_samps();
+    size_t maxPacketSize = rxStreamer_->get_max_num_samps();
     while (totalSamplesRecvd < config.noSamples) {
         std::vector<sample *> buffers;
         for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
@@ -64,9 +64,9 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
             buffers.push_back(buffer[rxAntennaIdx].data() + totalSamplesRecvd);
         }
         remainingNoSamples = config.noSamples - totalSamplesRecvd;
-        size_t noSamplesNextPkg = remainingNoSamples < noMaxNumSamples
+        size_t noSamplesNextPkg = remainingNoSamples < maxPacketSize
                                       ? remainingNoSamples
-                                      : noMaxNumSamples;
+                                      : maxPacketSize;
         size_t noSamplesRcvd =
             rxStreamer_->recv(buffers, noSamplesNextPkg, mdRx, timeout, true);
 

@@ -164,8 +164,6 @@ void Usrp::setRfConfig(const RfConfig &conf) {
         txStreamArgs.channels = std::vector<size_t>({0});
         txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
     }
-    configureRxStreamer(conf);
-
     rfConfig_ = getRfConfig();
 }
 
@@ -205,8 +203,10 @@ void Usrp::setTimeToZeroNextPps() {
     // join previous thread to make sure it has properly ended. This is also
     // necessary to use op= below (it'll std::terminate() if not joined
     // before)
-    if (setTimeToZeroNextPpsThread_.joinable())
+    if (setTimeToZeroNextPpsThread_.joinable()) {
         setTimeToZeroNextPpsThread_.join();
+        configureRxStreamer(rfConfig_);
+    }
 
     setTimeToZeroNextPpsThread_ =
         std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);

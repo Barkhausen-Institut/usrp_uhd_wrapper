@@ -32,6 +32,8 @@ def createSystem(
     rfConfig.txGain = txGain
     rfConfig.rxCarrierFrequency = fc
     rfConfig.txCarrierFrequency = fc
+    rfConfig.noRxAntennas = 1
+    rfConfig.noTxAntennas = 1
 
     system = System()
     system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")

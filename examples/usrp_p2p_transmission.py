@@ -24,6 +24,8 @@ def createSystem(
     rfConfig.txGain = txGain
     rfConfig.rxCarrierFrequency = fc
     rfConfig.txCarrierFrequency = fc
+    rfConfig.noRxAntennas = 1
+    rfConfig.noTxAntennas = 1
 
     # ceate system
     system = System()

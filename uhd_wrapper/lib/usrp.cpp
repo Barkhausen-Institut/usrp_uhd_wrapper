@@ -64,9 +64,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
             buffers.push_back(buffer[rxAntennaIdx].data() + totalSamplesRecvd);
         }
         remainingNoSamples = config.noSamples - totalSamplesRecvd;
-        size_t noSamplesNextPkg = remainingNoSamples < maxPacketSize
-                                      ? remainingNoSamples
-                                      : maxPacketSize;
+        size_t noSamplesNextPkg = std::min(remainingNoSamples, maxPacketSize);
         size_t noSamplesRcvd =
             rxStreamer_->recv(buffers, noSamplesNextPkg, mdRx, timeout, true);
 

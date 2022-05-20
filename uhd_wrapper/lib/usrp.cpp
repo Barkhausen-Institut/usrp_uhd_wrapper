@@ -140,18 +140,13 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
     std::scoped_lock lock(fpgaAccessMutex_);
-    // configure transmitter
-    setTxSamplingRate(conf.txSamplingRate);
-    uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency);
-    usrpDevice_->set_tx_freq(txTuneRequest, 0);
-    usrpDevice_->set_tx_gain(conf.txGain, 0);
-    usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw, 0);
 
-    // configure receiver
-    for (int idxRxAntenna = 0; idxRxAntenna < conf.noRxAntennas;
-         idxRxAntenna++) {
+    for (int idxRxAntenna = 0; idxRxAntenna < conf.noRxAntennas; idxRxAntenna++)
         setRfConfigForRxAntenna(conf, idxRxAntenna);
-    }
+
+    for (int idxTxAntenna = 0; idxTxAntenna < conf.noTxAntennas; idxTxAntenna++)
+        setRfConfigForTxAntenna(conf, idxTxAntenna);
+
     if (!subdevSpecSet_) {
         usrpDevice_->set_rx_subdev_spec(
             uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
@@ -190,6 +185,14 @@ void Usrp::setRfConfigForRxAntenna(const RfConfig &conf, size_t rxAntennaIdx) {
     usrpDevice_->set_rx_freq(rxTuneRequest, rxAntennaIdx);
     usrpDevice_->set_rx_gain(conf.rxGain, rxAntennaIdx);
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, rxAntennaIdx);
+}
+
+void Usrp::setRfConfigForTxAntenna(const RfConfig &conf, size_t txAntennaIdx) {
+    setTxSamplingRate(conf.txSamplingRate, txAntennaIdx);
+    uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency);
+    usrpDevice_->set_tx_freq(txTuneRequest, txAntennaIdx);
+    usrpDevice_->set_tx_gain(conf.txGain, txAntennaIdx);
+    usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw, txAntennaIdx);
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
@@ -276,8 +279,8 @@ void Usrp::resetStreamingConfigs() {
     txStreamingConfigs_.clear();
     rxStreamingConfigs_.clear();
 }
-void Usrp::setTxSamplingRate(const double samplingRate) {
-    usrpDevice_->set_tx_rate(samplingRate);
+void Usrp::setTxSamplingRate(const double samplingRate, size_t idxTxAntenna) {
+    usrpDevice_->set_tx_rate(samplingRate, idxTxAntenna);
     double actualSamplingRate = usrpDevice_->get_tx_rate();
     assertSamplingRate(actualSamplingRate, masterClockRate_);
 }

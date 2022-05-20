@@ -179,7 +179,8 @@ void Usrp::configureTxStreamer(const RfConfig &conf) {
         txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
     }
 }
-void Usrp::setRfConfigForRxAntenna(const RfConfig &conf, size_t rxAntennaIdx) {
+void Usrp::setRfConfigForRxAntenna(const RfConfig &conf,
+                                   const size_t rxAntennaIdx) {
     setRxSamplingRate(conf.rxSamplingRate, rxAntennaIdx);
     uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency);
     usrpDevice_->set_rx_freq(rxTuneRequest, rxAntennaIdx);
@@ -187,7 +188,8 @@ void Usrp::setRfConfigForRxAntenna(const RfConfig &conf, size_t rxAntennaIdx) {
     usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, rxAntennaIdx);
 }
 
-void Usrp::setRfConfigForTxAntenna(const RfConfig &conf, size_t txAntennaIdx) {
+void Usrp::setRfConfigForTxAntenna(const RfConfig &conf,
+                                   const size_t txAntennaIdx) {
     setTxSamplingRate(conf.txSamplingRate, txAntennaIdx);
     uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency);
     usrpDevice_->set_tx_freq(txTuneRequest, txAntennaIdx);
@@ -279,12 +281,14 @@ void Usrp::resetStreamingConfigs() {
     txStreamingConfigs_.clear();
     rxStreamingConfigs_.clear();
 }
-void Usrp::setTxSamplingRate(const double samplingRate, size_t idxTxAntenna) {
+void Usrp::setTxSamplingRate(const double samplingRate,
+                             const size_t idxTxAntenna) {
     usrpDevice_->set_tx_rate(samplingRate, idxTxAntenna);
     double actualSamplingRate = usrpDevice_->get_tx_rate();
     assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
-void Usrp::setRxSamplingRate(const double samplingRate, size_t idxRxAntenna) {
+void Usrp::setRxSamplingRate(const double samplingRate,
+                             const size_t idxRxAntenna) {
     usrpDevice_->set_rx_rate(samplingRate, idxRxAntenna);
     double actualSamplingRate = usrpDevice_->get_rx_rate(idxRxAntenna);
     assertSamplingRate(actualSamplingRate, masterClockRate_);

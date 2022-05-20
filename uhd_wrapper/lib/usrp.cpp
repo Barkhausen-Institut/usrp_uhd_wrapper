@@ -160,11 +160,7 @@ void Usrp::setRfConfig(const RfConfig &conf) {
         subdevSpecSet_ = true;
     }
 
-    if (!txStreamer_) {
-        uhd::stream_args_t txStreamArgs("fc32", "sc16");
-        txStreamArgs.channels = std::vector<size_t>({0});
-        txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
-    }
+    configureTxStreamer(conf);
     rfConfig_ = getRfConfig();
 }
 
@@ -177,6 +173,17 @@ void Usrp::configureRxStreamer(const RfConfig &conf) {
     rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
 }
 
+void Usrp::configureTxStreamer(const RfConfig &conf) {
+    if (!txStreamer_) {
+        uhd::stream_args_t txStreamArgs("fc32", "sc16");
+        txStreamArgs.channels = std::vector<size_t>({});
+
+        for (int txAntennaIdx = 0; txAntennaIdx < conf.noTxAntennas;
+             txAntennaIdx++)
+            txStreamArgs.channels.push_back(txAntennaIdx);
+        txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
+    }
+}
 void Usrp::setRfConfigForRxAntenna(const RfConfig &conf, size_t rxAntennaIdx) {
     setRxSamplingRate(conf.rxSamplingRate, rxAntennaIdx);
     uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency);

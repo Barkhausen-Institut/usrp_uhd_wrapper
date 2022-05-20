@@ -68,6 +68,7 @@ class Usrp : public UsrpInterface {
 
     void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
     void configureRxStreamer(const RfConfig& conf);
+    void configureTxStreamer(const RfConfig& conf);
 
     // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);

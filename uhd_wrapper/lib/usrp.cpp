@@ -155,7 +155,8 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     if (!subdevSpecSet_) {
         usrpDevice_->set_rx_subdev_spec(
             uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
-        usrpDevice_->set_tx_subdev_spec(uhd::usrp::subdev_spec_t("A:0"), 0);
+        usrpDevice_->set_tx_subdev_spec(
+            uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noTxAntennas - 1]), 0);
         subdevSpecSet_ = true;
     }
 

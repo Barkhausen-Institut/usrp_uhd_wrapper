@@ -62,19 +62,24 @@ class Usrp : public UsrpInterface {
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
     bool subdevSpecSet_ = false;
 
-    // functions
+    // configuration functions
     void setTxSamplingRate(const double samplingRate);
     void setRxSamplingRate(const double samplingRate, size_t rxAntennaIdx);
 
     void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
+    void configureRxStreamer(const RfConfig& conf);
+
+    // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);
     void receive(const double baseTime, std::vector<MimoSignal>& buffers,
                  std::exception_ptr& exceptionPtr);
-    void setTimeToZeroNextPpsThreadFunction();
     void processRxStreamingConfig(const RxStreamingConfig& config,
                                   MimoSignal& buffer, const double baseTime);
     void processTxStreamingConfig(const TxStreamingConfig& config,
                                   const double baseTime);
+
+    // remaining functions
+    void setTimeToZeroNextPpsThreadFunction();
 };
 
 }  // namespace bi

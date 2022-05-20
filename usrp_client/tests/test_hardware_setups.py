@@ -28,7 +28,7 @@ def createRandom(noSamples: int) -> np.ndarray:
 
 
 def padSignal(noZeroPads: int, signal: np.ndarray) -> np.ndarray:
-    return np.hstack([noZeroPads, signal])
+    return np.hstack([np.zeros(noZeroPads), signal])
 
 
 class HardwareSetup:
@@ -127,20 +127,19 @@ class TestHardwareSystemTests(unittest.TestCase):
     def test_fourTxAntennaOneRxAntenna_localhost(self) -> None:
         # create signal
         signalLength = 1000
-        interTxSignalZeros = [0, 100, 200, 300]
+        signalStarts = [0, int(10e3), int(20e3), int(30e3)]
         antTxSignals = [
             createRandom(signalLength),
             createRandom(signalLength),
             createRandom(signalLength),
             createRandom(signalLength),
         ]
+        paddedAntTxSignals = []
+        for antSignal, signalStart in zip(antTxSignals, signalStarts):
+            s = np.zeros(int(50e3), dtype=np.complex64)
+            s[signalStart + np.arange(antSignal.size)] = antSignal
+            paddedAntTxSignals.append(s)
 
-        paddedAntTxSignals = [
-            padSignal(interTxSignalZeros[0], antTxSignals[0]),
-            padSignal(antTxSignals[0].size + interTxSignalZeros[1], antTxSignals[1]),
-            padSignal(antTxSignals[1].size + interTxSignalZeros[2], antTxSignals[2]),
-            padSignal(antTxSignals[2].size + interTxSignalZeros[3], antTxSignals[3]),
-        ]
         # create setup
         setup = LocalTransmissionHardwareSetup()
         system = setup.connectUsrps()
@@ -163,21 +162,13 @@ class TestHardwareSystemTests(unittest.TestCase):
             self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
             self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
         ]
-        self.assertAlmostEqual(
-            first=signalStartsInFrame[0],
-            second=signalStartsInFrame[1] - interTxSignalZeros[1],
-            delta=1,
-        )
-        self.assertAlmostEqual(
-            first=signalStartsInFrame[0],
-            second=signalStartsInFrame[2] - interTxSignalZeros[2],
-            delta=1,
-        )
-        self.assertAlmostEqual(
-            first=signalStartsInFrame[0],
-            second=signalStartsInFrame[3] - interTxSignalZeros[3],
-            delta=1,
-        )
+
+        for antIdx in range(1, 4):
+            self.assertAlmostEqual(
+                first=signalStartsInFrame[antIdx] - signalStartsInFrame[antIdx - 1],
+                second=signalStarts[antIdx] - signalStarts[antIdx - 1],
+                delta=0,
+            )
 
     def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup()

@@ -50,7 +50,7 @@ def findSignalStartsInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
 class HardwareSetup:
     def __init__(
         self,
-        txGain: float = 27,
+        txGain: float = 26,
         rxGain: float = 25,
         rxSampleRate: float = 12.288e6,
         txSampleRate: float = 12.288e6,
@@ -222,8 +222,8 @@ class TestTxMimo(unittest.TestCase):
 
     def test_fourTxAntennaOneRxAntenna_localhost(self) -> None:
         # create signal
-        signalLength = 1000
-        signalStarts = [0, int(10e3), int(20e3), int(30e3)]
+        signalLength = 5000
+        signalStarts = [int(10e3), int(20e3), int(30e3), int(40e3)]
         antTxSignals = [
             createRandom(signalLength),
             createRandom(signalLength),
@@ -258,7 +258,6 @@ class TestTxMimo(unittest.TestCase):
             findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
             findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
         ]
-
         for antIdx in range(1, 4):
             self.assertEqual(
                 first=signalStartsInFrame[antIdx] - signalStartsInFrame[antIdx - 1],

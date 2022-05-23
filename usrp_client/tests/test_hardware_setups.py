@@ -14,11 +14,22 @@ from uhd_wrapper.utils.config import (
 from usrp_client.system import System
 
 
-def getUsrpIps() -> Tuple[str, str]:
+def getIpUsrp1() -> str:
     envVariables = os.environ.keys()
-    if "USRP1_IP" not in envVariables or "USRP2_IP" not in envVariables:
-        raise RuntimeError("Environment variables USRP1_IP/USRP2_IP must be defined.")
-    return (os.environ["USRP1_IP"], os.environ["USRP2_IP"])
+    if "USRP1_IP" not in envVariables:
+        raise RuntimeError("Environment variable USRP1_IP must be defined.")
+    return os.environ["USRP1_IP"]
+
+
+def getIpUsrp2() -> str:
+    envVariables = os.environ.keys()
+    if "USRP2_IP" not in envVariables:
+        raise RuntimeError("Environment variable USRP2_IP must be defined.")
+    return os.environ["USRP1_IP"]
+
+
+def getUsrpIps() -> Tuple[str, str]:
+    return (getIpUsrp1(), getIpUsrp2())
 
 
 def createRandom(noSamples: int) -> np.ndarray:

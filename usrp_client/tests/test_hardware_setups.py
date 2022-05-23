@@ -50,7 +50,7 @@ def findSignalStartsInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
 class HardwareSetup:
     def __init__(
         self,
-        txGain: float = 30,
+        txGain: float = 27,
         rxGain: float = 25,
         rxSampleRate: float = 12.288e6,
         txSampleRate: float = 12.288e6,

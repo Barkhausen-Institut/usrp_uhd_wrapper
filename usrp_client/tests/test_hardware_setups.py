@@ -31,6 +31,11 @@ def padSignal(noZeroPads: int, signal: np.ndarray) -> np.ndarray:
     return np.hstack([np.zeros(noZeroPads), signal])
 
 
+def findSignalStartsInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
+    correlation = np.abs(np.correlate(frame, txSignal))
+    return np.argsort(correlation)[-1]
+
+
 class HardwareSetup:
     def __init__(
         self,
@@ -83,10 +88,6 @@ class TestHardwareSystemTests(unittest.TestCase):
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
 
-    def findSignalStartsInFrame(self, frame: np.ndarray, txSignal: np.ndarray) -> int:
-        correlation = np.abs(np.correlate(frame, txSignal))
-        return np.argsort(correlation)[-1]
-
     def test_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup()
         system = setup.connectUsrps()
@@ -106,18 +107,18 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrpAnt4 = samplesSystem["usrp1"][0].signals[3]
 
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
-            second=self.findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),
+            first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+            second=findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),
             delta=1,
         )
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
-            second=self.findSignalStartsInFrame(rxSamplesUsrpAnt3, self.randomSignal),
+            first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+            second=findSignalStartsInFrame(rxSamplesUsrpAnt3, self.randomSignal),
             delta=1,
         )
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
-            second=self.findSignalStartsInFrame(rxSamplesUsrpAnt4, self.randomSignal),
+            first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+            second=findSignalStartsInFrame(rxSamplesUsrpAnt4, self.randomSignal),
             delta=1,
         )
         self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt2)), 1)
@@ -140,7 +141,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
 
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
+            first=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
             second=50,
             delta=10,
         )
@@ -163,7 +164,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
 
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
+            first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
             second=50,
             delta=10,
         )
@@ -191,12 +192,12 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrp2 = samplesSystem["usrp2"][0].signals[0]
 
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
+            first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
             second=50,
             delta=10,
         )
         self.assertAlmostEqual(
-            first=self.findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
+            first=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
             second=50,
             delta=10,
         )
@@ -244,10 +245,10 @@ class TestTxMimo(unittest.TestCase):
         rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
 
         signalStartsInFrame = [
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[0]),
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[1]),
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
+            findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[0]),
+            findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[1]),
+            findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
+            findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
         ]
 
         for antIdx in range(1, 4):

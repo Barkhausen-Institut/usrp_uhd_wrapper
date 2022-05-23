@@ -25,7 +25,7 @@ def getIpUsrp2() -> str:
     envVariables = os.environ.keys()
     if "USRP2_IP" not in envVariables:
         raise RuntimeError("Environment variable USRP2_IP must be defined.")
-    return os.environ["USRP1_IP"]
+    return os.environ["USRP2_IP"]
 
 
 def getUsrpIps() -> Tuple[str, str]:

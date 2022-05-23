@@ -117,20 +117,17 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrpAnt3 = samplesSystem["usrp1"][0].signals[2]
         rxSamplesUsrpAnt4 = samplesSystem["usrp1"][0].signals[3]
 
-        self.assertAlmostEqual(
+        self.assertEqual(
             first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
             second=findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),
-            delta=1,
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
             second=findSignalStartsInFrame(rxSamplesUsrpAnt3, self.randomSignal),
-            delta=1,
         )
-        self.assertAlmostEqual(
+        self.assertEqual(
             first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
             second=findSignalStartsInFrame(rxSamplesUsrpAnt4, self.randomSignal),
-            delta=1,
         )
         self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt2)), 1)
         self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)

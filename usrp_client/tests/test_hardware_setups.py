@@ -41,7 +41,7 @@ class HardwareSetup:
         txFc: float = 2e9,
         rxFc: float = 2e9,
         noRxAntennas: int = 4,
-        noTxAntennas: int = 4,
+        noTxAntennas: int = 1,
     ) -> None:
         self.rfConfig = RfConfig()
         self.rfConfig.rxAnalogFilterBw = 400e6
@@ -124,52 +124,6 @@ class TestHardwareSystemTests(unittest.TestCase):
         self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)
         self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt4)), 1)
 
-    def test_fourTxAntennaOneRxAntenna_localhost(self) -> None:
-        # create signal
-        signalLength = 1000
-        signalStarts = [0, int(10e3), int(20e3), int(30e3)]
-        antTxSignals = [
-            createRandom(signalLength),
-            createRandom(signalLength),
-            createRandom(signalLength),
-            createRandom(signalLength),
-        ]
-        paddedAntTxSignals = []
-        for antSignal, signalStart in zip(antTxSignals, signalStarts):
-            s = np.zeros(int(50e3), dtype=np.complex64)
-            s[signalStart + np.arange(antSignal.size)] = antSignal
-            paddedAntTxSignals.append(s)
-
-        # create setup
-        setup = LocalTransmissionHardwareSetup()
-        system = setup.connectUsrps()
-        rxStreamingConfig1 = RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=int(60e3)
-        )
-        txStreamingConfig1 = TxStreamingConfig(
-            sendTimeOffset=0.0,
-            samples=MimoSignal(signals=paddedAntTxSignals),
-        )
-        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
-        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
-        system.execute()
-        samplesSystem = system.collect()
-        rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
-
-        signalStartsInFrame = [
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[0]),
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[1]),
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
-            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
-        ]
-
-        for antIdx in range(1, 4):
-            self.assertAlmostEqual(
-                first=signalStartsInFrame[antIdx] - signalStartsInFrame[antIdx - 1],
-                second=signalStarts[antIdx] - signalStarts[antIdx - 1],
-                delta=0,
-            )
-
     def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup()
         system = setup.connectUsrps()
@@ -246,3 +200,59 @@ class TestHardwareSystemTests(unittest.TestCase):
             second=50,
             delta=10,
         )
+
+
+@pytest.mark.hardware_tx_mimo
+class TestTxMimo(unittest.TestCase):
+    def setUp(self) -> None:
+        self.noSamples = int(20e3)
+        self.randomSignal = (
+            np.random.sample((self.noSamples,))
+            + 1j * np.random.sample((self.noSamples,))
+        ) - (0.5 + 0.5j)
+
+    def test_fourTxAntennaOneRxAntenna_localhost(self) -> None:
+        # create signal
+        signalLength = 1000
+        signalStarts = [0, int(10e3), int(20e3), int(30e3)]
+        antTxSignals = [
+            createRandom(signalLength),
+            createRandom(signalLength),
+            createRandom(signalLength),
+            createRandom(signalLength),
+        ]
+        paddedAntTxSignals = []
+        for antSignal, signalStart in zip(antTxSignals, signalStarts):
+            s = np.zeros(int(50e3), dtype=np.complex64)
+            s[signalStart + np.arange(antSignal.size)] = antSignal
+            paddedAntTxSignals.append(s)
+
+        # create setup
+        setup = LocalTransmissionHardwareSetup(noTxAntennas=4, noRxAntennas=1)
+        system = setup.connectUsrps()
+        rxStreamingConfig1 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0,
+            samples=MimoSignal(signals=paddedAntTxSignals),
+        )
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.execute()
+        samplesSystem = system.collect()
+        rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
+
+        signalStartsInFrame = [
+            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[0]),
+            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[1]),
+            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
+            self.findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
+        ]
+
+        for antIdx in range(1, 4):
+            self.assertAlmostEqual(
+                first=signalStartsInFrame[antIdx] - signalStartsInFrame[antIdx - 1],
+                second=signalStarts[antIdx] - signalStarts[antIdx - 1],
+                delta=0,
+            )

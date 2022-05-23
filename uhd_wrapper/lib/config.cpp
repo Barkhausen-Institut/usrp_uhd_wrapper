@@ -72,11 +72,15 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
 
 void assertValidTxSignal(const MimoSignal& antSamples,
                          const size_t maxSamples) {
+    size_t lengthSignal = antSamples[0].size();
     for (const auto& antSignal : antSamples) {
         if (antSignal.size() > maxSamples)
             throw UsrpException(
                 "Transmitted signal length must not be larger than " +
                 std::to_string(maxSamples));
+        if (antSignal.size() != lengthSignal)
+            throw UsrpException(
+                "The antenna signals need to have the same length.");
     }
 }
 

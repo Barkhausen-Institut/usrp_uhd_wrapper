@@ -76,6 +76,7 @@ class System:
 
         usrpClient = self.createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
+        usrpClient.resetStreamingConfigs()
         self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
         self.__usrpsSynced = False
 

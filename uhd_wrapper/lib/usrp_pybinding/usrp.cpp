@@ -106,7 +106,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
-        .def(py::init<const unsigned int, const float>(), py::arg("noSamples"),
+        .def(py::init<const unsigned int, const double>(), py::arg("noSamples"),
              py::arg("receiveTimeOffset"))
         .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
         .def_readwrite("receiveTimeOffset",
@@ -115,8 +115,8 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
-        .def(py::init<const bi::MimoSignal&, const float>(), py::arg("samples"),
-             py::arg("sendTimeOffset"))
+        .def(py::init<const bi::MimoSignal&, const double>(),
+             py::arg("samples"), py::arg("sendTimeOffset"))
         .def_readwrite("samples", &bi::TxStreamingConfig::samples)
         .def_readwrite("sendTimeOffset", &bi::TxStreamingConfig::sendTimeOffset)
         .def(py::self == py::self);
@@ -130,7 +130,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("getCurrentFpgaTime", &bi::UsrpInterface::getCurrentFpgaTime)
         .def("execute", &bi::UsrpInterface::execute)
         .def("collect", &bi::UsrpInterface::collect)
-        .def("reset", &bi::UsrpInterface::reset)
+        .def("resetStreamingConfigs", &bi::UsrpInterface::resetStreamingConfigs)
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig);
 

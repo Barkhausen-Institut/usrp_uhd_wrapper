@@ -47,6 +47,11 @@ class TestSystemInitialization(unittest.TestCase):
         self.system.addUsrp(c, "localhost", "testusrp")
         self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
 
+    def test_streamingConfigsAreReset(self) -> None:
+        c = RfConfig()
+        self.system.addUsrp(c, "localhost", "testusrp")
+        self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
+
 
 class SystemMockFactory:
     def mockSystem(self, system: System, noMockUsrps: int) -> List[Mock]:

@@ -139,5 +139,12 @@ TEST_CASE("[ValidTxSignal]") {
         conf.samples = {samples_vec((size_t)10, sample(0, 0))};
         REQUIRE_NOTHROW(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES));
     }
+
+    SECTION("MimoSignalLengthsDiffer") {
+        conf.samples = {samples_vec((size_t)100, sample(0, 0)),
+                        samples_vec((size_t)200, sample(0.0))};
+        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES),
+                          UsrpException);
+    }
 }
 }  // namespace bi

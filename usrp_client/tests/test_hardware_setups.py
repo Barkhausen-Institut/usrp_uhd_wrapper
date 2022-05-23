@@ -232,7 +232,7 @@ class TestTxMimo(unittest.TestCase):
         ]
         paddedAntTxSignals = []
         for antSignal, signalStart in zip(antTxSignals, signalStarts):
-            s = np.zeros(int(50e3), dtype=np.complex64)
+            s = np.zeros(int(60e3), dtype=np.complex64)
             s[signalStart + np.arange(antSignal.size)] = antSignal
             paddedAntTxSignals.append(s)
 

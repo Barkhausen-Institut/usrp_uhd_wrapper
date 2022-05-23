@@ -9,3 +9,6 @@ __pycache__/
 .python-version
 env/
 *.egg-info/
+*.so
+*.rst
+*.txt

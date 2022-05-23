@@ -63,11 +63,18 @@ class Usrp : public UsrpInterface {
     bool subdevSpecSet_ = false;
 
     // configuration functions
-    void setTxSamplingRate(const double samplingRate);
-    void setRxSamplingRate(const double samplingRate, size_t rxAntennaIdx);
+    void setTxSamplingRate(const double samplingRate,
+                           const size_t txAntennaIdx);
+    void setRxSamplingRate(const double samplingRate,
+                           const size_t rxAntennaIdx);
 
-    void setRfConfigForRxAntenna(const RfConfig& conf, size_t rxAntennaIdx);
+    void setRfConfigForRxAntenna(const RfConfig& conf,
+                                 const size_t rxAntennaIdx);
+    void setRfConfigForTxAntenna(const RfConfig& conf,
+                                 const size_t txAntennaIdx);
+
     void configureRxStreamer(const RfConfig& conf);
+    void configureTxStreamer(const RfConfig& conf);
 
     // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);

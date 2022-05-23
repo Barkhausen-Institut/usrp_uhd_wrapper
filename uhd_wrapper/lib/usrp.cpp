@@ -57,6 +57,7 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
     size_t totalSamplesRecvd = 0;
     size_t maxPacketSize = rxStreamer_->get_max_num_samps();
+
     while (totalSamplesRecvd < config.noSamples) {
         std::vector<sample *> buffers;
         for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
@@ -96,11 +97,6 @@ void Usrp::transmit(const double baseTime, std::exception_ptr &exceptionPtr) {
 
 void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
                                     const double baseTime) {
-    size_t noPackages =
-        calcNoPackages(conf.samples[0].size(), SAMPLES_PER_BUFFER);
-    size_t noSamplesLastBuffer =
-        calcNoSamplesLastBuffer(conf.samples[0].size(), SAMPLES_PER_BUFFER);
-
     // specifiy on specifications of how to stream the command
     uhd::tx_metadata_t mdTx;
     mdTx.start_of_burst = false;
@@ -111,14 +107,23 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     double timeout =
         baseTime + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
 
-    for (size_t packageIdx = 0; packageIdx < noPackages; packageIdx++) {
-        txStreamer_->send(
-            {conf.samples[0].data() + packageIdx * SAMPLES_PER_BUFFER},
-            packageIdx == (noPackages - 1) ? noSamplesLastBuffer
-                                           : SAMPLES_PER_BUFFER,
-            mdTx, timeout);
-        // mdTx.start_of_burst = false;
+    size_t totalSamplesSent = 0;
+    size_t noSampsTxSignal = conf.samples[0].size();
+    size_t maxPacketSize = txStreamer_->get_max_num_samps();
+
+    while (totalSamplesSent < noSampsTxSignal) {
+        std::vector<const sample *> buffers;
+        for (int txAntennaIdx = 0; txAntennaIdx < rfConfig_.noTxAntennas;
+             txAntennaIdx++)
+            buffers.push_back(conf.samples[txAntennaIdx].data() +
+                              totalSamplesSent);
+        size_t sampsToSend =
+            std::min(noSampsTxSignal - totalSamplesSent, maxPacketSize);
+        size_t samplesSent =
+            txStreamer_->send(buffers, sampsToSend, mdTx, timeout);
         mdTx.has_time_spec = false;
+
+        totalSamplesSent += samplesSent;
     }
     mdTx.end_of_burst = true;
     txStreamer_->send("", 0, mdTx);
@@ -154,8 +159,8 @@ void Usrp::setRfConfig(const RfConfig &conf) {
             uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noTxAntennas - 1]), 0);
         subdevSpecSet_ = true;
     }
-
     configureTxStreamer(conf);
+
     rfConfig_ = getRfConfig();
 }
 

@@ -83,10 +83,10 @@ class P2pHardwareSetup(HardwareSetup):
 
 class LocalTransmissionHardwareSetup(HardwareSetup):
     def connectUsrps(self) -> System:
-        usrpIps = getUsrpIps()
+        usrpIp = getIpUsrp1()
 
         self.system = System()
-        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[0], usrpName="usrp1")
+        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
         return self.system
 
 

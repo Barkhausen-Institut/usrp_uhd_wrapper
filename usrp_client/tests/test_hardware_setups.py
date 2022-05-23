@@ -260,8 +260,7 @@ class TestTxMimo(unittest.TestCase):
         ]
 
         for antIdx in range(1, 4):
-            self.assertAlmostEqual(
+            self.assertEqual(
                 first=signalStartsInFrame[antIdx] - signalStartsInFrame[antIdx - 1],
                 second=signalStarts[antIdx] - signalStarts[antIdx - 1],
-                delta=0,
             )

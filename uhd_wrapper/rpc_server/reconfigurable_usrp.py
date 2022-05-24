@@ -12,6 +12,12 @@ class RestartingUsrp:
 
     def __init__(self, ip: str) -> None:
         self._ip = ip
+
+        usrpStarted = self._startUsrpMultipleTimes()
+        if not usrpStarted:
+            sys.exit("Could not start USRP... exiting.")
+
+    def _startUsrpMultipleTimes(self) -> bool:
         startAttempt = 1
         usrpStarted = False
         while not usrpStarted and startAttempt <= self.RestartTrials:
@@ -22,9 +28,7 @@ class RestartingUsrp:
                 print("Creation of USRP failed... Retrying after 2 seconds.")
                 time.sleep(2)
                 startAttempt += 1
-
-        if not usrpStarted:
-            sys.exit("Could not start USRP... exiting.")
+        return usrpStarted
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         self._usrp.setRfConfig(rfConfig)
@@ -67,7 +71,7 @@ class MimoReconfiguringUsrp(RestartingUsrp):
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         if self.__mimoConfigChanged(rfConfig):
-            self._usrp = pybinding.createUsrp(self._ip)
+            _ = self._startUsrpMultipleTimes()
         self._usrp.setRfConfig(rfConfig)
         self._currentRfConfig = rfConfig
 

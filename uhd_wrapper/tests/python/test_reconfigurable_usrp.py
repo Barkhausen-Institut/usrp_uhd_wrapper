@@ -8,7 +8,7 @@ from uhd_wrapper.usrp_pybinding import Usrp, RfConfig, TxStreamingConfig
 from uhd_wrapper.utils.config import fillDummyRfConfig
 
 
-class TestReconfigurableUsrp(unittest.TestCase):
+class TestUsrpStarts(unittest.TestCase):
     def setUp(self) -> None:
         sleepPatcher = patch("time.sleep", return_value=None)
         _ = sleepPatcher.start()

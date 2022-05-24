@@ -1,9 +1,10 @@
-from pdb import runeval
 import unittest
 from unittest.mock import Mock, patch
 
+import numpy as np
+
 from uhd_wrapper.rpc_server.reconfigurable_usrp import ReconfigurableUsrp
-from uhd_wrapper.usrp_pybinding import Usrp, RfConfig
+from uhd_wrapper.usrp_pybinding import Usrp, RfConfig, TxStreamingConfig
 from uhd_wrapper.utils.config import fillDummyRfConfig
 
 
@@ -44,3 +45,12 @@ class TestReconfigurableUsrp(unittest.TestCase):
         dummyRfConfig = fillDummyRfConfig(RfConfig())
         self.R.setRfConfig(dummyRfConfig)
         self.mockedUsrpDevice.setRfConfig.assert_called_once_with(dummyRfConfig)
+
+    def test_rxConfigGetsPassedThrough(self) -> None:
+        dummyTxStreamingConfig = TxStreamingConfig(
+            samples=[np.ones(10)], sendTimeOffset=3.0
+        )
+        self.R.setTxConfig(dummyTxStreamingConfig)
+        self.mockedUsrpDevice.setTxConfig.assert_called_once_with(
+            dummyTxStreamingConfig
+        )

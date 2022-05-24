@@ -1,12 +1,10 @@
 from typing import List
 import time
-import sys
 
 import numpy as np
 
 import uhd_wrapper.usrp_pybinding as pybinding
 from uhd_wrapper.usrp_pybinding import RfConfig, RxStreamingConfig, TxStreamingConfig
-from uhd_wrapper.utils.config import MimoSignal
 
 
 class ReconfigurableUsrp:
@@ -25,7 +23,7 @@ class ReconfigurableUsrp:
                 startAttempt += 1
 
         if not usrpStarted:
-            sys.exit("Could not start USRP... exiting.")
+            raise RuntimeError("Creation of USRP failed.")
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         self.__usrp.setRfConfig(rfConfig)

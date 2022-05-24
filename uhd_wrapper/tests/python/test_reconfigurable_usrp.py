@@ -1,26 +1,13 @@
 import unittest
 from unittest.mock import Mock, patch
 
-import numpy as np
-
 from uhd_wrapper.rpc_server.reconfigurable_usrp import ReconfigurableUsrp
-from uhd_wrapper.usrp_pybinding import (
-    Usrp,
-    RfConfig,
-    TxStreamingConfig,
-    RxStreamingConfig,
-)
-from uhd_wrapper.utils.config import fillDummyRfConfig
 
 
 class TestUsrpStarts(unittest.TestCase):
     def setUp(self) -> None:
         sleepPatcher = patch("time.sleep", return_value=None)
         _ = sleepPatcher.start()
-
-        sysExitPatcher = patch("sys.exit", return_value=None)
-        self.mockedSysExit = sysExitPatcher.start()
-
         usrpFactoryPatcher = patch(
             "uhd_wrapper.usrp_pybinding.createUsrp", return_value=Mock()
         )
@@ -43,6 +30,5 @@ class TestUsrpStarts(unittest.TestCase):
             RuntimeError(),
             Mock(),
         ]
-        _ = ReconfigurableUsrp("localhost")
+        self.assertRaises(RuntimeError, lambda: ReconfigurableUsrp("localhost"))
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 3)
-        self.mockedSysExit.assert_called_once()

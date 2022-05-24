@@ -55,12 +55,12 @@ class TestFunctionsGetPassedThrough(unittest.TestCase):
         self.mockedUsrpDevice.reset_mock()
         self.mockedUsrpFactoryFunction.reset_mock()
 
-    def test_rfConfigGetsPassedThrough(self) -> None:
+    def test_rfConfig(self) -> None:
         dummyRfConfig = fillDummyRfConfig(RfConfig())
         self.R.setRfConfig(dummyRfConfig)
         self.mockedUsrpDevice.setRfConfig.assert_called_once_with(dummyRfConfig)
 
-    def test_txConfigGetsPassedThrough(self) -> None:
+    def test_txConfig(self) -> None:
         dummyTxStreamingConfig = TxStreamingConfig(
             samples=[np.ones(10)], sendTimeOffset=3.0
         )
@@ -69,7 +69,7 @@ class TestFunctionsGetPassedThrough(unittest.TestCase):
             dummyTxStreamingConfig
         )
 
-    def test_rxConfigGetsPassedThrough(self) -> None:
+    def test_rxConfig(self) -> None:
         dummyRxStreamingConfig = RxStreamingConfig(
             noSamples=int(1e3), receiveTimeOffset=3.0
         )

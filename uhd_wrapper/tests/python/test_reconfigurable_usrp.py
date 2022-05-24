@@ -12,14 +12,10 @@ class TestReconfigurableUsrp(unittest.TestCase):
     def setUp(self) -> None:
         sleepPatcher = patch("time.sleep", return_value=None)
         _ = sleepPatcher.start()
-        self.mockedUsrpDevice = Mock(spec=Usrp)
         usrpFactoryPatcher = patch(
-            "uhd_wrapper.usrp_pybinding.createUsrp", return_value=self.mockedUsrpDevice
+            "uhd_wrapper.usrp_pybinding.createUsrp", return_value=Mock()
         )
         self.mockedUsrpFactoryFunction = usrpFactoryPatcher.start()
-        self.R = ReconfigurableUsrp("localhost")
-        self.mockedUsrpDevice.reset_mock()
-        self.mockedUsrpFactoryFunction.reset_mock()
 
     def test_initCreatesUsrp(self) -> None:
         IP = "myIp"
@@ -40,6 +36,18 @@ class TestReconfigurableUsrp(unittest.TestCase):
         ]
         _ = ReconfigurableUsrp("localhost")
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 3)
+
+
+class TestFunctionsGetPassedThrough(unittest.TestCase):
+    def setUp(self) -> None:
+        self.mockedUsrpDevice = Mock(spec=Usrp)
+        usrpFactoryPatcher = patch(
+            "uhd_wrapper.usrp_pybinding.createUsrp", return_value=self.mockedUsrpDevice
+        )
+        self.mockedUsrpFactoryFunction = usrpFactoryPatcher.start()
+        self.R = ReconfigurableUsrp("localhost")
+        self.mockedUsrpDevice.reset_mock()
+        self.mockedUsrpFactoryFunction.reset_mock()
 
     def test_rfConfigGetsPassedThrough(self) -> None:
         dummyRfConfig = fillDummyRfConfig(RfConfig())

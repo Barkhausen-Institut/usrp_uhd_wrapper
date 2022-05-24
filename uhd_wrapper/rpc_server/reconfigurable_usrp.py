@@ -3,7 +3,12 @@ import time
 import sys
 
 import uhd_wrapper.usrp_pybinding as pybinding
-from uhd_wrapper.usrp_pybinding import RfConfig, RxStreamingConfig, TxStreamingConfig
+from uhd_wrapper.usrp_pybinding import (
+    RfConfig,
+    RxStreamingConfig,
+    TxStreamingConfig,
+    Usrp,
+)
 from uhd_wrapper.utils.config import MimoSignal
 
 
@@ -13,22 +18,21 @@ class RestartingUsrp:
     def __init__(self, ip: str) -> None:
         self._ip = ip
 
-        usrpStarted = self._startUsrpMultipleTimes()
-        if not usrpStarted:
+        self._usrp = self._startUsrpMultipleTimes()
+        if not self._usrp:
             sys.exit("Could not start USRP... exiting.")
 
-    def _startUsrpMultipleTimes(self) -> bool:
+    def _startUsrpMultipleTimes(self) -> Usrp:
         startAttempt = 1
-        usrpStarted = False
-        while not usrpStarted and startAttempt <= self.RestartTrials:
+        usrp: Usrp = None
+        while usrp is None and startAttempt <= self.RestartTrials:
             try:
-                self._usrp = pybinding.createUsrp(self._ip)
-                usrpStarted = True
+                usrp = pybinding.createUsrp(self._ip)
             except RuntimeError:
                 print("Creation of USRP failed... Retrying after 2 seconds.")
                 time.sleep(2)
                 startAttempt += 1
-        return usrpStarted
+        return usrp
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         self._usrp.setRfConfig(rfConfig)
@@ -72,7 +76,7 @@ class MimoReconfiguringUsrp(RestartingUsrp):
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         if self.__mimoConfigChanged(rfConfig):
             del self._usrp
-            _ = self._startUsrpMultipleTimes()
+            self._usrp = self._startUsrpMultipleTimes()
         self._usrp.setRfConfig(rfConfig)
         self._currentRfConfig = rfConfig
 

@@ -4,7 +4,7 @@ from uhd_wrapper.rpc_server.reconfigurable_usrp import ReconfigurableUsrp
 
 # create environment
 PORT = 5555
-IP_USRP = "192.168.189.155"
+IP_USRP = "localhost"
 usrp = ReconfigurableUsrp(IP_USRP)
 
 # start server

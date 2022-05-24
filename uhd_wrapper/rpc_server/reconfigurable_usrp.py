@@ -1,5 +1,6 @@
 from typing import List
 import time
+import sys
 
 import uhd_wrapper.usrp_pybinding as pybinding
 from uhd_wrapper.usrp_pybinding import RfConfig, RxStreamingConfig, TxStreamingConfig
@@ -20,6 +21,9 @@ class ReconfigurableUsrp:
                 print("Creation of USRP failed... Retrying after 2 seconds.")
                 time.sleep(2)
                 startAttempt += 1
+
+        if not usrpStarted:
+            sys.exit("Could not start USRP... exiting.")
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         self.__usrp.setRfConfig(rfConfig)

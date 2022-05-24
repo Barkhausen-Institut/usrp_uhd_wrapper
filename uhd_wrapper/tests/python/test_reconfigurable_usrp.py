@@ -54,7 +54,7 @@ class TestFunctionsGetPassedThrough(unittest.TestCase):
         self.R.setRfConfig(dummyRfConfig)
         self.mockedUsrpDevice.setRfConfig.assert_called_once_with(dummyRfConfig)
 
-    def test_rxConfigGetsPassedThrough(self) -> None:
+    def test_txConfigGetsPassedThrough(self) -> None:
         dummyTxStreamingConfig = TxStreamingConfig(
             samples=[np.ones(10)], sendTimeOffset=3.0
         )

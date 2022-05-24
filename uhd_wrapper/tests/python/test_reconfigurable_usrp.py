@@ -5,35 +5,34 @@ from unittest.mock import Mock, patch
 from uhd_wrapper.rpc_server.reconfigurable_usrp import (
     ReconfigurableUsrp,
 )
-from uhd_wrapper.usrp_pybinding import Usrp, createUsrp
+from uhd_wrapper.usrp_pybinding import Usrp
 
 
 class TestReconfigurableUsrp(unittest.TestCase):
     def setUp(self) -> None:
         sleepPatcher = patch("time.sleep", return_value=None)
         _ = sleepPatcher.start()
+        usrpFactoryPatcher = patch(
+            "uhd_wrapper.usrp_pybinding.createUsrp", return_value=Mock(spec=Usrp)
+        )
+        self.mockedUsrpFactoryFunction = usrpFactoryPatcher.start()
 
-    @patch("uhd_wrapper.usrp_pybinding.createUsrp")
-    def test_initCreatesUsrp(self, mockedUsrpFactoryFunction) -> None:
+    def test_initCreatesUsrp(self) -> None:
         IP = "myIp"
         _ = ReconfigurableUsrp(IP)
-        mockedUsrpFactoryFunction.assert_called_once_with(IP)
+        self.mockedUsrpFactoryFunction.assert_called_once_with(IP)
 
-    @patch("uhd_wrapper.usrp_pybinding.createUsrp")
-    def test_usrpCreatedAfterFirstFail(self, mockedUsrpFactoryFunction) -> None:
-        mockedUsrpFactoryFunction.side_effect = [RuntimeError(), Mock(), Mock()]
+    def test_usrpCreatedAfterFirstFail(self) -> None:
+        self.mockedUsrpFactoryFunction.side_effect = [RuntimeError(), Mock(), Mock()]
         _ = ReconfigurableUsrp("localhost")
-        self.assertEqual(mockedUsrpFactoryFunction.call_count, 2)
+        self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 2)
 
-    @patch("uhd_wrapper.usrp_pybinding.createUsrp")
-    def test_usrpCreationIsOnlyAttemptedThreeTimes(
-        self, mockedUsrpFactoryFunction
-    ) -> None:
-        mockedUsrpFactoryFunction.side_effect = [
+    def test_usrpCreationIsOnlyAttemptedThreeTimes(self) -> None:
+        self.mockedUsrpFactoryFunction.side_effect = [
             RuntimeError(),
             RuntimeError(),
             RuntimeError(),
             Mock(),
         ]
         _ = ReconfigurableUsrp("localhost")
-        self.assertEqual(mockedUsrpFactoryFunction.call_count, 3)
+        self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 3)

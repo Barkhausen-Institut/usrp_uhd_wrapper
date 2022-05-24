@@ -7,7 +7,7 @@ from uhd_wrapper.usrp_pybinding import RfConfig, RxStreamingConfig, TxStreamingC
 from uhd_wrapper.utils.config import MimoSignal
 
 
-class ReconfigurableUsrp:
+class RestartingUsrp:
     RestartTrials = 3
 
     def __init__(self, ip: str) -> None:

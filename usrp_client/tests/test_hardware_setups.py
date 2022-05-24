@@ -56,7 +56,7 @@ class HardwareSetup:
         txSampleRate: float = 12.288e6,
         txFc: float = 2e9,
         rxFc: float = 2e9,
-        noRxAntennas: int = 4,
+        noRxAntennas: int = 1,
         noTxAntennas: int = 1,
     ) -> None:
         self.rfConfig = RfConfig()
@@ -100,7 +100,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         ) - (0.5 + 0.5j)
 
     def test_oneTxAntennaFourRxAntennas_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup()
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=4)
         system = setup.connectUsrps()
         rxStreamingConfig1 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)
@@ -210,16 +210,6 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-
-@pytest.mark.hardware_tx_mimo
-class TestTxMimo(unittest.TestCase):
-    def setUp(self) -> None:
-        self.noSamples = int(20e3)
-        self.randomSignal = (
-            np.random.sample((self.noSamples,))
-            + 1j * np.random.sample((self.noSamples,))
-        ) - (0.5 + 0.5j)
-
     def test_fourTxAntennaOneRxAntenna_localhost(self) -> None:
         # create signal
         signalLength = 5000
@@ -237,7 +227,7 @@ class TestTxMimo(unittest.TestCase):
             paddedAntTxSignals.append(s)
 
         # create setup
-        setup = LocalTransmissionHardwareSetup(noTxAntennas=4, noRxAntennas=1)
+        setup = LocalTransmissionHardwareSetup(noTxAntennas=4)
         system = setup.connectUsrps()
         rxStreamingConfig1 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)

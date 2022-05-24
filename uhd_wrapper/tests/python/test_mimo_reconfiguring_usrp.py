@@ -25,3 +25,9 @@ class TestMimoReconfigUsrp(unittest.TestCase):
         self.M.setRfConfig(sisoRfConfig)
         self.M.setRfConfig(mimoRfConfig)
         self.mockedUsrpFactoryFunction.assert_called_once_with(self.usrpIp)
+
+    def test_mimoConfigNotChanged_usrpNotRestarted(self) -> None:
+        sisoRfConfig = fillDummyRfConfig(RfConfig())
+        self.M.setRfConfig(sisoRfConfig)
+        self.M.setRfConfig(sisoRfConfig)
+        self.mockedUsrpFactoryFunction.assert_not_called()

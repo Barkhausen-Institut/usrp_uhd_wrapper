@@ -1,4 +1,3 @@
-from email.mime import base
 import unittest
 from unittest.mock import Mock, patch
 

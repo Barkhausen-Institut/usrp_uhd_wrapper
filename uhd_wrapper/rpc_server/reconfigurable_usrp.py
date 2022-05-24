@@ -71,6 +71,7 @@ class MimoReconfiguringUsrp(RestartingUsrp):
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         if self.__mimoConfigChanged(rfConfig):
+            del self._usrp
             _ = self._startUsrpMultipleTimes()
         self._usrp.setRfConfig(rfConfig)
         self._currentRfConfig = rfConfig

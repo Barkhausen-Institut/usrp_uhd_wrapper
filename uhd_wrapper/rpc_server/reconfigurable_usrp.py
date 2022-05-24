@@ -2,6 +2,8 @@ from typing import List
 import time
 import sys
 
+import numpy as np
+
 import uhd_wrapper.usrp_pybinding as pybinding
 from uhd_wrapper.usrp_pybinding import RfConfig, RxStreamingConfig, TxStreamingConfig
 from uhd_wrapper.utils.config import MimoSignal
@@ -46,8 +48,8 @@ class ReconfigurableUsrp:
     def execute(self, baseTime: float) -> None:
         self.__usrp.execute(baseTime)
 
-    def collect(self) -> List[MimoSignal]:
-        return [MimoSignal(signals=c) for c in self.__usrp.collect()]
+    def collect(self) -> List[List[np.ndarray]]:
+        return self.__usrp.collect()
 
     def resetStreamingConfigs(self) -> None:
         self.__usrp.resetStreamingConfigs()

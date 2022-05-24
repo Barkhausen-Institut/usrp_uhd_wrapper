@@ -165,19 +165,19 @@ class TestUsrpServer(unittest.TestCase):
 
     def test_collectGetsCalled(self) -> None:
         signal = MimoSignal(signals=[np.arange(10)])
-        self.usrpMock.collect.return_value = [signal]
+        self.usrpMock.collect.return_value = [signal.signals]
         _ = self.usrpServer.collect()
         self.usrpMock.collect.assert_called_once()
 
     def test_collectReturnsSerializedVersion(self) -> None:
         signal = MimoSignal(signals=[np.arange(10)])
-        self.usrpMock.collect.return_value = [signal]
+        self.usrpMock.collect.return_value = [signal.signals]
 
         self.assertListEqual([signal.serialize()], self.usrpServer.collect())
 
     def test_collectReturnsSerializedVersion_twoConfigs(self) -> None:
         signal = MimoSignal(signals=[np.arange(10)])
-        self.usrpMock.collect.return_value = [signal, signal]
+        self.usrpMock.collect.return_value = [signal.signals, signal.signals]
 
         self.assertListEqual(
             [signal.serialize(), signal.serialize()], self.usrpServer.collect()

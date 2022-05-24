@@ -59,7 +59,7 @@ class UsrpServer:
         self.__usrp.setTimeToZeroNextPps()
 
     def collect(self) -> List[List[SerializedComplexArray]]:
-        mimoSignals = self.__usrp.collect()
+        mimoSignals = [MimoSignal(signals=c) for c in self.__usrp.collect()]
         return [s.serialize() for s in mimoSignals]
 
     def getCurrentFpgaTime(self) -> int:

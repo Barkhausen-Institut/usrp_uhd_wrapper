@@ -1,4 +1,3 @@
-from pdb import Restart
 from typing import List
 import time
 
@@ -13,7 +12,7 @@ class ReconfigurableUsrp:
     def __init__(self, ip: str) -> None:
         startAttempt = 1
         usrpStarted = False
-        while not usrpStarted and startAttempt < self.RestartTrials:
+        while not usrpStarted and startAttempt <= self.RestartTrials:
             try:
                 self.__usrp = pybinding.createUsrp(ip)
                 usrpStarted = True

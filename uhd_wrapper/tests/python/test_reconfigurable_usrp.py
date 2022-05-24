@@ -1,3 +1,4 @@
+from pdb import runeval
 import unittest
 from unittest.mock import Mock, patch
 
@@ -23,3 +24,16 @@ class TestReconfigurableUsrp(unittest.TestCase):
         mockedUsrpFactoryFunction.side_effect = [RuntimeError(), Mock(), Mock()]
         _ = ReconfigurableUsrp("localhost")
         self.assertEqual(mockedUsrpFactoryFunction.call_count, 2)
+
+    @patch("uhd_wrapper.usrp_pybinding.createUsrp")
+    def test_usrpCreationIsOnlyAttemptedThreeTimes(
+        self, mockedUsrpFactoryFunction
+    ) -> None:
+        mockedUsrpFactoryFunction.side_effect = [
+            RuntimeError(),
+            RuntimeError(),
+            RuntimeError(),
+            Mock(),
+        ]
+        _ = ReconfigurableUsrp("localhost")
+        self.assertEqual(mockedUsrpFactoryFunction.call_count, 3)

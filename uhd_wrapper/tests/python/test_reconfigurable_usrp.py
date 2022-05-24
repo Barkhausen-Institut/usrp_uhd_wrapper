@@ -17,6 +17,10 @@ class TestUsrpStarts(unittest.TestCase):
     def setUp(self) -> None:
         sleepPatcher = patch("time.sleep", return_value=None)
         _ = sleepPatcher.start()
+
+        sysExitPatcher = patch("sys.exit", return_value=None)
+        self.mockedSysExit = sysExitPatcher.start()
+
         usrpFactoryPatcher = patch(
             "uhd_wrapper.usrp_pybinding.createUsrp", return_value=Mock()
         )
@@ -41,6 +45,7 @@ class TestUsrpStarts(unittest.TestCase):
         ]
         _ = ReconfigurableUsrp("localhost")
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 3)
+        self.mockedSysExit.assert_called_once()
 
 
 class TestFunctionsGetPassedThrough(unittest.TestCase):

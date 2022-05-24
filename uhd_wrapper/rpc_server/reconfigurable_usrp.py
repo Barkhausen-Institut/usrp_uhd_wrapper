@@ -52,4 +52,4 @@ class ReconfigurableUsrp:
         return self.__usrp.getMasterClockRate()
 
     def getRfConfig(self) -> RfConfig:
-        return self.__usrp.getRfConfig
+        return self.__usrp.getRfConfig()

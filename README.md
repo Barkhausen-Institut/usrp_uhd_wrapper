@@ -26,9 +26,8 @@ On the usrp (server):
 
 To start the usrp server as a service, run:
 
-1. `cd <repo> && cp rpc-server.service /etc/systemd/system/`
-2. `systemctl start rpc-server.service`
-3. `systemctl enable rpc-server.service`
+1. `systemctl start rpc-server.service`
+2. `systemctl enable rpc-server.service`
 
 For the client:
 

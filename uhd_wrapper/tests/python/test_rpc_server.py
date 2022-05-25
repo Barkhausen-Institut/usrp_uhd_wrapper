@@ -4,19 +4,21 @@ from unittest.mock import Mock
 import numpy as np
 import numpy.testing as npt
 
-from uhd_wrapper.rpc_server.rpc_server import UsrpServer
+from uhd_wrapper.rpc_server.rpc_server import (
+    RfConfigFromBinding,
+    UsrpServer,
+    RfConfigToBinding,
+)
 from uhd_wrapper.utils.serialization import (
-    deserializeRfConfig,
     serializeComplexArray,
     deserializeComplexArray,
-    serializeRfConfig,
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
-    RfConfig,
     RxStreamingConfig,
     TxStreamingConfig,
 )
+from uhd_wrapper.utils.config import RfConfig, fillDummyRfConfig, MimoSignal
 
 
 class TestSerializationComplexArr(unittest.TestCase):
@@ -59,41 +61,47 @@ class TestDeserializationComplexArr(unittest.TestCase):
 
 class TestSerializationRfConfig(unittest.TestCase):
     def setUp(self) -> None:
-        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
-
-        self.conf = RfConfigClient()
-        self.conf.txCarrierFrequency = [2e9]
-
-        self.conf.txGain = [30]
-        self.conf.txAnalogFilterBw = 200e6
-        self.conf.txSamplingRate = 20e6
-
-        self.conf.rxCarrierFrequency = [2e9]
-        self.conf.rxGain = [40]
-        self.conf.rxAnalogFilterBw = 100e6
-        self.conf.rxSamplingRate = 30e6
-
-        self.serializedRfConf = {
-            "rx": {
-                "analogFilterBw": self.conf.rxAnalogFilterBw,
-                "carrierFrequency": self.conf.rxCarrierFrequency,
-                "gain": self.conf.rxGain,
-                "samplingRate": self.conf.rxSamplingRate,
-            },
-            "tx": {
-                "analogFilterBw": self.conf.txAnalogFilterBw,
-                "carrierFrequency": self.conf.txCarrierFrequency,
-                "gain": self.conf.txGain,
-                "samplingRate": self.conf.txSamplingRate,
-            },
-        }
+        self.conf = fillDummyRfConfig(RfConfig())
+        self.serializedRfConf = self.conf.serialize()
 
     def test_properRfConfigSerialization(self) -> None:
-        serializedConf = serializeRfConfig(self.conf)
-        self.assertDictEqual(self.serializedRfConf, serializedConf)
+        serializedConf = self.conf.serialize()
+        self.assertEqual(self.serializedRfConf, serializedConf)
 
     def test_properRfConfigDeSerialization(self) -> None:
-        self.assertEqual(self.conf, deserializeRfConfig(self.serializedRfConf))
+        self.assertEqual(self.conf, RfConfig.deserialize(self.serializedRfConf))
+
+
+class TestRfConfigCast(unittest.TestCase):
+    def test_castFromBindingToConfig(self) -> None:
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+
+        cBinding = fillDummyRfConfig(RfConfigBinding())
+
+        c = RfConfigFromBinding(cBinding)
+        self.assertEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
+        self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
+        self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
+        self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
+        self.assertEqual(cBinding.txGain, c.txGain)
+        self.assertEqual(cBinding.rxGain, c.rxGain)
+
+    def test_castConfigToBinding(self) -> None:
+        from uhd_wrapper.utils.config import RfConfig
+
+        cBinding = fillDummyRfConfig(RfConfig())
+
+        c = RfConfigToBinding(cBinding)
+        self.assertEqual(cBinding.rxCarrierFrequency, c.rxCarrierFrequency)
+        self.assertEqual(cBinding.txCarrierFrequency, c.txCarrierFrequency)
+        self.assertEqual(cBinding.txSamplingRate, c.txSamplingRate)
+        self.assertEqual(cBinding.rxSamplingRate, c.rxSamplingRate)
+        self.assertEqual(cBinding.txAnalogFilterBw, c.txAnalogFilterBw)
+        self.assertEqual(cBinding.rxAnalogFilterBw, c.rxAnalogFilterBw)
+        self.assertEqual(cBinding.txGain, c.txGain)
+        self.assertEqual(cBinding.rxGain, c.rxGain)
 
 
 class TestUsrpServer(unittest.TestCase):
@@ -107,14 +115,13 @@ class TestUsrpServer(unittest.TestCase):
 
     def test_configureTxCalledWithCorrectArguments(self) -> None:
         TIME_OFFSET = 2.0
-        samples = np.array([2, 3]) + 1j * np.array([0, 1])
-        serializedSamples = serializeComplexArray(samples)
+        signal = MimoSignal(signals=[np.array([2, 3]) + 1j * np.array([0, 1])])
         self.usrpServer.configureTx(
             TIME_OFFSET,
-            [serializedSamples],
+            signal.serialize(),
         )
         self.usrpMock.setTxConfig.assert_called_once_with(
-            TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=[samples])
+            TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=signal.signals)
         )
 
     def test_configureRxCalledWithCorrectArguments(self) -> None:
@@ -127,56 +134,24 @@ class TestUsrpServer(unittest.TestCase):
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
+        from uhd_wrapper.utils.config import RfConfig
 
-        txGain = [50.0]
-        rxGain = [30.0]
-        txCarrierFrequency = [2e9]
-        rxCarrierFrequency = [2e9]
-        txAnalogFilterBw = 400e6
-        rxAnalogFilterBw = 400e6
-        txSamplingRate = 10e6
-        rxSamplingRate = 10e6
-
-        self.usrpServer.configureRfConfig(
-            txGain,
-            rxGain,
-            txCarrierFrequency,
-            rxCarrierFrequency,
-            txAnalogFilterBw,
-            rxAnalogFilterBw,
-            txSamplingRate,
-            rxSamplingRate,
-        )
+        c = fillDummyRfConfig(RfConfig())
+        self.usrpServer.configureRfConfig(c.serialize())  # type: ignore
 
         self.usrpMock.setRfConfig.assert_called_once_with(
-            RfConfig(
-                txGain=txGain,
-                rxGain=rxGain,
-                txCarrierFrequency=txCarrierFrequency,
-                rxCarrierFrequency=rxCarrierFrequency,
-                txAnalogFilterBw=txAnalogFilterBw,
-                rxAnalogFilterBw=rxAnalogFilterBw,
-                txSamplingRate=txSamplingRate,
-                rxSamplingRate=rxSamplingRate,
-            )
+            fillDummyRfConfig(RfConfigBinding())
         )
 
     def test_getRfConfigReturnsSerializedVersion(self) -> None:
-        usrpRfConfig = RfConfig()
-        usrpRfConfig.txCarrierFrequency = [2e9]
+        from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
 
-        usrpRfConfig.txGain = [30]
-        usrpRfConfig.txAnalogFilterBw = 200e6
-        usrpRfConfig.txSamplingRate = 20e6
+        usrpRfConfig = fillDummyRfConfig(RfConfigBinding())
+        c = RfConfigFromBinding(usrpRfConfig)
 
-        usrpRfConfig.rxCarrierFrequency = [2e9]
-        usrpRfConfig.rxGain = [40]
-        usrpRfConfig.rxAnalogFilterBw = 100e6
-        usrpRfConfig.rxSamplingRate = 30e6
         self.usrpMock.getRfConfig.return_value = usrpRfConfig
-        self.assertDictEqual(
-            serializeRfConfig(usrpRfConfig), self.usrpServer.getRfConfig()
-        )
+        self.assertEqual(c.serialize(), self.usrpServer.getRfConfig())
 
     def test_executeGetsCalledWithCorrectArguments(self) -> None:
         BASE_TIME = 3.0
@@ -189,21 +164,24 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.setTimeToZeroNextPps.assert_called_once()
 
     def test_collectGetsCalled(self) -> None:
-        self.usrpMock.collect.return_value = [np.arange(10)]
+        signal = MimoSignal(signals=[np.arange(10)])
+        self.usrpMock.collect.return_value = [signal.signals]
         _ = self.usrpServer.collect()
         self.usrpMock.collect.assert_called_once()
 
     def test_collectReturnsSerializedVersion(self) -> None:
-        receivedSamplesInFpga = np.arange(10)
-        self.usrpMock.collect.return_value = [receivedSamplesInFpga]
+        signal = MimoSignal(signals=[np.arange(10)])
+        self.usrpMock.collect.return_value = [signal.signals]
+
+        self.assertListEqual([signal.serialize()], self.usrpServer.collect())
+
+    def test_collectReturnsSerializedVersion_twoConfigs(self) -> None:
+        signal = MimoSignal(signals=[np.arange(10)])
+        self.usrpMock.collect.return_value = [signal.signals, signal.signals]
 
         self.assertListEqual(
-            [serializeComplexArray(receivedSamplesInFpga)], self.usrpServer.collect()
+            [signal.serialize(), signal.serialize()], self.usrpServer.collect()
         )
-
-    def test_usrpIsResetAtDestruction(self) -> None:
-        del self.usrpServer
-        self.usrpMock.reset.assert_called_once()
 
     def test_getCurrentFpgaTime_functionGetsCalled(self) -> None:
         TIME = 10
@@ -216,3 +194,11 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.getCurrentSystemTime.return_value = TIME
         time = self.usrpServer.getCurrentSystemTime()
         self.assertEqual(time, TIME)
+
+    def test_getMasterClockRate_functionGetsCalled(self) -> None:
+        _ = self.usrpServer.getMasterClockRate()
+        self.usrpMock.getMasterClockRate.assert_called_once()
+
+    def test_resetStreamingConfigs_functionsGetsCalled(self) -> None:
+        self.usrpServer.resetStreamingConfigs()
+        self.usrpMock.resetStreamingConfigs.assert_called_once()

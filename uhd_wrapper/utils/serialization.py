@@ -1,16 +1,30 @@
-from typing import List, Tuple, Dict, Any, Union
+"""This module contains functions required for serialization.
+
+Since we use zerorpc for RPC, we need to serialize non-pythonic datatypes.
+"""
+
+from typing import List, Tuple
 import numpy as np
 
-try:
-    from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigServer
-except ImportError:
-    RfConfigServer = None
-from uhd_wrapper.utils.config import RfConfig as RfConfigClient
 
 SerializedComplexArray = Tuple[List, List]
+"""Tuple containing real samples as `List` as first element
+and complex samples as `List` as second element."""
 
 
 def serializeComplexArray(data: np.ndarray) -> SerializedComplexArray:
+    """Serialize a complex array.
+
+    Args:
+        data (np.ndarray): Onedimensional array of complex samples.
+
+    Raises:
+        ValueError: Array must be one dimensional.
+
+    Returns:
+        SerializedComplexArray: Serialized data.
+
+    """
     data = np.squeeze(data)
     if len(data.shape) == 2:
         raise ValueError("Array must be one dimensional!")
@@ -18,6 +32,16 @@ def serializeComplexArray(data: np.ndarray) -> SerializedComplexArray:
 
 
 def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
+    """Deserialize into a complex array.
+
+    Args:
+        data (SerializedComplexArray): Samples.
+    Raises:
+        ValueError: Number of samples must match
+
+    Returns:
+        np.ndarray: One dimensional numpy array.
+    """
     if len(data[0]) != len(data[1]):
         raise ValueError(
             """Number of imaginary samples
@@ -25,35 +49,3 @@ def deserializeComplexArray(data: SerializedComplexArray) -> np.ndarray:
         )
     arr = np.array(data[0]) + 1j * np.array(data[1])
     return arr
-
-
-def serializeRfConfig(
-    conf: Union[RfConfigClient, RfConfigServer]
-) -> Dict[str, Dict[str, Any]]:
-    return {
-        "rx": {
-            "analogFilterBw": conf.rxAnalogFilterBw,
-            "carrierFrequency": conf.rxCarrierFrequency,
-            "gain": conf.rxGain,
-            "samplingRate": conf.rxSamplingRate,
-        },
-        "tx": {
-            "analogFilterBw": conf.txAnalogFilterBw,
-            "carrierFrequency": conf.txCarrierFrequency,
-            "gain": conf.txGain,
-            "samplingRate": conf.txSamplingRate,
-        },
-    }
-
-
-def deserializeRfConfig(serializedConf: Dict[str, Dict[str, Any]]) -> RfConfigClient:
-    conf = RfConfigClient()
-    conf.txSamplingRate = serializedConf["tx"]["samplingRate"]
-    conf.txGain = serializedConf["tx"]["gain"]
-    conf.txCarrierFrequency = serializedConf["tx"]["carrierFrequency"]
-    conf.txAnalogFilterBw = serializedConf["tx"]["analogFilterBw"]
-    conf.rxSamplingRate = serializedConf["rx"]["samplingRate"]
-    conf.rxGain = serializedConf["rx"]["gain"]
-    conf.rxCarrierFrequency = serializedConf["rx"]["carrierFrequency"]
-    conf.rxAnalogFilterBw = serializedConf["rx"]["analogFilterBw"]
-    return conf

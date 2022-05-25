@@ -5,13 +5,20 @@ import numpy as np
 import numpy.testing as npt
 
 from usrp_client.rpc_client import UsrpClient
-from uhd_wrapper.utils.config import RfConfig, TxStreamingConfig, RxStreamingConfig
-from uhd_wrapper.utils.serialization import serializeComplexArray, serializeRfConfig
+from uhd_wrapper.utils.config import (
+    MimoSignal,
+    RfConfig,
+    TxStreamingConfig,
+    RxStreamingConfig,
+    fillDummyRfConfig,
+)
 
 
 class TestUsrpClient(unittest.TestCase):
     def setUp(self) -> None:
+        self.masterClockRate = 400e6
         self.mockRpcClient = Mock()
+        self.mockRpcClient.getMasterClockRate.return_value = self.masterClockRate
         self.usrpClient = UsrpClient(self.mockRpcClient)
 
     def test_configureRxSerializesCorrectly(self) -> None:
@@ -22,10 +29,11 @@ class TestUsrpClient(unittest.TestCase):
         )
 
     def test_configureTxSerializesCorrectly(self) -> None:
-        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=[np.arange(10)])
+        signal = MimoSignal(signals=[np.arange(20)])
+        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal)
         self.usrpClient.configureTx(txConfig=txConfig)
         self.mockRpcClient.configureTx.assert_called_with(
-            txConfig.sendTimeOffset, [serializeComplexArray(txConfig.samples[0])]
+            txConfig.sendTimeOffset, signal.serialize()
         )
 
     def test_executeGetsCalledWithBaseTime(self) -> None:
@@ -34,64 +42,34 @@ class TestUsrpClient(unittest.TestCase):
         self.mockRpcClient.execute.assert_called_with(BASE_TIME)
 
     def test_collectReturnsDeserializedSamples(self) -> None:
-        samplesDeserialized = [np.ones(10)]
-        samplesSerialized = [serializeComplexArray(samplesDeserialized[0])]
-
-        self.mockRpcClient.collect.return_value = samplesSerialized
+        signal = MimoSignal(signals=[np.ones(10)])
+        self.mockRpcClient.collect.return_value = [signal.serialize()]
         recvdSamples = self.usrpClient.collect()
-        npt.assert_array_equal(recvdSamples[0], samplesDeserialized[0])
+        self.assertEqual(signal, recvdSamples[0])
+
+    def test_collectReturnsDeserializedSamples_twoConfigs(self) -> None:
+        signalConfig1 = MimoSignal(signals=[np.ones(10, dtype=np.complex64)])
+        signalConfig2 = MimoSignal(signals=[2 * np.ones(10, dtype=np.complex64)])
+        self.mockRpcClient.collect.return_value = [
+            signalConfig1.serialize(),
+            signalConfig2.serialize(),
+        ]
+        recvdSamples = self.usrpClient.collect()
+        self.assertListEqual(recvdSamples, [signalConfig1, signalConfig2])
 
     def test_getRfConfigReturnsSerializedRfConfig(self) -> None:
-        from uhd_wrapper.utils.config import RfConfig as RfConfigClient
+        usrpRfConf = fillDummyRfConfig(RfConfig())
 
-        usrpRfConf = RfConfigClient()
-        usrpRfConf.txCarrierFrequency = [2e9]
-
-        usrpRfConf.txGain = [30]
-        usrpRfConf.txAnalogFilterBw = 200e6
-        usrpRfConf.txSamplingRate = 20e6
-
-        usrpRfConf.rxCarrierFrequency = [2e9]
-        usrpRfConf.rxGain = [40]
-        usrpRfConf.rxAnalogFilterBw = 100e6
-        usrpRfConf.rxSamplingRate = 30e6
-
-        self.mockRpcClient.getRfConfig.return_value = serializeRfConfig(usrpRfConf)
+        self.mockRpcClient.getRfConfig.return_value = usrpRfConf.serialize()
         recvRfConfig = self.usrpClient.getRfConfig()
 
         self.assertEqual(recvRfConfig, usrpRfConf)
 
     def test_configureRfConfig_calledWithCorrectArguments(self) -> None:
-        txGain = [50.0]
-        rxGain = [30.0]
-        txCarrierFrequency = [2e9]
-        rxCarrierFrequency = [2e9]
-        txAnalogFilterBw = 400e6
-        rxAnalogFilterBw = 400e6
-        txSamplingRate = 10e6
-        rxSamplingRate = 10e6
+        c = fillDummyRfConfig(RfConfig())
 
-        rfConfig = RfConfig(
-            txGain=txGain,
-            rxGain=rxGain,
-            txCarrierFrequency=txCarrierFrequency,
-            rxCarrierFrequency=rxCarrierFrequency,
-            txAnalogFilterBw=txAnalogFilterBw,
-            rxAnalogFilterBw=rxAnalogFilterBw,
-            txSamplingRate=txSamplingRate,
-            rxSamplingRate=rxSamplingRate,
-        )
-        self.usrpClient.configureRfConfig(rfConfig=rfConfig)
-        self.mockRpcClient.configureRfConfig.assert_called_with(
-            txGain,
-            rxGain,
-            txCarrierFrequency,
-            rxCarrierFrequency,
-            txAnalogFilterBw,
-            rxAnalogFilterBw,
-            txSamplingRate,
-            rxSamplingRate,
-        )
+        self.usrpClient.configureRfConfig(rfConfig=c)
+        self.mockRpcClient.configureRfConfig.assert_called_with(c.serialize())
 
     def test_setTimeToZeroPpsGetsCalled(self) -> None:
         self.usrpClient.setTimeToZeroNextPps()
@@ -106,3 +84,21 @@ class TestUsrpClient(unittest.TestCase):
         TIME = 3
         self.mockRpcClient.getCurrentSystemTime.return_value = TIME
         self.assertAlmostEqual(self.usrpClient.getCurrentSystemTime(), TIME)
+
+    def test_getMasterClockRate_functionGetsCalled(self) -> None:
+        _ = self.usrpClient.getMasterClockRate()
+        self.mockRpcClient.getMasterClockRate.assert_called_once()
+
+    def test_supportedSamplingRates_queriesMasterClockRate(self) -> None:
+        _ = self.usrpClient.getSupportedSamplingRates()
+        self.mockRpcClient.getMasterClockRate.assert_called_once()
+
+    def test_supportedSamplingRates(self) -> None:
+        supportedDecimationRatios = np.array([1, 2])
+        self.usrpClient.getSupportedDecimationRatios = (  # type: ignore
+            lambda: supportedDecimationRatios
+        )
+        npt.assert_array_almost_equal(
+            self.masterClockRate / supportedDecimationRatios,
+            self.usrpClient.getSupportedSamplingRates(),
+        )

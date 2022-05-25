@@ -2,6 +2,7 @@ image: ubuntu:20.04
 
 stages:
   - build_test
+  - pages
 
 before_script:
   - export DEBIAN_FRONTEND=noninteractive
@@ -9,13 +10,14 @@ before_script:
   - apt-get install -y --no-install-recommends software-properties-common
   - add-apt-repository ppa:ettusresearch/uhd
   - apt-get update
-  - apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev
+  - apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev python3-wheel
+  - python3.9 -m venv .venv
+  - . .venv/bin/activate
+  - pip install wheel
 
 build_test:
   stage: build_test
   script:
-    - python3.9 -m venv .venv
-    - . .venv/bin/activate
     - pip install -e .
     - pip install -r requirements_tests.txt
     - cd uhd_wrapper
@@ -24,4 +26,17 @@ build_test:
     - make && make install
     - ctest -V
     - cd ../../
-    - pytest
+    - pytest .
+
+pages:
+  stage: pages
+  script:
+    - pip install -e .
+    - cd docs && pip install -r ../requirements_doc.txt && cd ..
+    - cd docs && make api && cd ..
+    - sphinx-build docs public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'

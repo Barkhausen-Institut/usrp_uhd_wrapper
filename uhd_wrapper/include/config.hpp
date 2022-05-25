@@ -6,15 +6,15 @@ namespace bi {
 const int SAMPLES_PER_BUFFER = 2000;
 typedef std::complex<float> sample;
 typedef std::vector<sample> samples_vec;
+typedef std::vector<samples_vec> MimoSignal;
 
 struct RfConfig {
     RfConfig() {}
-    RfConfig(const std::vector<float>& _txGain,
-             const std::vector<float>& _rxGain,
-             const std::vector<float>& _txCarrierFrequency,
-             const std::vector<float>& _rxCarrierFrequency,
+    RfConfig(const float _txGain, const float _rxGain,
+             const float _txCarrierFrequency, const float _rxCarrierFrequency,
              const float _txAnalogFilterBw, const float _rxAnalogFilterBw,
-             const float _txSamplingRate, const float _rxSamplingRate)
+             const float _txSamplingRate, const float _rxSamplingRate,
+             const int _noTxAntennas, const int _noRxAntennas)
         : txGain(_txGain),
           rxGain(_rxGain),
           txCarrierFrequency(_txCarrierFrequency),
@@ -22,29 +22,31 @@ struct RfConfig {
           txAnalogFilterBw(_txAnalogFilterBw),
           rxAnalogFilterBw(_rxAnalogFilterBw),
           txSamplingRate(_txSamplingRate),
-          rxSamplingRate(_rxSamplingRate) {}
-    std::vector<float> txGain, rxGain;
-    std::vector<float> txCarrierFrequency, rxCarrierFrequency;
+          rxSamplingRate(_rxSamplingRate),
+          noTxAntennas(_noTxAntennas),
+          noRxAntennas(_noRxAntennas) {}
+    float txGain, rxGain;
+    float txCarrierFrequency, rxCarrierFrequency;
     float txAnalogFilterBw, rxAnalogFilterBw;
     float txSamplingRate, rxSamplingRate;
+    int noTxAntennas, noRxAntennas;
 };
 
 struct TxStreamingConfig {
     TxStreamingConfig() {}
-    TxStreamingConfig(const std::vector<samples_vec>& _samples,
-                      const float _sendTimeOffset)
+    TxStreamingConfig(const MimoSignal& _samples, const double _sendTimeOffset)
         : samples(_samples), sendTimeOffset(_sendTimeOffset) {}
-    std::vector<samples_vec> samples;
-    float sendTimeOffset;
+    MimoSignal samples;
+    double sendTimeOffset;
 };
 
 struct RxStreamingConfig {
     RxStreamingConfig() {}
     RxStreamingConfig(const unsigned int _noSamples,
-                      const float _receiveTimeOffset)
+                      const double _receiveTimeOffset)
         : noSamples(_noSamples), receiveTimeOffset(_receiveTimeOffset) {}
     unsigned int noSamples;
-    float receiveTimeOffset;
+    double receiveTimeOffset;
 };
 
 // oerpators are overloaded for testing purposes
@@ -57,4 +59,15 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb);
 void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate);
 
+void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+                                  const TxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs);
+
+void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+                                  const RxStreamingConfig& newConfig,
+                                  const double guardOffset, const double fs);
+
+void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples);
+
+std::ostream& operator<<(std::ostream& os, const RfConfig& conf);
 }  // namespace bi

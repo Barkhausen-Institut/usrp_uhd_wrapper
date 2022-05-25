@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <ctime>
+#include <mutex>
 #include <thread>
 
 #include "config.hpp"
@@ -21,20 +22,26 @@ class Usrp : public UsrpInterface {
         usrpDevice_->set_sync_source("external", "external");
         masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
+    ~Usrp() { usrpDevice_->set_sync_source("internal", "internal"); }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
     void setTimeToZeroNextPps();
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
-    void execute(const float baseTime);
-    std::vector<samples_vec> collect();
+    void execute(const double baseTime);
+    std::vector<MimoSignal> collect();
 
     double getMasterClockRate() const { return masterClockRate_; }
     RfConfig getRfConfig() const;
-    void reset();
+    void resetStreamingConfigs();
 
    private:
+    // constants
+    const double GUARD_OFFSET_S_ = 0.05;
+    const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;
+    const std::vector<std::string> SUBDEV_SPECS = {
+        "A:0", "A:0 A:1", "A:0 A:1 B:0", "A:0 A:1 B:0 B:1"};
     // variables
     uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
@@ -45,21 +52,40 @@ class Usrp : public UsrpInterface {
     bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
+    mutable std::recursive_mutex fpgaAccessMutex_;
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
+    RfConfig rfConfig_;
 
-    std::vector<samples_vec> receivedSamples_ = {{}};
+    std::vector<MimoSignal> receivedSamples_ = {{{}}};
     bool subdevSpecSet_ = false;
-    // functions
-    void setTxSamplingRate(const double samplingRate);
-    void setRxSamplingRate(const double samplingRate);
-    void transmit(const float baseTime, std::exception_ptr& exceptionPtr,
-                  const double fpgaTimeThreadStart);
-    void receive(const float baseTime, std::vector<samples_vec>& buffer,
-                 std::exception_ptr& exceptionPtr,
-                 const double fpgaTimeThreadStart);
+
+    // configuration functions
+    void setTxSamplingRate(const double samplingRate,
+                           const size_t txAntennaIdx);
+    void setRxSamplingRate(const double samplingRate,
+                           const size_t rxAntennaIdx);
+
+    void setRfConfigForRxAntenna(const RfConfig& conf,
+                                 const size_t rxAntennaIdx);
+    void setRfConfigForTxAntenna(const RfConfig& conf,
+                                 const size_t txAntennaIdx);
+
+    void configureRxStreamer(const RfConfig& conf);
+    void configureTxStreamer(const RfConfig& conf);
+
+    // transmission related functions
+    void transmit(const double baseTime, std::exception_ptr& exceptionPtr);
+    void receive(const double baseTime, std::vector<MimoSignal>& buffers,
+                 std::exception_ptr& exceptionPtr);
+    void processRxStreamingConfig(const RxStreamingConfig& config,
+                                  MimoSignal& buffer, const double baseTime);
+    void processTxStreamingConfig(const TxStreamingConfig& config,
+                                  const double baseTime);
+
+    // remaining functions
     void setTimeToZeroNextPpsThreadFunction();
 };
 

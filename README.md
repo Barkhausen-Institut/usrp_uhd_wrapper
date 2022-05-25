@@ -4,12 +4,17 @@ This repo wraps the UHD for our X410. It contains the **client as well as the se
 
 Current versions of server are running on 192.168.189.131/134. **If you want to run code as a client against USRPs, only use these USRPs at the moment.**
 
+# Documentation
+
+Documentation is auto-generated and can be found [here](https://barkhauseninstitut.gitlab.io/corola-infrastructure/usrp-x410/usrp_uhd_api/).
+
+Read this in conjunction with **examples/jcas.py**!
+
 # Install
 
 On the usrp (server):
-Install libzmq beforehand.
 
-1. `git clone <this repo>`
+1. `git clone <this repo> && cd <repo>`
 2. `python3 -m venv env && . env/bin/activate`
 3. `pip install -e .`
 4. `cd usrp_uhd_wrapper && mkdir build`
@@ -30,6 +35,9 @@ For the client:
 2. Create and activate virtual env (on linux: `python -m venv env && . env/bin/activate`)
 3. `pip install -e .`
 4. **For running tests:** `pip install -r requirements_tests.txt && pytest usrp_client/`
+    - run `pytest . -m "not hardware"`
+
+**Note on running tests:** We also provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., Jcas, Localtransmssion, p2p...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding ip need to be set and the respective servers must be started. Execute the command `pytest .` or, if you just want to execute the hardware stuff: `pytest . -m hardware`
 
 # Use
 

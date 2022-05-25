@@ -17,10 +17,10 @@ int main() {
     std::string usrpIp = "localhost";
     std::shared_ptr<bi::UsrpInterface> usrpPtr = bi::createUsrp(usrpIp);
     bi::RfConfig rfConfig;
-    rfConfig.txGain = {50};
-    rfConfig.rxGain = {30};
-    rfConfig.txCarrierFrequency = {2e9};
-    rfConfig.rxCarrierFrequency = {2e9};
+    rfConfig.txGain = 50;
+    rfConfig.rxGain = 30;
+    rfConfig.txCarrierFrequency = 2e9;
+    rfConfig.rxCarrierFrequency = 2e9;
     rfConfig.txAnalogFilterBw = 400e6;
     rfConfig.rxAnalogFilterBw = 400e6;
     rfConfig.txSamplingRate = 122.88e6;
@@ -38,12 +38,14 @@ int main() {
     usrpPtr->setRfConfig(rfConfig);
     usrpPtr->setTxConfig(txStreamingConfig);
     usrpPtr->setRxConfig(rxStreamingConfig);
-    std::cout << "Setting time to zero..." << std::endl;
+    bi::RfConfig conf = usrpPtr->getRfConfig();
+    std::cout << conf << std::endl;
+    /*std::cout << "Setting time to zero..." << std::endl;
     usrpPtr->setTimeToZeroNextPps();
     std::cout << "Current Time " << usrpPtr->getCurrentFpgaTime() << std::endl;
     usrpPtr->execute(0.f);
-    std::vector<bi::samples_vec> samples = usrpPtr->collect();
+    std::vector<bi::MimoSignal> samples = usrpPtr->collect();
     std::ofstream csvFile = createCsv("rxSamples.csv", 1);
-    dumpSamples(samples, csvFile);
+    dumpSamplesFirstConfig(samples[0], csvFile);*/
     return 0;
 }

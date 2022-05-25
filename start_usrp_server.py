@@ -1,11 +1,11 @@
 from uhd_wrapper.rpc_server.rpc_server import UsrpServer
 import zerorpc
-from uhd_wrapper.usrp_pybinding import createUsrp
+from uhd_wrapper.rpc_server.reconfigurable_usrp import MimoReconfiguringUsrp
 
 # create environment
 PORT = 5555
 IP_USRP = "localhost"
-usrp = createUsrp(IP_USRP)
+usrp = MimoReconfiguringUsrp(IP_USRP)
 
 # start server
 rpcServer = zerorpc.Server(UsrpServer(usrp))

@@ -13,7 +13,8 @@ from uhd_wrapper.usrp_pybinding import (
 
 
 class RestartingUsrp:
-    RestartTrials = 3
+    RestartTrials = 5
+    SleepTime = 5
 
     def __init__(self, ip: str) -> None:
         self._ip = ip
@@ -25,8 +26,8 @@ class RestartingUsrp:
             try:
                 return pybinding.createUsrp(self._ip)
             except RuntimeError:
-                print("Creation of USRP failed... Retrying after 2 seconds.")
-                time.sleep(2)
+                print(f"Creation of USRP failed... Retrying after {self.SleepTime} seconds.")
+                time.sleep(self.SleepTime)
         raise RuntimeError("Could not start USRP... exiting.")
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:

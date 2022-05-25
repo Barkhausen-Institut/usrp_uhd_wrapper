@@ -28,7 +28,9 @@ class TestUsrpStarts(unittest.TestCase):
             RuntimeError(),
             RuntimeError(),
             RuntimeError(),
+            RuntimeError(),
+            RuntimeError(),
             Mock(),
         ]
         self.assertRaises(RuntimeError, lambda: RestartingUsrp("localhost"))
-        self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 3)
+        self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 5)

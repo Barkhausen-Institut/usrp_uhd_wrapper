@@ -24,6 +24,8 @@ On the usrp (server):
 8. `make install`
 9. `ctest -V` to check if the tests pass
 
+To start the usrp server as a service, run: `systemctl enable rpc-server.service`
+
 For the client:
 
 1. Ensure that you use at least python3.9.

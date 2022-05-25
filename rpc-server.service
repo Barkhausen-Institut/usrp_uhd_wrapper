@@ -2,7 +2,6 @@
 Description=ZeroRpc Server
 
 [Service]
-ExecStartPre=/bin/sleep 60
 ExecStart=/bin/bash /home/root/usrp_uhd_api/start_usrp_server.bash
 After=usrp-hwd.service
 [Install]

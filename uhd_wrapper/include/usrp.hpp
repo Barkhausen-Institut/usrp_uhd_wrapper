@@ -39,7 +39,7 @@ class Usrp : public UsrpInterface {
    private:
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
-    const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)64e3;
+    const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;
     const std::vector<std::string> SUBDEV_SPECS = {
         "A:0", "A:0 A:1", "A:0 A:1 B:0", "A:0 A:1 B:0 B:1"};
     // variables

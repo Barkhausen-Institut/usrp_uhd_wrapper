@@ -22,7 +22,13 @@ class Usrp : public UsrpInterface {
         usrpDevice_->set_sync_source("external", "external");
         masterClockRate_ = usrpDevice_->get_master_clock_rate();
     }
-    ~Usrp() { usrpDevice_->set_sync_source("internal", "internal"); }
+    ~Usrp() {
+        usrpDevice_->set_sync_source("internal", "internal");
+        if (transmitThread_.joinable()) transmitThread_.join();
+        if (receiveThread_.joinable()) receiveThread_.join();
+        if (setTimeToZeroNextPpsThread_.joinable())
+            setTimeToZeroNextPpsThread_.join();
+    }
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);

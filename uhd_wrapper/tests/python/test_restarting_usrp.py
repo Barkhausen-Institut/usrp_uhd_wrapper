@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 
-from uhd_wrapper.rpc_server.reconfigurable_usrp import ReconfigurableUsrp
+from uhd_wrapper.rpc_server.reconfigurable_usrp import RestartingUsrp
 
 
 class TestUsrpStarts(unittest.TestCase):
@@ -15,12 +15,12 @@ class TestUsrpStarts(unittest.TestCase):
 
     def test_initCreatesUsrp(self) -> None:
         IP = "myIp"
-        _ = ReconfigurableUsrp(IP)
+        _ = RestartingUsrp(IP)
         self.mockedUsrpFactoryFunction.assert_called_once_with(IP)
 
     def test_usrpCreatedAfterFirstFail(self) -> None:
         self.mockedUsrpFactoryFunction.side_effect = [RuntimeError(), Mock(), Mock()]
-        _ = ReconfigurableUsrp("localhost")
+        _ = RestartingUsrp("localhost")
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 2)
 
     def test_usrpCreationIsOnlyAttemptedThreeTimes(self) -> None:
@@ -30,5 +30,5 @@ class TestUsrpStarts(unittest.TestCase):
             RuntimeError(),
             Mock(),
         ]
-        self.assertRaises(RuntimeError, lambda: ReconfigurableUsrp("localhost"))
+        self.assertRaises(RuntimeError, lambda: RestartingUsrp("localhost"))
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 3)

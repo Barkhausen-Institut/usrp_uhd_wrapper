@@ -4,56 +4,86 @@ import time
 import numpy as np
 
 import uhd_wrapper.usrp_pybinding as pybinding
-from uhd_wrapper.usrp_pybinding import RfConfig, RxStreamingConfig, TxStreamingConfig
+from uhd_wrapper.usrp_pybinding import (
+    RfConfig,
+    RxStreamingConfig,
+    TxStreamingConfig,
+    Usrp,
+)
 
 
-class ReconfigurableUsrp:
+class RestartingUsrp:
     RestartTrials = 3
 
     def __init__(self, ip: str) -> None:
+        self._ip = ip
+
+        self._usrp = self._startUsrpMultipleTimes()
+        if not self._usrp:
+            raise RuntimeError("Could not start USRP... exiting.")
+
+    def _startUsrpMultipleTimes(self) -> Usrp:
         startAttempt = 1
-        usrpStarted = False
-        while not usrpStarted and startAttempt <= self.RestartTrials:
+        usrp: Usrp = None
+        while usrp is None and startAttempt <= self.RestartTrials:
             try:
-                self.__usrp = pybinding.createUsrp(ip)
-                usrpStarted = True
+                usrp = pybinding.createUsrp(self._ip)
             except RuntimeError:
                 print("Creation of USRP failed... Retrying after 2 seconds.")
                 time.sleep(2)
                 startAttempt += 1
-
-        if not usrpStarted:
-            raise RuntimeError("Creation of USRP failed.")
+        return usrp
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
-        self.__usrp.setRfConfig(rfConfig)
+        self._usrp.setRfConfig(rfConfig)
 
     def setRxConfig(self, rxConfig: RxStreamingConfig) -> None:
-        self.__usrp.setRxConfig(rxConfig)
+        self._usrp.setRxConfig(rxConfig)
 
     def setTxConfig(self, txConfig: TxStreamingConfig) -> None:
-        self.__usrp.setTxConfig(txConfig)
+        self._usrp.setTxConfig(txConfig)
 
     def setTimeToZeroNextPps(self) -> None:
-        self.__usrp.setTimeToZeroNextPps()
+        self._usrp.setTimeToZeroNextPps()
 
     def getCurrentSystemTime(self) -> int:
-        return self.__usrp.getCurrentSystemTime()
+        return self._usrp.getCurrentSystemTime()
 
     def getCurrentFpgaTime(self) -> int:
-        return self.__usrp.getCurrentFpgaTime()
+        return self._usrp.getCurrentFpgaTime()
 
     def execute(self, baseTime: float) -> None:
-        self.__usrp.execute(baseTime)
+        self._usrp.execute(baseTime)
 
     def collect(self) -> List[List[np.ndarray]]:
-        return self.__usrp.collect()
+        return self._usrp.collect()
 
     def resetStreamingConfigs(self) -> None:
-        self.__usrp.resetStreamingConfigs()
+        self._usrp.resetStreamingConfigs()
 
     def getMasterClockRate(self) -> float:
-        return self.__usrp.getMasterClockRate()
+        return self._usrp.getMasterClockRate()
 
     def getRfConfig(self) -> RfConfig:
-        return self.__usrp.getRfConfig()
+        return self._usrp.getRfConfig()
+
+
+class MimoReconfiguringUsrp(RestartingUsrp):
+    def __init__(self, ip: str) -> None:
+        super().__init__(ip)
+        self._currentRfConfig: RfConfig = None
+
+    def setRfConfig(self, rfConfig: RfConfig) -> None:
+        if self.__mimoConfigChanged(rfConfig):
+            del self._usrp
+            self._usrp = self._startUsrpMultipleTimes()
+        self._usrp.setRfConfig(rfConfig)
+        self._currentRfConfig = rfConfig
+
+    def __mimoConfigChanged(self, newRfConfig: RfConfig) -> bool:
+        hasChanged = False
+        if self._currentRfConfig is not None:
+            hasChanged = (
+                self._currentRfConfig.noRxAntennas != newRfConfig.noRxAntennas
+            ) or (self._currentRfConfig.noTxAntennas != newRfConfig.noTxAntennas)
+        return hasChanged

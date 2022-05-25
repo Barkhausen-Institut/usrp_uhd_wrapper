@@ -19,20 +19,15 @@ class RestartingUsrp:
         self._ip = ip
 
         self._usrp = self._startUsrpMultipleTimes()
-        if not self._usrp:
-            raise RuntimeError("Could not start USRP... exiting.")
 
     def _startUsrpMultipleTimes(self) -> Usrp:
-        startAttempt = 1
-        usrp: Usrp = None
-        while usrp is None and startAttempt <= self.RestartTrials:
+        for _ in range(self.RestartTrials):
             try:
-                usrp = pybinding.createUsrp(self._ip)
+                return pybinding.createUsrp(self._ip)
             except RuntimeError:
                 print("Creation of USRP failed... Retrying after 2 seconds.")
                 time.sleep(2)
-                startAttempt += 1
-        return usrp
+        raise RuntimeError("Could not start USRP... exiting.")
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:
         self._usrp.setRfConfig(rfConfig)

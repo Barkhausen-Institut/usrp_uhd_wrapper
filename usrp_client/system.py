@@ -2,6 +2,7 @@ import logging
 from typing import Dict, List
 import time
 from collections import namedtuple
+from threading import Timer
 
 import zerorpc
 import numpy as np
@@ -35,12 +36,14 @@ class System:
             USRPs. For development use mainly. Do not change. Default value: 0.2s.
         syncAttempts (int): Specifies number of synchronization attemps for USRP system.
         timeBetweenSyncAttempts (float): Sleep time between two synchronisation attempts in s.
+        syncTimeOut (float): Timeout of synchronisation.
     """
 
     syncThresholdSec = 0.2
     baseTimeOffsetSec = 0.2
     syncAttempts = 3
     timeBetweenSyncAttempts = 0.3
+    syncTimeOut = 60.0
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
@@ -146,14 +149,21 @@ class System:
             logging.info("Synchronizing...")
             for _ in range(System.syncAttempts):
                 self.__setTimeToZeroNextPps()
-                if self.__synchronisationValid():
+                if self.__synchronisationValid():  # ganz am anfang vor der schleife checken
                     self.__usrpsSynced = True
                     break
                 else:
-                    time.sleep(System.timeBetweenSyncAttempts)
+                    self.sleep(System.timeBetweenSyncAttempts)
 
         if not self.__usrpsSynced:
             raise RuntimeError("Could not synchronize. Tried three times...")
+        else:
+            self.__startResetSyncFlagTimer()
+
+    def __startResetSyncFlagTimer(self) -> None:
+        def resetSyncFlag() -> None:
+            self.__usrpsSynced = False
+        Timer(self.syncTimeOut, resetSyncFlag).start()
 
     def __synchronisationValid(self) -> bool:
         logging.info("Successfully synchronised USRPs...")
@@ -167,7 +177,10 @@ class System:
         for usrp in self.__usrpClients.keys():
             self.__usrpClients[usrp].client.setTimeToZeroNextPps()
             logging.info("Set time to zero for PPS.")
-        time.sleep(1.1)
+        self.sleep(1.1)
+
+    def sleep(self, delay: float) -> None:
+        time.sleep(delay)
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()

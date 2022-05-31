@@ -57,11 +57,24 @@ class TestSystemInitialization(unittest.TestCase):
 class SystemMockFactory:
     def mockSystem(self, system: System, noMockUsrps: int) -> List[Mock]:
         self.__noUsrps = 0
+        self.__attempts = 0
+        self.syncSuccesfulAfterAttemptNb = 1
         system.createUsrpClient = Mock()  # type: ignore
         system.createUsrpClient.side_effect = []  # type: ignore
         system.sleep = Mock(spec=System.sleep)  # type: ignore
+        system.synchronisationValid = self.__syncValidAfterSomeAttempts  # type: ignore
         mockUsrps = [self.addUsrp(system) for _ in range(noMockUsrps)]
         return mockUsrps
+
+    def __syncValidAfterSomeAttempts(self) -> bool:
+        if self.__attempts < self.syncSuccesfulAfterAttemptNb:
+            self.__attempts += 1
+            return False
+        else:
+            return True
+
+    def unsync(self) -> None:
+        self.__attempts = 0
 
     def addUsrp(self, system: System) -> Mock:
         self.__noUsrps += 1
@@ -127,11 +140,9 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.mockUsrps[0].reset_mock()
         self.mockUsrps[1].reset_mock()
 
-        time.sleep(syncTimeOut)
+        time.sleep(syncTimeOut + 1.0)
+        self.unsync()
         self.system.execute()
-        self.mockUsrps[0].getCurrentFpgaTime.side_effect = [1.0]
-        self.mockUsrps[1].getCurrentFpgaTime.side_effect = [
-            1.0 + System.syncThresholdSec + 1.0]
         self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
 
@@ -158,36 +169,21 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
 
         self.mockUsrps[0].reset_mock()
         self.mockUsrps[1].reset_mock()
-
         mockedUsrp = self.addUsrp(self.system)
+        self.unsync()
         self.system.execute()
         self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
         mockedUsrp.setTimeToZeroNextPps.assert_called_once()
 
     def test_threeTimesSyncRaisesError(self) -> None:
-        self.mockUsrps[0].getCurrentFpgaTime.side_effect = [1.0, 1.5, 2.0]
-        self.mockUsrps[1].getCurrentFpgaTime.side_effect = [
-            1.0 + System.syncThresholdSec + 1.0,
-            1.0 + System.syncThresholdSec + 1.5,
-            1.0 + System.syncThresholdSec + 2.0,
-        ]
-
+        self.syncSuccesfulAfterAttemptNb = self.system.syncAttempts + 2
         self.assertRaises(RuntimeError, lambda: self.system.execute())
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 3)
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 3)
 
     def test_syncValidAfterSecondAttempt(self) -> None:
-        self.mockUsrps[0].getCurrentFpgaTime.side_effect = [
-            1.0,
-            1.5,
-            1.6,
-        ]
-        self.mockUsrps[1].getCurrentFpgaTime.side_effect = [
-            1.0 + System.syncThresholdSec + 0.1,
-            1.5 + System.syncThresholdSec,
-            1.6 + 0.01,
-        ]
+        self.syncSuccesfulAfterAttemptNb = 2
 
         self.system.execute()
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 2)
@@ -220,13 +216,6 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         self.mockUsrps[0].execute.assert_called_once_with(expectedBaseTime)
         self.mockUsrps[1].execute.assert_called_once_with(expectedBaseTime)
 
-    def test_calculationBaseTime_invalidSynchronisation(self) -> None:
-        FPGA_TIME_S_USRP1 = 0.3
-        FPGA_TIME_S_USRP2 = 1.5
-
-        self.mockUsrps[0].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP1
-        self.mockUsrps[1].getCurrentFpgaTime.return_value = FPGA_TIME_S_USRP2
-        self.assertRaises(RuntimeError, lambda: self.system.execute())
 
     def test_getSamplingRates(self) -> None:
         supportedSamplingRates = np.array([200e6])

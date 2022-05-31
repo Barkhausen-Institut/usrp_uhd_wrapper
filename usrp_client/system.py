@@ -145,20 +145,17 @@ class System:
             self.__usrpClients[usrpName].client.execute(baseTimeSec)
 
     def __synchronizeUsrps(self) -> None:
-        if not self.__usrpsSynced:
-            logging.info("Synchronizing...")
+        if not self.synchronisationValid():
             for _ in range(System.syncAttempts):
                 self.__setTimeToZeroNextPps()
-                if self.__synchronisationValid():  # ganz am anfang vor der schleife checken
-                    self.__usrpsSynced = True
+                if self.synchronisationValid():
+                    self.__startResetSyncFlagTimer()
                     break
                 else:
                     self.sleep(System.timeBetweenSyncAttempts)
 
-        if not self.__usrpsSynced:
+        if not self.synchronisationValid():
             raise RuntimeError("Could not synchronize. Tried three times...")
-        else:
-            self.__startResetSyncFlagTimer()
 
     def __startResetSyncFlagTimer(self) -> None:
         def resetSyncFlag() -> None:
@@ -167,7 +164,7 @@ class System:
         self.__resetSyncFlagTimer.daemon = True
         self.__resetSyncFlagTimer.start()
 
-    def __synchronisationValid(self) -> bool:
+    def synchronisationValid(self) -> bool:
         logging.info("Successfully synchronised USRPs...")
         currentFpgaTimes = self.__getCurrentFpgaTimes()
         return (

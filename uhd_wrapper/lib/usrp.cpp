@@ -162,6 +162,13 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     configureTxStreamer(conf);
 
     rfConfig_ = getRfConfig();
+    if (!(rfConfig_ == conf)) {
+        std::ostringstream confStream;
+        confStream << rfConfig_;
+        throw UsrpException(
+            "Request and actual Rf Config mismatch. Actaul rf config:\n " +
+            confStream.str());
+    }
 }
 
 void Usrp::configureRxStreamer(const RfConfig &conf) {

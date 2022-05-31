@@ -177,7 +177,7 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         mockedUsrp.setTimeToZeroNextPps.assert_called_once()
 
     def test_threeTimesSyncRaisesError(self) -> None:
-        self.syncSuccesfulAfterAttemptNb = self.system.syncAttempts + 2
+        self.system.synchronisationValid = Mock(return_value=False)  # type: ignore
         self.assertRaises(RuntimeError, lambda: self.system.execute())
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 3)
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 3)
@@ -215,7 +215,6 @@ class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
         self.system.execute()
         self.mockUsrps[0].execute.assert_called_once_with(expectedBaseTime)
         self.mockUsrps[1].execute.assert_called_once_with(expectedBaseTime)
-
 
     def test_getSamplingRates(self) -> None:
         supportedSamplingRates = np.array([200e6])

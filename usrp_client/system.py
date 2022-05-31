@@ -163,7 +163,9 @@ class System:
     def __startResetSyncFlagTimer(self) -> None:
         def resetSyncFlag() -> None:
             self.__usrpsSynced = False
-        Timer(self.syncTimeOut, resetSyncFlag).start()
+        self.__resetSyncFlagTimer = Timer(self.syncTimeOut, resetSyncFlag)
+        self.__resetSyncFlagTimer.daemon = True
+        self.__resetSyncFlagTimer.start()
 
     def __synchronisationValid(self) -> bool:
         logging.info("Successfully synchronised USRPs...")

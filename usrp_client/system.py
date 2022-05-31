@@ -81,7 +81,6 @@ class System:
         usrpClient.configureRfConfig(rfConfig)
         usrpClient.resetStreamingConfigs()
         self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
-        self.__usrpsSynced = False
 
     def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
         self.__assertUniqueUsrpName(usrpName)

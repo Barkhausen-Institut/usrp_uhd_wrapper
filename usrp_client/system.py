@@ -153,7 +153,6 @@ class System:
                     break
                 else:
                     self.sleep(System.timeBetweenSyncAttempts)
-
         if not self.synchronisationValid():
             raise RuntimeError("Could not synchronize. Tried three times...")
 

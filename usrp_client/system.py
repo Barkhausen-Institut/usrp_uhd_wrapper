@@ -1,4 +1,3 @@
-from cgitb import reset
 import logging
 from typing import Dict, List
 import time
@@ -179,7 +178,7 @@ class System:
             self.__usrpClients[usrp].client.setTimeToZeroNextPps()
             logging.info("Set time to zero for PPS.")
         self.sleep(1.1)
-        
+
     def sleep(self, delay: float) -> None:
         time.sleep(delay)
 

@@ -16,6 +16,8 @@ bool operator==(const RfConfig& a, const RfConfig& b) {
     return equal;
 }
 
+bool operator!=(const RfConfig& a, const RfConfig& b) { return !(a == b); }
+
 bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b) {
     bool equal = true;
     equal &= a.noSamples == b.noSamples;

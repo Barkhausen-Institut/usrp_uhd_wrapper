@@ -1,0 +1,8 @@
+[Unit]
+Description=ZeroRpc Server
+
+[Service]
+ExecStart=/bin/bash /home/root/usrp_uhd_api/start_usrp_server.bash
+After=usrp-hwd.service
+[Install]
+WantedBy=multi-user.target

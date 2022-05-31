@@ -50,14 +50,15 @@ def findSignalStartsInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
 class HardwareSetup:
     def __init__(
         self,
+        *,
         txGain: float = 26,
         rxGain: float = 25,
         rxSampleRate: float = 12.288e6,
         txSampleRate: float = 12.288e6,
         txFc: float = 2e9,
         rxFc: float = 2e9,
-        noRxAntennas: int = 4,
-        noTxAntennas: int = 1,
+        noRxAntennas: int,
+        noTxAntennas: int,
     ) -> None:
         self.rfConfig = RfConfig()
         self.rfConfig.rxAnalogFilterBw = 400e6
@@ -100,7 +101,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         ) - (0.5 + 0.5j)
 
     def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup()
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
         system = setup.connectUsrps()
 
         for _ in range(10):
@@ -136,7 +137,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt4)), 1)
 
     def test_p2pTransmission(self) -> None:
-        setup = P2pHardwareSetup()
+        setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -157,7 +158,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_localTransmission(self) -> None:
-        setup = LocalTransmissionHardwareSetup()
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -180,7 +181,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_jcas(self) -> None:
-        setup = P2pHardwareSetup()
+        setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.1, samples=MimoSignal(signals=[self.randomSignal])
@@ -212,18 +213,24 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-
-@pytest.mark.hardware_tx_mimo
-class TestTxMimo(unittest.TestCase):
-    def setUp(self) -> None:
-        self.noSamples = int(20e3)
-        self.randomSignal = (
-            np.random.sample((self.noSamples,))
-            + 1j * np.random.sample((self.noSamples,))
-        ) - (0.5 + 0.5j)
-
     def test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup(noTxAntennas=4, noRxAntennas=1)
+        # create signal
+        signalLength = 5000
+        signalStarts = [int(10e3), int(20e3), int(30e3), int(40e3)]
+        antTxSignals = [
+            createRandom(signalLength),
+            createRandom(signalLength),
+            createRandom(signalLength),
+            createRandom(signalLength),
+        ]
+        paddedAntTxSignals = []
+        for antSignal, signalStart in zip(antTxSignals, signalStarts):
+            s = np.zeros(int(60e3), dtype=np.complex64)
+            s[signalStart + np.arange(antSignal.size)] = antSignal
+            paddedAntTxSignals.append(s)
+
+        # create setup
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=4)
         system = setup.connectUsrps()
 
         # create signal

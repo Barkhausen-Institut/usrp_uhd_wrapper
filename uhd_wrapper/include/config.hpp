@@ -67,7 +67,8 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
                                   const RxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
 
-void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples);
+void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
+                         const size_t noTxAntennas);
 
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf);
 }  // namespace bi

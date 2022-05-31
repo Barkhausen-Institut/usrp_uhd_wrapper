@@ -70,9 +70,12 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
             "small.");
 }
 
-void assertValidTxSignal(const MimoSignal& antSamples,
-                         const size_t maxSamples) {
+void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
+                         const size_t noTxAntennas) {
     size_t lengthSignal = antSamples[0].size();
+    if (antSamples.size() != noTxAntennas)
+        throw UsrpException(
+            "The number of signals must match the number of tx antennas.");
     for (const auto& antSignal : antSamples) {
         if (antSignal.size() > maxSamples)
             throw UsrpException(

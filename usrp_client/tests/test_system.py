@@ -1,6 +1,7 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from typing import List
+import time
 
 import numpy as np
 import numpy.testing as npt
@@ -58,9 +59,8 @@ class SystemMockFactory:
         self.__noUsrps = 0
         system.createUsrpClient = Mock()  # type: ignore
         system.createUsrpClient.side_effect = []  # type: ignore
+        system.sleep = Mock(spec=System.sleep)  # type: ignore
         mockUsrps = [self.addUsrp(system) for _ in range(noMockUsrps)]
-        sleepPatcher = patch("time.sleep", return_value=None)
-        _ = sleepPatcher.start()
         return mockUsrps
 
     def addUsrp(self, system: System) -> Mock:
@@ -118,6 +118,22 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
     def setUp(self) -> None:
         self.system = System()
         self.mockUsrps = self.mockSystem(self.system, 2)
+
+    def test_recheckSyncAfterSomeTime(self) -> None:
+        syncTimeOut = 2.0
+        self.system.syncTimeOut = syncTimeOut
+        self.system.sleep = lambda t: time.sleep(t)  # type: ignore
+        self.system.execute()
+        self.mockUsrps[0].reset_mock()
+        self.mockUsrps[1].reset_mock()
+
+        time.sleep(syncTimeOut)
+        self.system.execute()
+        self.mockUsrps[0].getCurrentFpgaTime.side_effect = [1.0]
+        self.mockUsrps[1].getCurrentFpgaTime.side_effect = [
+            1.0 + System.syncThresholdSec + 1.0]
+        self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
 
     def test_synchronisationUponExecution(self) -> None:
         self.system.execute()

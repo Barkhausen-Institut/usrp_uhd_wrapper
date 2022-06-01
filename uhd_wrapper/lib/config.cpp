@@ -1,6 +1,7 @@
+#include <iostream>
+
 #include "config.hpp"
 #include "usrp_exception.hpp"
-
 namespace bi {
 
 bool operator==(const RfConfig& a, const RfConfig& b) {
@@ -74,6 +75,8 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
 
 void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
                          const size_t noTxAntennas) {
+    size_t noSignals = antSamples.size();
+    if (noSignals == 0) throw UsrpException("No signal provided.");
     size_t lengthSignal = antSamples[0].size();
     if (antSamples.size() != noTxAntennas)
         throw UsrpException(

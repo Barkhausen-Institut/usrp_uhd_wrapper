@@ -157,5 +157,12 @@ TEST_CASE("[ValidTxSignal]") {
             assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
             UsrpException);
     }
+
+    SECTION("NoSamplesProvided") {
+        conf.samples = {};
+        REQUIRE_THROWS_AS(
+            assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
+            UsrpException);
+    }
 }
 }  // namespace bi

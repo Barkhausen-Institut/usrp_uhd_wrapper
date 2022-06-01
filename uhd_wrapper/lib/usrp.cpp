@@ -164,10 +164,12 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     rfConfig_ = getRfConfig();
     if (rfConfig_ != conf) {
         std::ostringstream confStream;
-        confStream << rfConfig_;
-        throw UsrpException(
-            "Request and actual Rf Config mismatch. Actaul rf config:\n " +
-            confStream.str());
+        confStream << "Actual Rf Config:" << std::endl
+                   << rfConfig_ << std::endl
+                   << std::endl
+                   << "Requested Rf Config: " << conf << std::endl;
+        throw UsrpException("Request and actual Rf Config mismatch:\n " +
+                            confStream.str());
     }
 }
 

@@ -43,10 +43,11 @@ class System:
     baseTimeOffsetSec = 0.2
     syncAttempts = 3
     timeBetweenSyncAttempts = 0.3
-    syncTimeOut = 60.0
+    syncTimeOut = 1.0
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
+        self.__usrpsSynced = False
 
     def createUsrpClient(self, ip: str) -> UsrpClient:
         """Connect to the USRP server. Developers only.
@@ -145,6 +146,10 @@ class System:
 
     def __synchronizeUsrps(self) -> None:
         if not self.__usrpsSynced:
+            if self.synchronisationValid():
+                self.__startResetSyncFlagTimer()
+                self.__usrpsSynced = True
+                return
             for _ in range(System.syncAttempts):
                 self.__setTimeToZeroNextPps()
                 if self.synchronisationValid():

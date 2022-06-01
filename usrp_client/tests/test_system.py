@@ -57,24 +57,12 @@ class TestSystemInitialization(unittest.TestCase):
 class SystemMockFactory:
     def mockSystem(self, system: System, noMockUsrps: int) -> List[Mock]:
         self.__noUsrps = 0
-        self.__attempts = 0
-        self.syncSuccesfulAfterAttemptNb = 1
         system.createUsrpClient = Mock()  # type: ignore
         system.createUsrpClient.side_effect = []  # type: ignore
         system.sleep = Mock(spec=System.sleep)  # type: ignore
-        system.synchronisationValid = self.__syncValidAfterSomeAttempts  # type: ignore
+        system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
         mockUsrps = [self.addUsrp(system) for _ in range(noMockUsrps)]
         return mockUsrps
-
-    def __syncValidAfterSomeAttempts(self) -> bool:
-        if self.__attempts < self.syncSuccesfulAfterAttemptNb:
-            self.__attempts += 1
-            return False
-        else:
-            return True
-
-    def unsync(self) -> None:
-        self.__attempts = 0
 
     def addUsrp(self, system: System) -> Mock:
         self.__noUsrps += 1
@@ -132,19 +120,67 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.system = System()
         self.mockUsrps = self.mockSystem(self.system, 2)
 
-    def test_recheckSyncAfterSomeTime(self) -> None:
+    def test_recheckSyncAfterSomeTime_syncValidAfterFirstAttempt(self) -> None:
         syncTimeOut = 2.0
         self.system.syncTimeOut = syncTimeOut
         self.system.sleep = time.sleep  # type: ignore
+        self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
         self.system.execute()
-        self.mockUsrps[0].reset_mock()
-        self.mockUsrps[1].reset_mock()
+        self.assertEqual(self.system.synchronisationValid.call_count, 2)
+        self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
 
-        time.sleep(syncTimeOut + 1.0)
-        self.unsync()
+        self.mockUsrps[0].reset_mock()
+        self.system.synchronisationValid.reset_mock()
+        time.sleep(syncTimeOut - 1.0)
+        self.system.execute()
+        self.system.synchronisationValid.assert_not_called()
+
+        time.sleep(2.0)
+        self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
         self.system.execute()
         self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
-        self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
+        self.assertEqual(self.system.synchronisationValid.call_count, 2)
+
+    def test_recheckSyncAfterSomeTime_syncValidAfterSecondAttempt(self) -> None:
+        syncTimeOut = 2.0
+        self.system.syncTimeOut = syncTimeOut
+        self.system.sleep = time.sleep  # type: ignore
+        self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
+
+        self.system.execute()
+        self.assertEqual(self.system.synchronisationValid.call_count, 2)
+        self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
+
+        self.mockUsrps[0].reset_mock()
+        self.system.synchronisationValid.reset_mock()
+        time.sleep(syncTimeOut - 1)
+        self.system.execute()
+        self.system.synchronisationValid.assert_not_called()
+
+        time.sleep(2.0)
+        self.system.synchronisationValid = Mock(
+            side_effect=[False, False, True]
+        )  # type: ignore
+        self.system.execute()
+        self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 2)
+        self.assertEqual(self.system.synchronisationValid.call_count, 3)
+
+    def test_syncValidAfterResetSyncFlagTimerTimedOut(self) -> None:
+        syncTimeOut = 2.0
+        self.system.syncTimeOut = syncTimeOut
+        self.system.sleep = time.sleep  # type: ignore
+
+        self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
+        self.system.execute()
+        self.assertEqual(self.system.synchronisationValid.call_count, 2)
+        self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrps[0].reset_mock()
+
+        time.sleep(syncTimeOut + 2.0)
+        self.system.synchronisationValid = Mock(return_value=True)  # type: ignore
+        self.system.execute()
+        self.mockUsrps[0].setTimeToZeroNextPps.assert_not_called()
+        self.assertEqual(self.system.synchronisationValid.call_count, 1)
 
     def test_synchronisationUponExecution(self) -> None:
         self.system.execute()
@@ -166,11 +202,10 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.system.execute()
         self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
-
         self.mockUsrps[0].reset_mock()
         self.mockUsrps[1].reset_mock()
         mockedUsrp = self.addUsrp(self.system)
-        self.unsync()
+        self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
         self.system.execute()
         self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
@@ -183,8 +218,9 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 3)
 
     def test_syncValidAfterSecondAttempt(self) -> None:
-        self.syncSuccesfulAfterAttemptNb = 2
-
+        self.system.synchronisationValid = Mock(
+            side_effect=[False, False, True]
+        )  # type: ignore
         self.system.execute()
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 2)
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 2)

@@ -216,6 +216,7 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.assertRaises(RuntimeError, lambda: self.system.execute())
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 3)
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 3)
+        self.assertEqual(self.system.synchronisationValid.call_count, 3)
 
     def test_syncValidAfterSecondAttempt(self) -> None:
         self.system.synchronisationValid = Mock(  # type: ignore

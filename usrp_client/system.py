@@ -145,19 +145,21 @@ class System:
             self.__usrpClients[usrpName].client.execute(baseTimeSec)
 
     def __synchronizeUsrps(self) -> None:
+        syncAttempts = 1
         if not self.__usrpsSynced:
-            if self.synchronisationValid():
-                self.__startResetSyncFlagTimer()
-                self.__usrpsSynced = True
-                return
-            for _ in range(System.syncAttempts):
+            while (
+                syncAttempts <= System.syncAttempts and not self.synchronisationValid()
+            ):
                 self.__setTimeToZeroNextPps()
-                if self.synchronisationValid():
-                    self.__startResetSyncFlagTimer()
-                    self.__usrpsSynced = True
-                    return
                 self.sleep(System.timeBetweenSyncAttempts)
-            raise RuntimeError("Could not synchronize. Tried three times...")
+                syncAttempts += 1
+
+        if syncAttempts > System.syncAttempts:
+            raise RuntimeError(
+                f"Tried at least {self.syncAttempts} syncing wihout succes."
+            )
+        self.__startResetSyncFlagTimer()
+        self.__usrpsSynced = True
 
     def __startResetSyncFlagTimer(self) -> None:
         def resetSyncFlag() -> None:

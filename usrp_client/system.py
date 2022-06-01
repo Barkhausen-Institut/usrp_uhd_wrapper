@@ -170,7 +170,6 @@ class System:
         resetSyncFlagTimer.start()
 
     def synchronisationValid(self) -> bool:
-        logging.info("Successfully synchronised USRPs...")
         currentFpgaTimes = self.__getCurrentFpgaTimes()
         return (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)

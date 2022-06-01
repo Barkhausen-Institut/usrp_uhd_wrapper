@@ -47,7 +47,6 @@ class System:
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
-        self.__usrpsSynced = False
 
     def createUsrpClient(self, ip: str) -> UsrpClient:
         """Connect to the USRP server. Developers only.
@@ -75,6 +74,7 @@ class System:
             ip (str): IP of the USRP.
             usrpName (str): Identifier of the USRP to be added.
         """
+        self.__usrpsSynced = False
         self.__assertUniqueUsrp(ip, usrpName)
 
         usrpClient = self.createUsrpClient(ip)

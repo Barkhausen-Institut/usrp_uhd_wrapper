@@ -152,7 +152,7 @@ class System:
                     self.__usrpsSynced = True
                     return
                 self.sleep(System.timeBetweenSyncAttempts)
-        raise RuntimeError("Could not synchronize. Tried three times...")
+            raise RuntimeError("Could not synchronize. Tried three times...")
 
     def __startResetSyncFlagTimer(self) -> None:
         def resetSyncFlag() -> None:

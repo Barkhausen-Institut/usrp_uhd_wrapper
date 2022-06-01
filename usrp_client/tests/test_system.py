@@ -131,11 +131,11 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
 
         self.mockUsrps[0].reset_mock()
         self.system.synchronisationValid.reset_mock()
-        time.sleep(syncTimeOut - 1.0)
+        time.sleep(syncTimeOut - 0.2)
         self.system.execute()
         self.system.synchronisationValid.assert_not_called()
 
-        time.sleep(2.0)
+        time.sleep(0.4)
         self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
         self.system.execute()
         self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
@@ -153,11 +153,11 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
 
         self.mockUsrps[0].reset_mock()
         self.system.synchronisationValid.reset_mock()
-        time.sleep(syncTimeOut - 1)
+        time.sleep(syncTimeOut - 0.2)
         self.system.execute()
         self.system.synchronisationValid.assert_not_called()
 
-        time.sleep(2.0)
+        time.sleep(0.4)
         self.system.synchronisationValid = Mock(  # type: ignore
             side_effect=[False, False, True]
         )
@@ -176,7 +176,7 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.mockUsrps[0].reset_mock()
 
-        time.sleep(syncTimeOut + 2.0)
+        time.sleep(syncTimeOut + 0.2)
         self.system.synchronisationValid = Mock(return_value=True)  # type: ignore
         self.system.execute()
         self.mockUsrps[0].setTimeToZeroNextPps.assert_not_called()

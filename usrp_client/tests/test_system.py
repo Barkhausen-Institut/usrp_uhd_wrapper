@@ -158,9 +158,9 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.system.synchronisationValid.assert_not_called()
 
         time.sleep(2.0)
-        self.system.synchronisationValid = Mock(
+        self.system.synchronisationValid = Mock(  # type: ignore
             side_effect=[False, False, True]
-        )  # type: ignore
+        )
         self.system.execute()
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 2)
         self.assertEqual(self.system.synchronisationValid.call_count, 3)
@@ -218,9 +218,9 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 3)
 
     def test_syncValidAfterSecondAttempt(self) -> None:
-        self.system.synchronisationValid = Mock(
+        self.system.synchronisationValid = Mock(  # type: ignore
             side_effect=[False, False, True]
-        )  # type: ignore
+        )
         self.system.execute()
         self.assertEqual(self.mockUsrps[0].setTimeToZeroNextPps.call_count, 2)
         self.assertEqual(self.mockUsrps[1].setTimeToZeroNextPps.call_count, 2)

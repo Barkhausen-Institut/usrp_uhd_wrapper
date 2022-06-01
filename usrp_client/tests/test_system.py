@@ -135,7 +135,7 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
     def test_recheckSyncAfterSomeTime(self) -> None:
         syncTimeOut = 2.0
         self.system.syncTimeOut = syncTimeOut
-        self.system.sleep = lambda t: time.sleep(t)  # type: ignore
+        self.system.sleep = time.sleep  # type: ignore
         self.system.execute()
         self.mockUsrps[0].reset_mock()
         self.mockUsrps[1].reset_mock()

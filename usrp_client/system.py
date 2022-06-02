@@ -68,7 +68,7 @@ class System:
     baseTimeOffsetSec = 0.2
     syncAttempts = 3
     timeBetweenSyncAttempts = 0.3
-    syncTimeOut = 1.0
+    syncTimeOut = 20 * 60  # every 20 minutes
 
     def __init__(self) -> None:
         self._usrpClients: Dict[str, LabeledUsrp] = {}

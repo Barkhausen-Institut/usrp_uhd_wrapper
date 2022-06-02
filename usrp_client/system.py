@@ -23,12 +23,10 @@ LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
 class TimedFlag:
     def __init__(self, resetTimeSec: float) -> None:
         self._resetTimeSec = resetTimeSec
-        print(self._resetTimeSec)
         self._value = False
 
     def set(self) -> None:
         self._value = True
-        print("call set")
         self._startTimer()
 
     def reset(self) -> None:
@@ -38,7 +36,6 @@ class TimedFlag:
     def _startTimer(self) -> None:
         def setFlagToFalse() -> None:
             self._value = False
-            print(f"flag set to {self._value}")
 
         resetSyncFlagTimer = Timer(self._resetTimeSec, setFlagToFalse)
         resetSyncFlagTimer.daemon = True

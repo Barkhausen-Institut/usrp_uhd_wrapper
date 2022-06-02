@@ -1,13 +1,12 @@
 import unittest
 from unittest.mock import Mock
-from typing import List
 import time
 
 import numpy as np
 import numpy.testing as npt
 
 from usrp_client.rpc_client import UsrpClient
-from usrp_client.system import System
+from usrp_client.system import System, TimedFlag
 from uhd_wrapper.utils.config import (
     MimoSignal,
     RfConfig,
@@ -54,6 +53,11 @@ class TestSystemInitialization(unittest.TestCase):
         self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
 
 
+class FakedTimeFlag(TimedFlag):
+    def _startTimer(self) -> None:
+        pass
+
+
 class FakeSystem(System):
     def __init__(self, noUsrps: int) -> None:
         System.__init__(self)
@@ -80,6 +84,14 @@ class FakeSystem(System):
         usrpClientMock.getRfConfig.return_value = RfConfig()
         usrpClientMock.getMasterClockRate.return_value = 400e6
         return usrpClientMock
+
+    def _setSyncedFlag(self, timeout: float) -> None:
+        self._usrpsSynced = FakedTimeFlag(timeout)
+
+
+class FakeSystemTimedSyncCheck(FakeSystem):
+    def _setSyncedFlag(self, timeout: float) -> None:
+        self._usrpsSynced = TimedFlag(timeout)
 
 
 class TestStreamingConfiguration(unittest.TestCase):
@@ -120,34 +132,29 @@ class TestMultiDeviceSync(unittest.TestCase):
 
     def test_recheckSyncAfterSomeTime_syncValidAfterFirstAttempt(self) -> None:
         syncTimeOut = 2.0
-        self.system.syncTimeOut = syncTimeOut
-        self.system.sleep = time.sleep  # type: ignore
-
-        self.system.execute()
-        self.assertEqual(self.system.synchronisationValid.call_count, 1)
-
+        System.syncTimeOut = syncTimeOut
+        system = FakeSystemTimedSyncCheck(2)
+        system.syncTimeOut = syncTimeOut
         time.sleep(syncTimeOut - 0.2)
-        self.system.execute()
-        self.assertEqual(self.system.synchronisationValid.call_count, 1)
+        system.execute()
+        system.synchronisationValid.assert_called_once()
+        system.synchronisationValid.reset_mock()
 
         time.sleep(0.4)
-        self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
-        self.system.execute()
-        self.assertEqual(self.system.synchronisationValid.call_count, 2)
+        system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
+        system.execute()
+        self.assertEqual(system.synchronisationValid.call_count, 2)
 
     def test_recheckSyncAfterSomeTime_syncValidAfterSecondAttempt(self) -> None:
         syncTimeOut = 2.0
         self.system.syncTimeOut = syncTimeOut
-        self.system.sleep = time.sleep  # type: ignore
-
-        self.system.execute()
-        self.assertEqual(self.system.synchronisationValid.call_count, 1)
 
         time.sleep(syncTimeOut - 0.2)
         self.system.execute()
-        self.assertEqual(self.system.synchronisationValid.call_count, 1)
+        self.system.synchronisationValid.assert_called_once()
+        self.system.synchronisationValid.reset_mock()
 
-        time.sleep(0.4)
+        time.sleep(10)
         self.system.synchronisationValid = Mock(  # type: ignore
             side_effect=[False, False, True]
         )
@@ -157,7 +164,6 @@ class TestMultiDeviceSync(unittest.TestCase):
     def test_syncValidAfterResetSyncFlagTimerTimedOut(self) -> None:
         syncTimeOut = 2.0
         self.system.syncTimeOut = syncTimeOut
-        self.system.sleep = time.sleep  # type: ignore
 
         self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
         self.system.execute()

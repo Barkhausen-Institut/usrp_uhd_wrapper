@@ -20,6 +20,34 @@ from usrp_client.rpc_client import UsrpClient
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
 
 
+class TimedFlag:
+    def __init__(self, resetTimeSec: float) -> None:
+        self._resetTimeSec = resetTimeSec
+        print(self._resetTimeSec)
+        self._value = False
+
+    def set(self) -> None:
+        self._value = True
+        print("call set")
+        self._startTimer()
+
+    def reset(self) -> None:
+        self._value = False
+        self._startTimer()
+
+    def _startTimer(self) -> None:
+        def setFlagToFalse() -> None:
+            self._value = False
+            print(f"flag set to {self._value}")
+
+        resetSyncFlagTimer = Timer(self._resetTimeSec, setFlagToFalse)
+        resetSyncFlagTimer.daemon = True
+        resetSyncFlagTimer.start()
+
+    def isSet(self) -> bool:
+        return self._value
+
+
 class System:
     """User interface for accessing multiple USRPs.
 
@@ -47,7 +75,10 @@ class System:
 
     def __init__(self) -> None:
         self._usrpClients: Dict[str, LabeledUsrp] = {}
-        self._usrpsSynced = False
+        self._setSyncedFlag(timeout=System.syncTimeOut)
+
+    def _setSyncedFlag(self, timeout: float) -> None:
+        self._usrpsSynced = TimedFlag(resetTimeSec=timeout)
 
     def createUsrpClient(self, ip: str) -> UsrpClient:
         """Connect to the USRP server. Developers only.
@@ -75,7 +106,7 @@ class System:
             ip (str): IP of the USRP.
             usrpName (str): Identifier of the USRP to be added.
         """
-        self._usrpsSynced = False
+        self._usrpsSynced.reset()
         self._assertUniqueUsrp(ip, usrpName)
 
         usrpClient = self.createUsrpClient(ip)
@@ -145,21 +176,20 @@ class System:
             self._usrpClients[usrpName].client.execute(baseTimeSec)
 
     def _synchronizeUsrps(self) -> None:
-        syncAttempts = 1
-        if not self._usrpsSynced:
-            while (
-                syncAttempts <= System.syncAttempts and not self.synchronisationValid()
-            ):
-                self._setTimeToZeroNextPps()
-                self.sleep(System.timeBetweenSyncAttempts)
-                syncAttempts += 1
+        if self._usrpsSynced.isSet():
+            return
 
-        if syncAttempts > System.syncAttempts:
-            raise RuntimeError(
-                f"Tried at least {self.syncAttempts} syncing wihout succes."
-            )
-        self._startResetSyncFlagTimer()
-        self._usrpsSynced = True
+        if self.synchronisationValid():
+            self._usrpsSynced.set()
+            return
+
+        for _ in range(System.syncAttempts):
+            self._setTimeToZeroNextPps()
+            if self.synchronisationValid():
+                self._usrpsSynced.set()
+                return
+            self.sleep(System.timeBetweenSyncAttempts)
+        raise RuntimeError(f"Tried at least {self.syncAttempts} syncing wihout succes.")
 
     def _startResetSyncFlagTimer(self) -> None:
         def resetSyncFlag() -> None:

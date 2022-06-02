@@ -211,7 +211,7 @@ class TestMultiDeviceSync(unittest.TestCase):
         self.system.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
 
 
-class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
+class TestTransceivingMultiDevice(unittest.TestCase):
     def setUp(self) -> None:
         self.system = FakeSystem(2)
         # self.mockUsrps = self.mockSystem(self.system, 2)

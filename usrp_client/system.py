@@ -185,14 +185,6 @@ class System:
             self.sleep(System.timeBetweenSyncAttempts)
         raise RuntimeError(f"Tried at least {self.syncAttempts} syncing wihout succes.")
 
-    def _startResetSyncFlagTimer(self) -> None:
-        def resetSyncFlag() -> None:
-            self._usrpsSynced = False
-
-        resetSyncFlagTimer = Timer(self.syncTimeOut, resetSyncFlag)
-        resetSyncFlagTimer.daemon = True
-        resetSyncFlagTimer.start()
-
     def synchronisationValid(self) -> bool:
         currentFpgaTimes = self._getCurrentFpgaTimes()
         return (

@@ -72,10 +72,7 @@ class System:
 
     def __init__(self) -> None:
         self._usrpClients: Dict[str, LabeledUsrp] = {}
-        self._setSyncedFlag(timeout=System.syncTimeOut)
-
-    def _setSyncedFlag(self, timeout: float) -> None:
-        self._usrpsSynced = TimedFlag(resetTimeSec=timeout)
+        self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
 
     def createUsrpClient(self, ip: str) -> UsrpClient:
         """Connect to the USRP server. Developers only.

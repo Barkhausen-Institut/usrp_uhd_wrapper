@@ -92,6 +92,18 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
     }
 }
 
+void assertValidRfConfig(const RfConfig& conf) {
+    if (conf.noTxAntennas > 4 || conf.noTxAntennas < 1)
+        throw UsrpException(
+            "You provided " + std::to_string(conf.noTxAntennas) +
+            "antennas.. Number of antennas must be within interval [1,4].");
+
+    if (conf.noRxAntennas > 4 || conf.noRxAntennas < 1)
+        throw UsrpException(
+            "You provided " + std::to_string(conf.noRxAntennas) +
+            "antennas.. Number of antennas must be in interval [1,4].");
+}
+
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     os << "TxGain: " << conf.txGain << std::endl;
     os << "RxGain: " << conf.rxGain << std::endl;

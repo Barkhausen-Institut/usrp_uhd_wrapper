@@ -165,4 +165,25 @@ TEST_CASE("[ValidTxSignal]") {
             UsrpException);
     }
 }
+
+TEST_CASE("[ValidRfConfig]") {
+    RfConfig conf;
+    SECTION("NoTxAntennasTooLarge") {
+        conf.noTxAntennas = 5;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
+    }
+    SECTION("NoRxAntennasTooLarge") {
+        conf.noRxAntennas = 5;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
+    }
+
+    SECTION("NoTxAntennasZero") {
+        conf.noTxAntennas = 0;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
+    }
+    SECTION("NoRxAntennasZero") {
+        conf.noRxAntennas = 0;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
+    }
+}
 }  // namespace bi

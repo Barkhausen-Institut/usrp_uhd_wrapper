@@ -144,6 +144,7 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
+    assertValidRfConfig(conf);
     std::scoped_lock lock(fpgaAccessMutex_);
 
     for (int idxRxAntenna = 0; idxRxAntenna < conf.noRxAntennas; idxRxAntenna++)

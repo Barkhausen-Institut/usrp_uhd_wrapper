@@ -206,6 +206,12 @@ class TestMultiDeviceSync(unittest.TestCase, SystemMockFactory):
         self.system.execute()
         self.assertEqual(self.system.synchronisationValid.call_count, 3)
 
+    def test_syncInvalidSetsPps(self) -> None:
+        self.system.synchronisationValid = Mock(side_effect=[False, True])  # type: ignore
+        self.system.execute()
+        self.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
+        self.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
+
 
 class TestTransceivingMultiDevice(unittest.TestCase, SystemMockFactory):
     def setUp(self) -> None:

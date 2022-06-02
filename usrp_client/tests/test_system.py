@@ -60,13 +60,17 @@ class FakedTimeFlag(TimedFlag):
 
 class FakeSystem(System):
     def __init__(
-        self, noUsrps: int, resyncFlag: TimedFlag = FakedTimeFlag(0.0)
+        self,
+        noUsrps: int,
+        resyncFlag: TimedFlag = FakedTimeFlag(0.0),
+        mockSyncValid: bool = True,
     ) -> None:
         System.__init__(self)
         self.__noUsrps = 0
         self.createUsrpClient = Mock(side_effect=[])  # type: ignore
         self.sleep = Mock(spec=System.sleep)  # type: ignore
-        self.synchronisationValid = Mock(return_value=True)  # type: ignore
+        if mockSyncValid:
+            self.synchronisationValid = Mock(return_value=True)  # type: ignore
         self._usrpsSynced = resyncFlag
         self.mockUsrps = [self.addNewUsrp() for _ in range(noUsrps)]
 
@@ -119,20 +123,6 @@ class TestStreamingConfiguration(unittest.TestCase):
         self.assertTrue(isinstance(rfConfigs["usrp1"], RfConfig))
         self.assertTrue(isinstance(rfConfigs["usrp1"], RfConfig))
 
-    def test_syncValidQueriesFpga(self) -> None:
-        self.system.synchronisationValid = System.synchronisationValid
-        _ = self.system.synchronisationValid(self.system)
-        self.system.mockUsrps[0].getCurrentFpgaTime.assert_called_once()
-        self.system.mockUsrps[1].getCurrentFpgaTime.assert_called_once()
-
-    def test_syncInvalidIfFpgaTimes_tooFarApart(self) -> None:
-        self.system.synchronisationValid = System.synchronisationValid
-        self.system.mockUsrps[0].getCurrentFpgaTime.return_value = 3.0
-        self.system.mockUsrps[0].getCurrentFpgaTime.return_value = (
-            3.0 + System.syncThresholdSec + 1.0
-        )
-        self.assertFalse(self.system.synchronisationValid())
-
 
 class TestMultiDeviceSync(unittest.TestCase):
     def setUp(self) -> None:
@@ -176,6 +166,23 @@ class TestMultiDeviceSync(unittest.TestCase):
         self.system.execute()
         self.system.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.system.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
+
+
+class TestSynchronisationValid(unittest.TestCase):
+    def setUp(self) -> None:
+        self.system = FakeSystem(2, mockSyncValid=False)
+
+    def test_syncValidQueriesFpga(self) -> None:
+        _ = self.system.synchronisationValid()
+        self.system.mockUsrps[0].getCurrentFpgaTime.assert_called_once()
+        self.system.mockUsrps[1].getCurrentFpgaTime.assert_called_once()
+
+    def test_syncInvalidIfFpgaTimes_tooFarApart(self) -> None:
+        self.system.mockUsrps[0].getCurrentFpgaTime.return_value = 3.0
+        self.system.mockUsrps[0].getCurrentFpgaTime.return_value = (
+            3.0 + System.syncThresholdSec + 1.0
+        )
+        self.assertFalse(self.system.synchronisationValid())
 
 
 class TestSyncRecheck(unittest.TestCase):

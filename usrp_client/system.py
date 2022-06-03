@@ -32,7 +32,6 @@ class TimedFlag:
 
     def reset(self) -> None:
         self._value = False
-        self._startTimer()
 
     def _startTimer(self) -> None:
         def setFlagToFalse() -> None:

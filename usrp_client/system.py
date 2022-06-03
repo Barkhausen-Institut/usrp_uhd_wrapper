@@ -72,7 +72,7 @@ class System:
     syncTimeOut = 20 * 60.0  # every 20 minutes
 
     def __init__(self) -> None:
-        self._usrpClients: Dict[str, LabeledUsrp] = {}
+        self.__usrpClients: Dict[str, LabeledUsrp] = {}
         self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
 
     def createUsrpClient(self, ip: str) -> UsrpClient:
@@ -102,24 +102,24 @@ class System:
             usrpName (str): Identifier of the USRP to be added.
         """
         self._usrpsSynced.reset()
-        self._assertUniqueUsrp(ip, usrpName)
+        self.__assertUniqueUsrp(ip, usrpName)
 
         usrpClient = self.createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
         usrpClient.resetStreamingConfigs()
-        self._usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
+        self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
 
-    def _assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
-        self._assertUniqueUsrpName(usrpName)
-        self._assertUniqueIp(ip)
+    def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
+        self.__assertUniqueUsrpName(usrpName)
+        self.__assertUniqueIp(ip)
 
-    def _assertUniqueUsrpName(self, usrpName: str) -> None:
-        if usrpName in self._usrpClients.keys():
+    def __assertUniqueUsrpName(self, usrpName: str) -> None:
+        if usrpName in self.__usrpClients.keys():
             raise ValueError("Connection to USRP already exists!")
 
-    def _assertUniqueIp(self, ip: str) -> None:
-        for usrp in self._usrpClients.keys():
-            if self._usrpClients[usrp].ip == ip:
+    def __assertUniqueIp(self, ip: str) -> None:
+        for usrp in self.__usrpClients.keys():
+            if self.__usrpClients[usrp].ip == ip:
                 raise ValueError("Connection to USRP already exists!")
 
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
@@ -131,7 +131,7 @@ class System:
             usrpName (str): Identifier of USRP.
             txStreamingConfig (TxStreamingConfig): Desired configuration.
         """
-        self._usrpClients[usrpName].client.configureTx(txStreamingConfig)
+        self.__usrpClients[usrpName].client.configureTx(txStreamingConfig)
         logging.info(f"Configured TX Streaming for USRP: {usrpName}.")
 
     def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
@@ -143,7 +143,7 @@ class System:
             usrpName (str): Identifier of USRP.
             rxStreamingConfig (RxStreamingConfig): Desired configuration.
         """
-        self._usrpClients[usrpName].client.configureRx(rxStreamingConfig)
+        self.__usrpClients[usrpName].client.configureRx(rxStreamingConfig)
         logging.info(f"Configured RX streaming for USRP: {usrpName}.")
 
     def getRfConfigs(self) -> Dict[str, RfConfig]:
@@ -155,8 +155,8 @@ class System:
                 Values are the Radio Frontend configurations.
         """
         return {
-            usrpName: self._usrpClients[usrpName].client.getRfConfig()
-            for usrpName in self._usrpClients.keys()
+            usrpName: self.__usrpClients[usrpName].client.getRfConfig()
+            for usrpName in self.__usrpClients.keys()
         }
 
     def execute(self) -> None:
@@ -164,13 +164,13 @@ class System:
 
         Samples are buffered, timeouts are calculated, Usrps are synchronized...
         """
-        self._synchronizeUsrps()
-        baseTimeSec = self._calculateBaseTimeSec()
+        self.__synchronizeUsrps()
+        baseTimeSec = self.__calculateBaseTimeSec()
         logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
-        for usrpName in self._usrpClients.keys():
-            self._usrpClients[usrpName].client.execute(baseTimeSec)
+        for usrpName in self.__usrpClients.keys():
+            self.__usrpClients[usrpName].client.execute(baseTimeSec)
 
-    def _synchronizeUsrps(self) -> None:
+    def __synchronizeUsrps(self) -> None:
         if self._usrpsSynced.isSet():
             return
 
@@ -179,7 +179,7 @@ class System:
             return
 
         for _ in range(System.syncAttempts):
-            self._setTimeToZeroNextPps()
+            self.__setTimeToZeroNextPps()
             if self.synchronisationValid():
                 self._usrpsSynced.set()
                 return
@@ -187,23 +187,23 @@ class System:
         raise RuntimeError(f"Tried at least {self.syncAttempts} syncing wihout succes.")
 
     def synchronisationValid(self) -> bool:
-        currentFpgaTimes = self._getCurrentFpgaTimes()
+        currentFpgaTimes = self.__getCurrentFpgaTimes()
         return (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
             < System.syncThresholdSec
         )
 
-    def _setTimeToZeroNextPps(self) -> None:
-        for usrp in self._usrpClients.keys():
-            self._usrpClients[usrp].client.setTimeToZeroNextPps()
+    def __setTimeToZeroNextPps(self) -> None:
+        for usrp in self.__usrpClients.keys():
+            self.__usrpClients[usrp].client.setTimeToZeroNextPps()
             logging.info("Set time to zero for PPS.")
         self.sleep(1.1)
 
     def sleep(self, delay: float) -> None:
         time.sleep(delay)
 
-    def _calculateBaseTimeSec(self) -> float:
-        currentFpgaTimesSec = self._getCurrentFpgaTimes()
+    def __calculateBaseTimeSec(self) -> float:
+        currentFpgaTimesSec = self.__getCurrentFpgaTimes()
         logging.info(
             f"For calculating the base time, I received the "
             f"following fpgaTimes: {currentFpgaTimesSec}"
@@ -211,9 +211,9 @@ class System:
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec
 
-    def _getCurrentFpgaTimes(self) -> List[int]:
+    def __getCurrentFpgaTimes(self) -> List[int]:
         return [
-            item.client.getCurrentFpgaTime() for _, item in self._usrpClients.items()
+            item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]
 
     def collect(self) -> Dict[str, List[MimoSignal]]:
@@ -229,9 +229,9 @@ class System:
                 The key represents the usrp identifier.
         """
         samples = {
-            key: item.client.collect() for key, item in self._usrpClients.items()
+            key: item.client.collect() for key, item in self.__usrpClients.items()
         }
-        self._assertNoClippedValues(samples)
+        self.__assertNoClippedValues(samples)
         return samples
 
     def getSupportedSamplingRates(self, usrpName: str) -> np.ndarray:
@@ -243,9 +243,9 @@ class System:
         Returns:
             np.ndarray: Array of supported sampling rates.
         """
-        return self._usrpClients[usrpName].client.getSupportedSamplingRates()
+        return self.__usrpClients[usrpName].client.getSupportedSamplingRates()
 
-    def _assertNoClippedValues(self, samples: Dict[str, List[MimoSignal]]) -> None:
+    def __assertNoClippedValues(self, samples: Dict[str, List[MimoSignal]]) -> None:
         for usrpName, usrpConfigSamples in samples.items():
             if any(
                 containsClippedValue(mimoSignal) for mimoSignal in usrpConfigSamples

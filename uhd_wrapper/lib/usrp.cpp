@@ -259,15 +259,15 @@ double Usrp::getCurrentFpgaTime() {
 
 void Usrp::execute(const double baseTime) {
     receivedSamples_ = {{{}}};
-    if (!ppsSetToZero_) {
+    /*if (!ppsSetToZero_) {
         throw UsrpException("Synchronization must happen before execution.");
-    } else {
-        transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
-                                      std::ref(transmitThreadException_));
-        receiveThread_ = std::thread(&Usrp::receive, this, baseTime,
-                                     std::ref(receivedSamples_),
-                                     std::ref(receiveThreadException_));
-    }
+    } else {*/
+    transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
+                                  std::ref(transmitThreadException_));
+    receiveThread_ =
+        std::thread(&Usrp::receive, this, baseTime, std::ref(receivedSamples_),
+                    std::ref(receiveThreadException_));
+    //}
 }
 
 std::vector<MimoSignal> Usrp::collect() {

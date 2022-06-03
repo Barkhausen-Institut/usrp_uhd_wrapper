@@ -74,6 +74,8 @@ class FakeSystem(System):
         self._usrpsSynced = resyncFlag
         self.mockUsrps = [self.addNewUsrp() for _ in range(noUsrps)]
 
+    synchronisationValid: Mock
+
     def addNewUsrp(self) -> Mock:
         self.__noUsrps += 1
         mockedUsrp = Mock(spec=UsrpClient)

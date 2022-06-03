@@ -65,7 +65,7 @@ class FakeSystem(System):
         resyncFlag: TimedFlag = FakedTimeFlag(0.0),
         mockSyncValid: bool = True,
     ) -> None:
-        System.__init__(self)
+        super().__init__()
         self.__noUsrps = 0
         self.createUsrpClient = Mock(side_effect=[])  # type: ignore
         self.sleep = Mock(spec=System.sleep)  # type: ignore

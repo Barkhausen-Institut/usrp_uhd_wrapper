@@ -24,6 +24,7 @@ class TimedFlag:
     def __init__(self, resetTimeSec: float) -> None:
         self._resetTimeSec = resetTimeSec
         self._value = False
+        self.__resetSyncFlagTimer = Timer(10.0, lambda: None)
 
     def set(self) -> None:
         self._value = True
@@ -37,9 +38,10 @@ class TimedFlag:
         def setFlagToFalse() -> None:
             self._value = False
 
-        resetSyncFlagTimer = Timer(self._resetTimeSec, setFlagToFalse)
-        resetSyncFlagTimer.daemon = True
-        resetSyncFlagTimer.start()
+        self.__resetSyncFlagTimer.cancel()
+        self.__resetSyncFlagTimer = Timer(self._resetTimeSec, setFlagToFalse)
+        self.__resetSyncFlagTimer.daemon = True
+        self.__resetSyncFlagTimer.start()
 
     def isSet(self) -> bool:
         return self._value

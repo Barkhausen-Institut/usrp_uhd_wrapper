@@ -55,7 +55,6 @@ class Usrp : public UsrpInterface {
     uhd::rx_streamer::sptr rxStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
-    bool ppsSetToZero_ = false;
     std::thread transmitThread_;
     std::thread receiveThread_;
     mutable std::recursive_mutex fpgaAccessMutex_;

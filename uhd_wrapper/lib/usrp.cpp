@@ -250,9 +250,10 @@ uint64_t Usrp::getCurrentSystemTime() {
 
 double Usrp::getCurrentFpgaTime() {
     std::scoped_lock lock(fpgaAccessMutex_);
-    if (!ppsSetToZero_) {
-        setTimeToZeroNextPpsThread_.join();
-    }
+    /*if (!ppsSetToZero_) {
+        if (setTimeToZeroNextPpsThread_.joinable())
+            setTimeToZeroNextPpsThread_.join();
+    }*/
     return usrpDevice_->get_time_now().get_real_secs();
 }
 

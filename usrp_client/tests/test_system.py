@@ -76,7 +76,7 @@ class FakeSystem(System):
 
     def addNewUsrp(self) -> Mock:
         self.__noUsrps += 1
-        mockedUsrp = Mock(sec=UsrpClient)
+        mockedUsrp = Mock(spec=UsrpClient)
         mockedUsrp = self.__mockUsrpFunctions(mockedUsrp)
         self.createUsrpClient.side_effect = list(  # type: ignore
             self.createUsrpClient.side_effect  # type: ignore

@@ -184,6 +184,13 @@ class TestSynchronisationValid(unittest.TestCase):
         )
         self.assertFalse(self.system.synchronisationValid())
 
+    def test_syncValidWhenFpgaTimesAreClose(self) -> None:
+        self.system.mockUsrps[0].getCurrentFpgaTime.return_value = 3.0
+        self.system.mockUsrps[0].getCurrentFpgaTime.return_value = (
+            3.0 + System.syncThresholdSec - 0.1
+        )
+        self.assertTrue(self.system.synchronisationValid())
+
 
 class TestSyncRecheck(unittest.TestCase):
     def setUp(self) -> None:

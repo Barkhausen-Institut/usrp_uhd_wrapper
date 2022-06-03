@@ -199,8 +199,8 @@ class TestSyncRecheck(unittest.TestCase):
         self.system = FakeSystem(2, TimedFlag(resetTimeSec=self.syncTimeOut))
 
     def test_recheckSyncAfterSomeTime_syncValidAfterFirstAttempt(self) -> None:
-        time.sleep(self.syncTimeOut - 0.2)
         self.system.execute()
+        time.sleep(self.syncTimeOut - 0.2)
         self.system.synchronisationValid.assert_called_once()
         self.system.synchronisationValid.reset_mock()
 
@@ -210,8 +210,8 @@ class TestSyncRecheck(unittest.TestCase):
         self.assertEqual(self.system.synchronisationValid.call_count, 2)
 
     def test_recheckSyncAfterSomeTime_syncValidAfterSecondAttempt(self) -> None:
-        time.sleep(self.syncTimeOut - 0.2)
         self.system.execute()
+        time.sleep(self.syncTimeOut - 0.2)
         self.system.synchronisationValid.assert_called_once()
         self.system.synchronisationValid.reset_mock()
 

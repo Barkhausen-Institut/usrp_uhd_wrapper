@@ -25,6 +25,7 @@ RfConfig Usrp::getRfConfig() const {
 
 void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
+    configureRxStreamer(getRfConfig());
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
             std::move(rxStreamingConfigs_);
@@ -44,20 +45,18 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                                     MimoSignal &buffer, const double baseTime) {
     buffer = MimoSignal((size_t)rfConfig_.noRxAntennas,
                         samples_vec((size_t)config.noSamples, sample(0, 0)));
-
     uhd::stream_cmd_t streamCmd =
         uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
     streamCmd.num_samps = config.noSamples;
     streamCmd.stream_now = false;
     streamCmd.time_spec = uhd::time_spec_t(baseTime + config.receiveTimeOffset);
-    rxStreamer_->issue_stream_cmd(streamCmd);
 
+    rxStreamer_->issue_stream_cmd(streamCmd);
     uhd::rx_metadata_t mdRx;
     double timeout =
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
     size_t totalSamplesRecvd = 0;
     size_t maxPacketSize = rxStreamer_->get_max_num_samps();
-
     while (totalSamplesRecvd < config.noSamples) {
         std::vector<sample *> buffers;
         for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;

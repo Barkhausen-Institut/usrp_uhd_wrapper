@@ -229,14 +229,11 @@ void Usrp::setTimeToZeroNextPps() {
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {
     std::scoped_lock lock(fpgaAccessMutex_);
-    ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
-    configureRxStreamer(rfConfig_);
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
-    ppsSetToZero_ = true;
 }
 
 uint64_t Usrp::getCurrentSystemTime() {
@@ -249,24 +246,18 @@ uint64_t Usrp::getCurrentSystemTime() {
 
 double Usrp::getCurrentFpgaTime() {
     std::scoped_lock lock(fpgaAccessMutex_);
-    /*if (!ppsSetToZero_) {
-        if (setTimeToZeroNextPpsThread_.joinable())
-            setTimeToZeroNextPpsThread_.join();
-    }*/
     return usrpDevice_->get_time_now().get_real_secs();
 }
 
 void Usrp::execute(const double baseTime) {
+    if (setTimeToZeroNextPpsThread_.joinable())
+        setTimeToZeroNextPpsThread_.join();
     receivedSamples_ = {{{}}};
-    /*if (!ppsSetToZero_) {
-        throw UsrpException("Synchronization must happen before execution.");
-    } else {*/
     transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
                                   std::ref(transmitThreadException_));
     receiveThread_ =
         std::thread(&Usrp::receive, this, baseTime, std::ref(receivedSamples_),
                     std::ref(receiveThreadException_));
-    //}
 }
 
 std::vector<MimoSignal> Usrp::collect() {

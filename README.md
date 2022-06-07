@@ -1,6 +1,10 @@
 # Purpose
 
-This repo wraps the UHD for our X410. It contains the **client as well as the server**. The client is to be used by the user for signal processing purposes and sending the commands to the USRP, which serves as a server.
+This repo wraps the [Universal Hardware Driver](https://github.com/EttusResearch/uhd) (UHD) for [Ettus USRP X410](https://www.ni.com/de-de/support/model.ettus-usrp-x410.html). Since the authors of UHD point out that the driver is device-independent, this wrapper should support other USRPs out-of-the-box as well. It is to be noted that the configuration is different for the USRPs, therefore, some modifications most likely need to be made for other USRPs
+
+We cover the following use-case: The USRP can be used with the full-mimo setup, i.e. four transmitting and four receiving antennas. The user creates the signal on its laptop, sends them to the USRP via network and collects the received samples. Post-processing happens on the laptop of the user.
+
+This repository contains the **client as well as the server code**. The client is to be used by the user for signal processing purposes and sending the commands to the USRP, which serves as a server. The server code is to be deployed on the USRP. Once built and installed, the USRP does not need to be touched again.
 
 # Documentation
 
@@ -10,7 +14,7 @@ Read this in conjunction with our example files located in **examples/**!
 
 # Install
 
-On the usrp (server):
+For installing the server on the USRP (needs to be done only once per USRP):
 
 1. `git clone <this repo> && cd <repo>`
 2. `python3 -m venv env && . env/bin/activate`
@@ -22,7 +26,7 @@ On the usrp (server):
 8. `make install`
 9. `ctest -V` to check if the tests pass
 
-To start the usrp server as a service, run: `systemctl enable rpc-server.service`
+To start the usrp server as a service, run: `systemctl enable rpc-server.service`. Restart.
 
 For the client:
 
@@ -34,7 +38,7 @@ For the client:
 
 # Before Use
 
-We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., Jcas, Localtransmssion, p2p...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding ip need to be set. Execute the command `pytest .` or, if you just want to execute the hardware stuff: `pytest . -m "hardware"`. **It is highly recommend to execute these tests before doing your measurements**:
+We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., joint communication and sensing, local transmission, peer-to-peer-transmission...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding IP need to be set. Execute the command `pytest .` or, if you just want to execute the hardware stuff: `pytest . -m "hardware"`. **It is highly recommended to execute these tests before doing your measurements**:
 
 On client side:
 
@@ -47,13 +51,11 @@ $ pytest .
 
 # Use
 
-After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. RF config, samples, etc.) to the usrp server. The `uhd_wrapper.utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
-The examples below will explain its usage until further documentaiton will follows.
-
+After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. radio frontend (RF) config, samples, etc.) to the USRP server. The `uhd_wrapper.utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
 
 ## Examples
 
-The **examples** directory contains two examples. In each example file, we will print when the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. **Port 5555 is being used.** We add the option to plot signals. Examples should be self-explanatory.
+The **examples** directory contains some examples. In each example file, we will print if the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. **Port 5555 is used.** We add the option to plot signals. Examples should be self-explanatory.
 
 **usrp_p2p_transmission**: Sends random signal from Usrp1 to Usrp2, check file.
 

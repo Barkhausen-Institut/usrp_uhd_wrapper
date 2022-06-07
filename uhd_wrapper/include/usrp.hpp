@@ -93,6 +93,7 @@ class Usrp : public UsrpInterface {
 
     // remaining functions
     void setTimeToZeroNextPpsThreadFunction();
+    void waitOnThreadToJoin(std::thread&);
 };
 
 }  // namespace bi

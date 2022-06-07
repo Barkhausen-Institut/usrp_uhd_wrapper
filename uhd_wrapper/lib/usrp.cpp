@@ -220,8 +220,7 @@ void Usrp::setTimeToZeroNextPps() {
     // join previous thread to make sure it has properly ended. This is also
     // necessary to use op= below (it'll std::terminate() if not joined
     // before)
-    if (setTimeToZeroNextPpsThread_.joinable())
-        setTimeToZeroNextPpsThread_.join();
+    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
 
     setTimeToZeroNextPpsThread_ =
         std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
@@ -248,15 +247,13 @@ uint64_t Usrp::getCurrentSystemTime() {
 
 double Usrp::getCurrentFpgaTime() {
     std::scoped_lock lock(fpgaAccessMutex_);
-    if (setTimeToZeroNextPpsThread_.joinable())
-        setTimeToZeroNextPpsThread_.join();
+    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
 
     return usrpDevice_->get_time_now().get_real_secs();
 }
 
 void Usrp::execute(const double baseTime) {
-    if (setTimeToZeroNextPpsThread_.joinable())
-        setTimeToZeroNextPpsThread_.join();
+    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
     receivedSamples_ = {{{}}};
     transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
                                   std::ref(transmitThreadException_));
@@ -266,8 +263,8 @@ void Usrp::execute(const double baseTime) {
 }
 
 std::vector<MimoSignal> Usrp::collect() {
-    transmitThread_.join();
-    receiveThread_.join();
+    waitOnThreadToJoin(transmitThread_);
+    waitOnThreadToJoin(receiveThread_);
     if (transmitThreadException_)
         std::rethrow_exception(transmitThreadException_);
     if (receiveThreadException_)
@@ -293,6 +290,10 @@ void Usrp::setRxSamplingRate(const double samplingRate,
     usrpDevice_->set_rx_rate(samplingRate, idxRxAntenna);
     double actualSamplingRate = usrpDevice_->get_rx_rate(idxRxAntenna);
     assertSamplingRate(actualSamplingRate, masterClockRate_);
+}
+
+void Usrp::waitOnThreadToJoin(std::thread &t) {
+    if (t.joinable()) t.join();
 }
 
 }  // namespace bi

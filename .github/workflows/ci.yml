@@ -1,0 +1,49 @@
+name: usrp_uhd_wrapper
+
+on: [push, pull_request]
+
+jobs:
+  Testing_and_Deployment:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Install System Dependencies
+      run: |
+        export DEBIAN_FRONTEND=noninteractive
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends software-properties-common
+        sudo add-apt-repository ppa:ettusresearch/uhd
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev python3-wheel
+
+    - name: Setup python environment
+      run: |
+        python3.9 -m venv .venv
+        . .venv/bin/activate
+        pip install wheel
+        pip install -e .
+        pip install -r requirements_tests.txt
+    
+    - name: Build source code
+      run: |
+        cd uhd_wrapper
+        mkdir build && cd build
+        cmake ..
+        make && make install
+
+    - name: Run tests
+      run: |
+        ctest -V
+        cd ../../
+        pytest .
+
+    - name: Create Documentation
+      run: |
+        cd docs && pip install -r ../requirements_doc.txt && cd ..
+        cd docs && make api && cd ..
+        sphinx-build docs public
+    - name: Create github pages
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/head/main' }}
+      uses: JamesIves/github-pages-deploy-action@4.1.2
+      with:
+        branch: gh-pages
+        folder: docs/html

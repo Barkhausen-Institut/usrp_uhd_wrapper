@@ -14,4 +14,8 @@ add_subdirectory(debug)
 
 enable_testing()
 
-install(FILES ${CMAKE_SOURCE_DIR}/../rpc-server.service DESTINATION /etc/systemd/system/)
+# only copy service file if we are on the USRP
+execute_process(COMMAND bash -c "systemctl is-active usrp-hwd.service" OUTPUT_VARIABLE onUsrp OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(${onUsrp} STREQUAL "active")
+    install(FILES ${CMAKE_SOURCE_DIR}/../rpc-server.service DESTINATION /etc/systemd/system/)
+endif()

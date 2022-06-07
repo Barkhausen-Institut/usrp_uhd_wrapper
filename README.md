@@ -92,3 +92,9 @@ In the `snippets` directory, snippets can be found. As the testing capabilities 
 We also have a **debug** folder that contains some files to be used for debugging:
 
 - tx_stream: streams white noise (mean 0, std 2) that may be analysed with the specci. **note**: undeflow occurs, i.e. samples are not buffered fast enough into the fpga. No clue how this can be fixed. however, we hope that the results are still valid...
+
+
+# Change History
+
+- `0.0-siso-jcas`: One antenna for transmitting and receiving is supported. Further, we support receiving and transmitting at one USRP with a second USRP receiving only. This covers the usecase of JCAS.
+- `0.1-mimo`: Full-fledged MIMO support.

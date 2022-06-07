@@ -1,7 +1,6 @@
 from typing import List, Tuple, Dict
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from usrp_client.system import System
 from uhd_wrapper.utils.config import (
@@ -14,6 +13,7 @@ from examples.helpers import (
     createRandom,
     readArgs,
     findFirstSampleInFrameOfSignal,
+    plotMimo,
 )
 
 
@@ -25,40 +25,6 @@ def printDelays(samples: Dict[str, List[MimoSignal]], txSignal: MimoSignal) -> N
         print(
             f"Transmitted signal at antenna {antIdx} from usrp1 starts at sample {txSignalStartUsrp2} in usrp2"
         )
-
-
-def plotOneAntenna(samples: MimoSignal, antIdx: int) -> None:
-    plt.plot(
-        np.arange(samples.signals[antIdx].size),
-        np.real(samples.signals[antIdx]),
-        label="real",
-    )
-    plt.plot(
-        np.arange(samples.signals[antIdx].size),
-        np.imag(samples.signals[antIdx]),
-        label="imag",
-    )
-    plt.legend()
-    plt.xlabel("Samples [#]")
-    plt.ylabel("Value")
-    plt.title(f"Received samples, time domain, antenna {antIdx+1}")
-
-
-def plot(samples: Dict[str, List[MimoSignal]]) -> None:
-    recvdMimoSignal = samples["usrp2"][0]
-
-    plt.subplot(221)
-    plotOneAntenna(recvdMimoSignal, 0)
-
-    plt.subplot(222)
-    plotOneAntenna(recvdMimoSignal, 1)
-
-    plt.subplot(223)
-    plotOneAntenna(recvdMimoSignal, 2)
-
-    plt.subplot(224)
-    plotOneAntenna(recvdMimoSignal, 3)
-    plt.show()
 
 
 def createSystem(
@@ -134,7 +100,7 @@ def main() -> None:
     printDelays(samples, unpaddedMimoSignals)
 
     if args.plot:
-        plot(samples)
+        plotMimo("usrp2", samples)
 
 
 if __name__ == "__main__":

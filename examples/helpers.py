@@ -59,7 +59,7 @@ def db(data: np.ndarray) -> np.ndarray:
     return 20 * np.log10(np.abs(data))
 
 
-def plot(samples: Dict[str, List[MimoSignal]]) -> None:
+def plotP2pSiso(samples: Dict[str, List[MimoSignal]]) -> None:
     samplesUsrp1 = samples["usrp1"][0].signals[0]
     samplesUsrp2 = samples["usrp2"][0].signals[0]
     rxSpectrumUsrp1 = np.fft.fftshift(np.fft.fft(samplesUsrp1))
@@ -67,16 +67,10 @@ def plot(samples: Dict[str, List[MimoSignal]]) -> None:
     rxSpectrumUsrp2 = np.fft.fftshift(np.fft.fft(samplesUsrp2))
     freq = np.linspace(-0.5, 0.5, samplesUsrp1.size, endpoint=False)
     plt.subplot(221)
-    plt.plot(np.arange(samplesUsrp1.size), samplesUsrp1)
-    plt.xlabel("Samples [#]")
-    plt.ylabel("Value")
-    plt.title("Usrp1, received samples, time")
+    plotOneAntenna(samples["usrp1"][0], 0, "usrp1")
 
     plt.subplot(222)
-    plt.plot(np.arange(samplesUsrp1.size), samplesUsrp2)
-    plt.xlabel("Samples [#]")
-    plt.ylabel("Value")
-    plt.title("Usrp2, received samples, time")
+    plotOneAntenna(samples["usrp2"][0], 0, "usrp2")
 
     plt.subplot(223)
     plt.plot(freq, db(rxSpectrumUsrp1))
@@ -89,4 +83,38 @@ def plot(samples: Dict[str, List[MimoSignal]]) -> None:
     plt.xlabel("Frequency / fs")
     plt.ylabel("Power [dB]")
     plt.title("Spectrum USRP2")
+    plt.show()
+
+
+def plotOneAntenna(samples: MimoSignal, antIdx: int, usrpName: str) -> None:
+    plt.plot(
+        np.arange(samples.signals[antIdx].size),
+        np.real(samples.signals[antIdx]),
+        label="real",
+    )
+    plt.plot(
+        np.arange(samples.signals[antIdx].size),
+        np.imag(samples.signals[antIdx]),
+        label="imag",
+    )
+    plt.legend()
+    plt.xlabel("Samples [#]")
+    plt.ylabel("Value")
+    plt.title(f"Received samples, time domain, antenna {antIdx+1} on {usrpName}")
+
+
+def plotMimo(samples: Dict[str, List[MimoSignal]], usrpName: str) -> None:
+    recvdMimoSignal = samples[usrpName][0]
+
+    plt.subplot(221)
+    plotOneAntenna(recvdMimoSignal, 0)
+
+    plt.subplot(222)
+    plotOneAntenna(recvdMimoSignal, 1)
+
+    plt.subplot(223)
+    plotOneAntenna(recvdMimoSignal, 2)
+
+    plt.subplot(224)
+    plotOneAntenna(recvdMimoSignal, 3)
     plt.show()

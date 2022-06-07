@@ -9,7 +9,7 @@ from uhd_wrapper.utils.config import (
     RxStreamingConfig,
     MimoSignal,
 )
-from examples.helpers import createRandom, printDelays, plot, readArgs
+from examples.helpers import createRandom, printDelays, plotP2pSiso, readArgs
 
 
 def createSystem(
@@ -101,7 +101,7 @@ def main() -> None:
 
         printDelays(samples, txSignal)
         if args.plot:
-            plot(samples)
+            plotP2pSiso(samples)
             break
 
 

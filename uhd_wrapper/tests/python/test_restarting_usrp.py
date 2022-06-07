@@ -6,12 +6,15 @@ from uhd_wrapper.rpc_server.reconfigurable_usrp import RestartingUsrp
 
 class TestUsrpStarts(unittest.TestCase):
     def setUp(self) -> None:
-        sleepPatcher = patch("time.sleep", return_value=None)
-        _ = sleepPatcher.start()
+        self.sleepPatcher = patch("time.sleep", return_value=None)
+        _ = self.sleepPatcher.start()
         usrpFactoryPatcher = patch(
             "uhd_wrapper.usrp_pybinding.createUsrp", return_value=Mock()
         )
         self.mockedUsrpFactoryFunction = usrpFactoryPatcher.start()
+
+    def tearDown(self) -> None:
+        self.sleepPatcher.stop()
 
     def test_initCreatesUsrp(self) -> None:
         IP = "myIp"

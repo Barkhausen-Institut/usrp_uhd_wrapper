@@ -25,6 +25,7 @@ RfConfig Usrp::getRfConfig() const {
 
 void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
+    if (!rxStreamer_) configureRxStreamer(getRfConfig());
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
             std::move(rxStreamingConfigs_);
@@ -44,20 +45,18 @@ void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                                     MimoSignal &buffer, const double baseTime) {
     buffer = MimoSignal((size_t)rfConfig_.noRxAntennas,
                         samples_vec((size_t)config.noSamples, sample(0, 0)));
-
     uhd::stream_cmd_t streamCmd =
         uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
     streamCmd.num_samps = config.noSamples;
     streamCmd.stream_now = false;
     streamCmd.time_spec = uhd::time_spec_t(baseTime + config.receiveTimeOffset);
-    rxStreamer_->issue_stream_cmd(streamCmd);
 
+    rxStreamer_->issue_stream_cmd(streamCmd);
     uhd::rx_metadata_t mdRx;
     double timeout =
         (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
     size_t totalSamplesRecvd = 0;
     size_t maxPacketSize = rxStreamer_->get_max_num_samps();
-
     while (totalSamplesRecvd < config.noSamples) {
         std::vector<sample *> buffers;
         for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
@@ -232,8 +231,7 @@ void Usrp::setTimeToZeroNextPps() {
     // join previous thread to make sure it has properly ended. This is also
     // necessary to use op= below (it'll std::terminate() if not joined
     // before)
-    if (setTimeToZeroNextPpsThread_.joinable())
-        setTimeToZeroNextPpsThread_.join();
+    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
 
     setTimeToZeroNextPpsThread_ =
         std::thread(&Usrp::setTimeToZeroNextPpsThreadFunction, this);
@@ -241,14 +239,13 @@ void Usrp::setTimeToZeroNextPps() {
 
 void Usrp::setTimeToZeroNextPpsThreadFunction() {
     std::scoped_lock lock(fpgaAccessMutex_);
-    ppsSetToZero_ = false;
     usrpDevice_->set_time_next_pps(uhd::time_spec_t(0.f));
-    configureRxStreamer(rfConfig_);
     // wait for next pps
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
-    ppsSetToZero_ = true;
+    rxStreamer_
+        .reset();  // cf. issue https://github.com/EttusResearch/uhd/issues/593
 }
 
 uint64_t Usrp::getCurrentSystemTime() {
@@ -261,28 +258,27 @@ uint64_t Usrp::getCurrentSystemTime() {
 
 double Usrp::getCurrentFpgaTime() {
     std::scoped_lock lock(fpgaAccessMutex_);
-    if (!ppsSetToZero_) {
-        setTimeToZeroNextPpsThread_.join();
-    }
+    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
+
     return usrpDevice_->get_time_now().get_real_secs();
 }
 
 void Usrp::execute(const double baseTime) {
+    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
     receivedSamples_ = {{{}}};
-    if (!ppsSetToZero_) {
-        throw UsrpException("Synchronization must happen before execution.");
-    } else {
+
+    if (txStreamingConfigs_.size() > 0)
         transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
                                       std::ref(transmitThreadException_));
+    if (rxStreamingConfigs_.size() > 0)
         receiveThread_ = std::thread(&Usrp::receive, this, baseTime,
                                      std::ref(receivedSamples_),
                                      std::ref(receiveThreadException_));
-    }
 }
 
 std::vector<MimoSignal> Usrp::collect() {
-    transmitThread_.join();
-    receiveThread_.join();
+    waitOnThreadToJoin(transmitThread_);
+    waitOnThreadToJoin(receiveThread_);
     if (transmitThreadException_)
         std::rethrow_exception(transmitThreadException_);
     if (receiveThreadException_)
@@ -308,6 +304,10 @@ void Usrp::setRxSamplingRate(const double samplingRate,
     usrpDevice_->set_rx_rate(samplingRate, idxRxAntenna);
     double actualSamplingRate = usrpDevice_->get_rx_rate(idxRxAntenna);
     assertSamplingRate(actualSamplingRate, masterClockRate_);
+}
+
+void Usrp::waitOnThreadToJoin(std::thread &t) {
+    if (t.joinable()) t.join();
 }
 
 }  // namespace bi

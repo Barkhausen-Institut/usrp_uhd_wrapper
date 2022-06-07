@@ -2,6 +2,7 @@ import logging
 from typing import Dict, List
 import time
 from collections import namedtuple
+from threading import Timer
 
 import zerorpc
 import numpy as np
@@ -17,6 +18,32 @@ from usrp_client.rpc_client import UsrpClient
 
 
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
+
+
+class TimedFlag:
+    def __init__(self, resetTimeSec: float) -> None:
+        self._resetTimeSec = resetTimeSec
+        self._value = False
+        self.__resetSyncFlagTimer = Timer(10.0, lambda: None)
+
+    def set(self) -> None:
+        self._value = True
+        self._startTimer()
+
+    def reset(self) -> None:
+        self._value = False
+
+    def _startTimer(self) -> None:
+        def setFlagToFalse() -> None:
+            self._value = False
+
+        self.__resetSyncFlagTimer.cancel()
+        self.__resetSyncFlagTimer = Timer(self._resetTimeSec, setFlagToFalse)
+        self.__resetSyncFlagTimer.daemon = True
+        self.__resetSyncFlagTimer.start()
+
+    def isSet(self) -> bool:
+        return self._value
 
 
 class System:
@@ -35,16 +62,18 @@ class System:
             USRPs. For development use mainly. Do not change. Default value: 0.2s.
         syncAttempts (int): Specifies number of synchronization attemps for USRP system.
         timeBetweenSyncAttempts (float): Sleep time between two synchronisation attempts in s.
+        syncTimeOut (float): Timeout of synchronisation.
     """
 
     syncThresholdSec = 0.2
     baseTimeOffsetSec = 0.2
     syncAttempts = 3
     timeBetweenSyncAttempts = 0.3
+    syncTimeOut = 20 * 60.0  # every 20 minutes
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
-        self.__usrpsSynced = False
+        self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
 
     def createUsrpClient(self, ip: str) -> UsrpClient:
         """Connect to the USRP server. Developers only.
@@ -72,13 +101,13 @@ class System:
             ip (str): IP of the USRP.
             usrpName (str): Identifier of the USRP to be added.
         """
+        self._usrpsSynced.reset()
         self.__assertUniqueUsrp(ip, usrpName)
 
         usrpClient = self.createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
         usrpClient.resetStreamingConfigs()
         self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
-        self.__usrpsSynced = False
 
     def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
         self.__assertUniqueUsrpName(usrpName)
@@ -142,21 +171,22 @@ class System:
             self.__usrpClients[usrpName].client.execute(baseTimeSec)
 
     def __synchronizeUsrps(self) -> None:
-        if not self.__usrpsSynced:
-            logging.info("Synchronizing...")
-            for _ in range(System.syncAttempts):
-                self.__setTimeToZeroNextPps()
-                if self.__synchronisationValid():
-                    self.__usrpsSynced = True
-                    break
-                else:
-                    time.sleep(System.timeBetweenSyncAttempts)
+        if self._usrpsSynced.isSet():
+            return
 
-        if not self.__usrpsSynced:
-            raise RuntimeError("Could not synchronize. Tried three times...")
+        if self.synchronisationValid():
+            self._usrpsSynced.set()
+            return
 
-    def __synchronisationValid(self) -> bool:
-        logging.info("Successfully synchronised USRPs...")
+        for _ in range(System.syncAttempts):
+            self.__setTimeToZeroNextPps()
+            if self.synchronisationValid():
+                self._usrpsSynced.set()
+                return
+            self.sleep(System.timeBetweenSyncAttempts)
+        raise RuntimeError(f"Tried at least {self.syncAttempts} syncing wihout succes.")
+
+    def synchronisationValid(self) -> bool:
         currentFpgaTimes = self.__getCurrentFpgaTimes()
         return (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
@@ -167,7 +197,10 @@ class System:
         for usrp in self.__usrpClients.keys():
             self.__usrpClients[usrp].client.setTimeToZeroNextPps()
             logging.info("Set time to zero for PPS.")
-        time.sleep(1.1)
+        self.sleep(1.1)
+
+    def sleep(self, delay: float) -> None:
+        time.sleep(delay)
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()

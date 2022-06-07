@@ -80,18 +80,9 @@ Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well. If 
 
 ## hardware_tests
 
-We have some hardware tests, for testing/debugging purposes mainly. **However, we hve one test with transmits a chirp localhost**. This code is to be run on the USRP directly and uses the python binding of the UHD wrapper. Call on the usrp:
+We have some hardware tests, for testing/debugging purposes mainly. Samples are dumped as well for better analysis. They are to be run from the usrp directly. Files are located in the **hardware_tests** folder.
 
-```bash
-$ cd <repo>
-$ . env/bin/activate
-$ cd uhd_wrapper
-$ python hardware_tests/transmit_chirp_localhost.py --bandwidth <bandwidth> --carrier-frequency <carrier-frequency>
-```
-
-`bandwidth` denotes the bandwidth of the chirp, starting at `f0 = bandwidth/2` until `f1 = bandwidth/2`.
-
-**Note**: The Usrp should be stopped for this purpose!
+**Note**: The Usrp service should be stopped for this purpose!
 
 
 # For Developers

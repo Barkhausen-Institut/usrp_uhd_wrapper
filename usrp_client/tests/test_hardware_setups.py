@@ -214,21 +214,6 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
 
     def test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
-        # create signal
-        signalLength = 5000
-        signalStarts = [int(10e3), int(20e3), int(30e3), int(40e3)]
-        antTxSignals = [
-            createRandom(signalLength),
-            createRandom(signalLength),
-            createRandom(signalLength),
-            createRandom(signalLength),
-        ]
-        paddedAntTxSignals = []
-        for antSignal, signalStart in zip(antTxSignals, signalStarts):
-            s = np.zeros(int(60e3), dtype=np.complex64)
-            s[signalStart + np.arange(antSignal.size)] = antSignal
-            paddedAntTxSignals.append(s)
-
         # create setup
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=4)
         system = setup.connectUsrps()

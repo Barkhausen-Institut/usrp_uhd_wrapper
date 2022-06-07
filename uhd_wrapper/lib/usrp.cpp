@@ -255,11 +255,14 @@ double Usrp::getCurrentFpgaTime() {
 void Usrp::execute(const double baseTime) {
     waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
     receivedSamples_ = {{{}}};
-    transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
-                                  std::ref(transmitThreadException_));
-    receiveThread_ =
-        std::thread(&Usrp::receive, this, baseTime, std::ref(receivedSamples_),
-                    std::ref(receiveThreadException_));
+
+    if (txStreamingConfigs_.size() > 0)
+        transmitThread_ = std::thread(&Usrp::transmit, this, baseTime,
+                                      std::ref(transmitThreadException_));
+    if (rxStreamingConfigs_.size() > 0)
+        receiveThread_ = std::thread(&Usrp::receive, this, baseTime,
+                                     std::ref(receivedSamples_),
+                                     std::ref(receiveThreadException_));
 }
 
 std::vector<MimoSignal> Usrp::collect() {

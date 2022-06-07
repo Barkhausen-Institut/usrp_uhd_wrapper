@@ -2,13 +2,11 @@
 
 This repo wraps the UHD for our X410. It contains the **client as well as the server**. The client is to be used by the user for signal processing purposes and sending the commands to the USRP, which serves as a server.
 
-Current versions of server are running on 192.168.189.131/134. **If you want to run code as a client against USRPs, only use these USRPs at the moment.**
-
 # Documentation
 
 Documentation is auto-generated and can be found [here](https://barkhauseninstitut.gitlab.io/corola-infrastructure/usrp-x410/usrp_uhd_api/).
 
-Read this in conjunction with **examples/jcas.py**!
+Read this in conjunction with our example files located in **examples/**!
 
 # Install
 
@@ -31,24 +29,26 @@ For the client:
 1. Ensure that you use at least python3.9.
 2. Create and activate virtual env (on linux: `python -m venv env && . env/bin/activate`)
 3. `pip install -e .`
-4. **For running tests:** `pip install -r requirements_tests.txt && pytest usrp_client/`
-    - run `pytest . -m "not hardware"`
+4. **For running tests:** `pip install -r requirements_tests.txt`
 
-**Note on running tests:** We also provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., Jcas, Localtransmssion, p2p...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding ip need to be set and the respective servers must be started. Execute the command `pytest .` or, if you just want to execute the hardware stuff: `pytest . -m hardware`
+
+# Before Use
+
+We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., Jcas, Localtransmssion, p2p...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding ip need to be set. Execute the command `pytest .` or, if you just want to execute the hardware stuff: `pytest . -m "hardware"`. **It is highly recommend to execute these tests before doing your measurements**:
+
+On client side:
+
+```bash
+$ cd <repo>
+$ . env/bin/activate
+$ USRP1_IP=<usrp1-ip> USRP2_IP=<usrp2-ip> pytest . -m "hardware"
+$ pytest .
+```
 
 # Use
 
 After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. RF config, samples, etc.) to the usrp server. The `uhd_wrapper.utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
-
-We implemented a multidevice setup with SISO only. It is easily extendible however. The examples below will explain its usage until further documentaiton will follows.
-
-**Note**: Ensure that the usrp server is started:
-
-ssh to usrp.
-
-1. `cd <repo>`
-2. `. env/bin/activate`
-3. `python start_usrp_server.py`
+The examples below will explain its usage until further documentaiton will follows.
 
 
 ## Examples
@@ -101,6 +101,3 @@ In the `snippets` directory, snippets can be found. As the testing capabilities 
 We also have a **debug** folder that contains some files to be used for debugging:
 
 - tx_stream: streams white noise (mean 0, std 2) that may be analysed with the specci. **note**: undeflow occurs, i.e. samples are not buffered fast enough into the fpga. No clue how this can be fixed. however, we hope that the results are still valid...
-
-## Start usrp server
-

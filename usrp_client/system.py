@@ -192,6 +192,7 @@ class System:
         raise RuntimeError(f"Tried at least {self.syncAttempts} syncing wihout succes.")
 
     def synchronisationValid(self) -> bool:
+        """Returns true if synchronisation of the USRPs is valid."""
         currentFpgaTimes = self.__getCurrentFpgaTimes()
         return (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
@@ -205,6 +206,7 @@ class System:
         self.sleep(1.1)
 
     def sleep(self, delay: float) -> None:
+        """Let's the system sleep for `delay` seconds."""
         time.sleep(delay)
 
     def __calculateBaseTimeSec(self) -> float:

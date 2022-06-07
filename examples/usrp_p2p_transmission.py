@@ -62,9 +62,9 @@ def main() -> None:
     args = readArgs()
     system = createSystem(
         fc=args.carrier_frequency,
-        fs=245e6 / 2,
-        txGain=35,
-        rxGain=35,
+        fs=128.8e6,
+        txGain=30,
+        rxGain=30,
         ipUsrp1=args.usrp1_ip,
         ipUsrp2=args.usrp2_ip,
     )

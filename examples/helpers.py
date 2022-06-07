@@ -107,14 +107,14 @@ def plotMimo(samples: Dict[str, List[MimoSignal]], usrpName: str) -> None:
     recvdMimoSignal = samples[usrpName][0]
 
     plt.subplot(221)
-    plotOneAntenna(recvdMimoSignal, 0)
+    plotOneAntenna(recvdMimoSignal, 0, usrpName)
 
     plt.subplot(222)
-    plotOneAntenna(recvdMimoSignal, 1)
+    plotOneAntenna(recvdMimoSignal, 1, usrpName)
 
     plt.subplot(223)
-    plotOneAntenna(recvdMimoSignal, 2)
+    plotOneAntenna(recvdMimoSignal, 2, usrpName)
 
     plt.subplot(224)
-    plotOneAntenna(recvdMimoSignal, 3)
+    plotOneAntenna(recvdMimoSignal, 3, usrpName)
     plt.show()

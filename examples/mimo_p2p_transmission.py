@@ -23,7 +23,8 @@ def printDelays(samples: Dict[str, List[MimoSignal]], txSignal: MimoSignal) -> N
             samples["usrp2"][0].signals[antIdx], txSignal.signals[antIdx]
         )
         print(
-            f"Transmitted signal at antenna {antIdx} from usrp1 starts at sample {txSignalStartUsrp2} in usrp2"
+            f"Transmitted signal at antenna {antIdx} from usrp1 starts at"
+            f"sample {txSignalStartUsrp2} in usrp2"
         )
 
 
@@ -100,7 +101,7 @@ def main() -> None:
     printDelays(samples, unpaddedMimoSignals)
 
     if args.plot:
-        plotMimo("usrp2", samples)
+        plotMimo(samples, "usrp2")
 
 
 if __name__ == "__main__":

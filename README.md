@@ -76,7 +76,16 @@ $ python examples/jcas.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <c
 
 Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well. If `--plot` argument is omitted, the signal will be sent/received 10 times a row.
 
+**mimo_p2p_transmission**: Implements a 4x4 MIMO scenario.
+Usage:
 
+```bash
+$ cd <repo>
+$ . env/bin/activate
+$ python examples/mimo_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot
+```
+
+Creates four random signals, that are distributed to the antennas. They are shifted by 10k samples. Usrp2 receives the signals at four antennas.
 
 ## hardware_tests
 

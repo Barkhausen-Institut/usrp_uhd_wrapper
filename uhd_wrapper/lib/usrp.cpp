@@ -25,7 +25,7 @@ RfConfig Usrp::getRfConfig() const {
 
 void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
-    configureRxStreamer(getRfConfig());
+    if (!rxStreamer_) configureRxStreamer(getRfConfig());
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
             std::move(rxStreamingConfigs_);

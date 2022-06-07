@@ -144,6 +144,7 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
     }
 }
 void Usrp::setRfConfig(const RfConfig &conf) {
+    assertValidRfConfig(conf);
     std::scoped_lock lock(fpgaAccessMutex_);
 
     for (int idxRxAntenna = 0; idxRxAntenna < conf.noRxAntennas; idxRxAntenna++)
@@ -162,6 +163,15 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     configureTxStreamer(conf);
 
     rfConfig_ = getRfConfig();
+    if (rfConfig_ != conf) {
+        std::ostringstream confStream;
+        confStream << "Actual Rf Config:" << std::endl
+                   << rfConfig_ << std::endl
+                   << std::endl
+                   << "Requested Rf Config: " << conf << std::endl;
+        throw UsrpException("Request and actual Rf Config mismatch:\n " +
+                            confStream.str());
+    }
 }
 
 void Usrp::configureRxStreamer(const RfConfig &conf) {
@@ -203,7 +213,8 @@ void Usrp::setRfConfigForTxAntenna(const RfConfig &conf,
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
-    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL);
+    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL,
+                        rfConfig_.noTxAntennas);
     if (txStreamingConfigs_.size() > 0)
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
                                      GUARD_OFFSET_S_, rfConfig_.txSamplingRate);

@@ -49,8 +49,8 @@ struct RxStreamingConfig {
     double receiveTimeOffset;
 };
 
-// oerpators are overloaded for testing purposes
 bool operator==(const RfConfig& a, const RfConfig& b);
+bool operator!=(const RfConfig& a, const RfConfig& b);
 bool operator==(const TxStreamingConfig& a, const TxStreamingConfig& b);
 bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b);
 
@@ -67,7 +67,10 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
                                   const RxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
 
-void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples);
+void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
+                         const size_t noTxAntennas);
+
+void assertValidRfConfig(const RfConfig& conf);
 
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf);
 }  // namespace bi

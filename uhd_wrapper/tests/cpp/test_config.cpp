@@ -126,25 +126,64 @@ TEST_CASE("[ValidTxSignal]") {
     const size_t MAX_NUM_SAMPLES = (size_t)55e3;
     SECTION("SignalTooLong") {
         conf.samples = {samples_vec((size_t)56e3, sample(0, 0))};
-        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES),
+        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES,
+                                              conf.samples.size()),
                           UsrpException);
     }
     SECTION("OneSignalTooLong_TheOtherAreFine") {
         conf.samples = {samples_vec((size_t)65e3, sample(0, 0)),
                         samples_vec(10, sample(0, 0))};
-        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES),
+        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES,
+                                              conf.samples.size()),
                           UsrpException);
     }
     SECTION("SignalShorterThanMaxNumberSamples") {
         conf.samples = {samples_vec((size_t)10, sample(0, 0))};
-        REQUIRE_NOTHROW(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES));
+        REQUIRE_NOTHROW(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES,
+                                            conf.samples.size()));
     }
 
     SECTION("MimoSignalLengthsDiffer") {
         conf.samples = {samples_vec((size_t)100, sample(0, 0)),
                         samples_vec((size_t)200, sample(0.0))};
-        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES),
+        REQUIRE_THROWS_AS(assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES,
+                                              conf.samples.size()),
                           UsrpException);
+    }
+    SECTION("NoTxSignalMismatchesNoTxAntennas") {
+        conf.samples = {samples_vec((size_t)100, sample(0, 0)),
+                        samples_vec((size_t)200, sample(0.0))};
+        REQUIRE_THROWS_AS(
+            assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
+            UsrpException);
+    }
+
+    SECTION("NoSamplesProvided") {
+        conf.samples = {};
+        REQUIRE_THROWS_AS(
+            assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
+            UsrpException);
+    }
+}
+
+TEST_CASE("[ValidRfConfig]") {
+    RfConfig conf;
+    SECTION("NoTxAntennasTooLarge") {
+        conf.noTxAntennas = 5;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
+    }
+    SECTION("NoRxAntennasTooLarge") {
+        conf.noRxAntennas = 5;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
+    }
+
+    SECTION("NoTxAntennasZero") {
+        conf.noTxAntennas = 0;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
+    }
+    SECTION("NoRxAntennasZero") {
+        conf.noRxAntennas = 0;
+        REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
     }
 }
 }  // namespace bi

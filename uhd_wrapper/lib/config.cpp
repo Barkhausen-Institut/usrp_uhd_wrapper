@@ -1,6 +1,7 @@
+#include <iostream>
+
 #include "config.hpp"
 #include "usrp_exception.hpp"
-
 namespace bi {
 
 bool operator==(const RfConfig& a, const RfConfig& b) {
@@ -15,6 +16,8 @@ bool operator==(const RfConfig& a, const RfConfig& b) {
     equal &= a.rxSamplingRate == b.rxSamplingRate;
     return equal;
 }
+
+bool operator!=(const RfConfig& a, const RfConfig& b) { return !(a == b); }
 
 bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b) {
     bool equal = true;
@@ -70,9 +73,14 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
             "small.");
 }
 
-void assertValidTxSignal(const MimoSignal& antSamples,
-                         const size_t maxSamples) {
+void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
+                         const size_t noTxAntennas) {
+    size_t noSignals = antSamples.size();
+    if (noSignals == 0) throw UsrpException("No signal provided.");
     size_t lengthSignal = antSamples[0].size();
+    if (antSamples.size() != noTxAntennas)
+        throw UsrpException(
+            "The number of signals must match the number of tx antennas.");
     for (const auto& antSignal : antSamples) {
         if (antSignal.size() > maxSamples)
             throw UsrpException(
@@ -82,6 +90,18 @@ void assertValidTxSignal(const MimoSignal& antSamples,
             throw UsrpException(
                 "The antenna signals need to have the same length.");
     }
+}
+
+void assertValidRfConfig(const RfConfig& conf) {
+    if (conf.noTxAntennas > 4 || conf.noTxAntennas < 1)
+        throw UsrpException(
+            "You provided " + std::to_string(conf.noTxAntennas) +
+            "Tx antennas. Number of antennas must be within interval [1,4].");
+
+    if (conf.noRxAntennas > 4 || conf.noRxAntennas < 1)
+        throw UsrpException(
+            "You provided " + std::to_string(conf.noRxAntennas) +
+            "Rx antennas. Number of antennas must be in interval [1,4].");
 }
 
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {

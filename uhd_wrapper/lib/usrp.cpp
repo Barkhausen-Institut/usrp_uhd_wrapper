@@ -234,6 +234,7 @@ void Usrp::setTimeToZeroNextPpsThreadFunction() {
     const uhd::time_spec_t lastPpsTime = usrpDevice_->get_time_last_pps();
     while (lastPpsTime == usrpDevice_->get_time_last_pps()) {
     }
+    rxStreamer_.reset();
 }
 
 uint64_t Usrp::getCurrentSystemTime() {

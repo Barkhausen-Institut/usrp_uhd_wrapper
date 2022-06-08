@@ -18,7 +18,7 @@ We wait `System.timeBetweenSyncAttempts` seconds for the next synchronisation at
 
 After `System.syncTimeOut` seconds we check if the synchronisation is still valid.
 
-You may check the :py:class:`documentation of the System class <usrp_client.system.System>`
+You may check the :py:class:`documentation of the System class <usrp_client.system.System>`.
 
 The radio frequencies need to be synchronized again. This does not need to be triggered
 however.

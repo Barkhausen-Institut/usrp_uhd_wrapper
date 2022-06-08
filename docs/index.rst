@@ -9,6 +9,8 @@ Welcome to the documentation of the Usrp Uhd API.
 
    self
    API <modules>
+   synchronisation
+
 
 .. mdinclude:: ../README.md
 

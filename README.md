@@ -22,7 +22,7 @@ Follow the Steps of Install/Client below to install the client. Afterwards proce
 
 ## USRP is not setup
 
-`ssh` to the USRP and follow the steps of Install/erver below. Afterwards proceed with the steps of the previous section. Ensure that the USRP was restarted.
+`ssh` to the USRP and follow the steps of Install/Server below. Afterwards proceed with the steps of the previous section. Ensure that the USRP was restarted.
 
 # Install
 

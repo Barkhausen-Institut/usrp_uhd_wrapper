@@ -1,14 +1,14 @@
 # Purpose
 
-This repo wraps the [Universal Hardware Driver](https://github.com/EttusResearch/uhd) (UHD) for [Ettus USRP X410](https://www.ni.com/de-de/support/model.ettus-usrp-x410.html). Since the authors of UHD point out that the driver is device-independent, this wrapper should support other USRPs out-of-the-box as well. It is to be noted that the configuration is different for the USRPs, therefore, some modifications most likely need to be made for other USRPs
+This repo wraps the [Universal Hardware Driver](https://github.com/EttusResearch/uhd) (UHD) for [USRP X410](https://www.ni.com/de-de/support/model.ettus-usrp-x410.html). Since the authors of UHD point out that the driver is device-independent, this wrapper should support other USRPs out-of-the-box as well. It is to be noted that the configuration is different for the USRPs, therefore, some modifications most likely need to be made for other USRPs
 
-We cover the following use-case: The USRP can be used with the full-mimo setup, i.e. four transmitting and four receiving antennas. The user creates the signal on its laptop, sends them to the USRP via network and collects the received samples. Post-processing happens on the laptop of the user.
+We cover the following use-case: The USRP can be used with the full-mimo setup, i.e. four transmitting and four receiving antennas. The user creates the signal on his/her laptop, sends them **as bursts** to the USRP via network and collects the received samples. Post-processing happens on the laptop of the user. **We strongly emphasize that this wrapper is not meant for wrapping. On top of that, USRPs are mainly meant for transmission use-cases. Therefore some adjustments had to be made to the wrapper.**
 
 This repository contains the **client as well as the server code**. The client is to be used by the user for signal processing purposes and sending the commands to the USRP, which serves as a server. The server code is to be deployed on the USRP. Once built and installed, the USRP does not need to be touched again.
 
 # Documentation
 
-Documentation is auto-generated and can be found [here](https://barkhauseninstitut.gitlab.io/corola-infrastructure/usrp-x410/usrp_uhd_api/).
+Documentation can be found [here](https://barkhauseninstitut.gitlab.io/corola-infrastructure/usrp-x410/usrp_uhd_api/).
 
 Read this in conjunction with our example files located in **examples/**!
 

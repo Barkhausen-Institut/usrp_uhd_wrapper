@@ -12,8 +12,21 @@ Documentation can be found [here](https://barkhauseninstitut.gitlab.io/corola-in
 
 Read this in conjunction with our example files located in **examples/**!
 
+# Getting Started
+
+## USRP is already setup
+
+Assume somebody already deployed the USRP server code (cf. Install section) and gives you the IP address of the USRPs you may use. As a first step, you want to transmit some samples from USRP1 to USRP2.
+
+Follow the Steps of Install/Client below to install the client. Afterwards proceed to the Examples section.
+
+## USRP is not setup
+
+`ssh` to the USRP and follow the steps of Install/erver below. Afterwards proceed with the steps of the previous section. Ensure that the USRP was restarted.
+
 # Install
 
+## Server
 For installing the server on the USRP (needs to be done only once per USRP):
 
 1. `git clone <this repo> && cd <repo>`
@@ -28,13 +41,12 @@ For installing the server on the USRP (needs to be done only once per USRP):
 
 To start the usrp server as a service, run: `systemctl enable rpc-server.service`. Restart.
 
-For the client:
+## Client
 
 1. Ensure that you use at least python3.9.
 2. Create and activate virtual env (on linux: `python -m venv env && . env/bin/activate`)
 3. `pip install -e .`
 4. **For running tests:** `pip install -r requirements_tests.txt`
-
 
 # Before Use
 
@@ -53,6 +65,13 @@ $ pytest .
 
 After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. radio frontend (RF) config, samples, etc.) to the USRP server. The `uhd_wrapper.utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
 
+Assuming you installed the client, always activate the virtual environment via:
+
+```bash
+$ cd <repo>
+$ . env/bin/activate
+```
+
 ## Examples
 
 The **examples** directory contains some examples. In each example file, we will print if the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. **Port 5555 is used.** We add the option to plot signals. Examples should be self-explanatory.
@@ -62,8 +81,6 @@ The **examples** directory contains some examples. In each example file, we will
 Usage:
 
 ```bash
-$ cd <repo>
-$ . env/bin/activate
 $ python examples/usrp_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot
 ```
 
@@ -71,8 +88,6 @@ $ python examples/usrp_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --car
 Usage:
 
 ```bash
-$ cd <repo>
-$ . env/bin/activate
 $ python examples/jcas.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot
 ```
 
@@ -82,8 +97,6 @@ Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well. If 
 Usage:
 
 ```bash
-$ cd <repo>
-$ . env/bin/activate
 $ python examples/mimo_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot
 ```
 

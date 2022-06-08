@@ -1,4 +1,4 @@
-"""Example shows how to use the USRPs to draw an eye diagram of a
+"""Example shows how to use one USRP to draw an eye diagram of a
 BPSK signal, using a sinc-filter as transmit filter.
 
 Usage:

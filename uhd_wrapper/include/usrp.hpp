@@ -2,6 +2,7 @@
 #include <sys/time.h>
 
 #include <chrono>
+#include <cstring>
 #include <ctime>
 #include <mutex>
 #include <thread>
@@ -41,6 +42,7 @@ class Usrp : public UsrpInterface {
     double getMasterClockRate() const { return masterClockRate_; }
     RfConfig getRfConfig() const;
     void resetStreamingConfigs();
+    bool isUsrpType(const std::string&) const;
 
    private:
     // constants

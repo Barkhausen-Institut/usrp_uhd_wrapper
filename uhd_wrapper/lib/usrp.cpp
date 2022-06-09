@@ -1,4 +1,6 @@
+#include <boost/algorithm/string.hpp>
 #include <cmath>
+#include <cstring>
 #include <numeric>
 #include <uhd/types/ref_vector.hpp>
 
@@ -310,4 +312,11 @@ void Usrp::waitOnThreadToJoin(std::thread &t) {
     if (t.joinable()) t.join();
 }
 
+bool Usrp::isUsrpType(const std::string &type) const {
+    std::string expectedType = type;
+    boost::to_upper(expectedType);
+    std::string actualType = usrpDevice_->get_mboard_name();
+    boost::to_upper(actualType);
+    return (actualType == expectedType);
+}
 }  // namespace bi

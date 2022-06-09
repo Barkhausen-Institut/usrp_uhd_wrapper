@@ -9,13 +9,13 @@ The USRPs have a built-in trigger that detects PPS signals. Once a PPS signal ar
 the internal USRP time can be set to zero. Each USRP has an interval FPGA time. If the USRPs are synced,
 the FPGA time is reset at the next PPS edge, cf. the following picture.
 
-.. image:: streaming_configs_timeline_gneral.png
+.. image:: images/streaming_configs_timeline_gneral.png
 
 In the client, you need to specify ``TxStreamingConfig`` and ``RxStreamingConfig``.
 The offsets determine when the signal is sent and received. Based on these offsets, you can define
 your own communcation patterns. The following illustrates a Request-Reply-Pattern:
 
-.. image:: request_reply_pattern.png
+.. image:: images/request_reply_pattern.png
 
 If you want to define a multi-cast pattern, the streaming configurations look as follows (pseudo-code):
 

@@ -1,7 +1,7 @@
 Software Architecture
 =====================
 
-.. image:: software_architecture.png
+.. image:: images/software_architecture.png
 
 On the laptop (henceforth called "client"), signal processing is performed using python.
 Via API calls, configurations are passed to the :py:class:`Usrp Client <usrp_client.rpc_client.UsrpClient>`.

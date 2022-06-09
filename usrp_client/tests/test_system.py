@@ -125,6 +125,20 @@ class TestStreamingConfiguration(unittest.TestCase):
         self.assertTrue(isinstance(rfConfigs["usrp1"], RfConfig))
         self.assertTrue(isinstance(rfConfigs["usrp1"], RfConfig))
 
+    def test_txSignalContainsClippedValues(self) -> None:
+        txStreamingConfig = TxStreamingConfig(
+            sendTimeOffset=2.0,
+            samples=MimoSignal(
+                signals=[0.1 * np.ones(int(20e3)), 1.1 * np.ones(int(20e3))]
+            ),
+        )
+        self.assertRaises(
+            ValueError,
+            lambda: self.system.configureTx(
+                usrpName="usrp1", txStreamingConfig=txStreamingConfig
+            ),
+        )
+
 
 class TestMultiDeviceSync(unittest.TestCase):
     def setUp(self) -> None:

@@ -131,6 +131,9 @@ class System:
             usrpName (str): Identifier of USRP.
             txStreamingConfig (TxStreamingConfig): Desired configuration.
         """
+        if containsClippedValue(txStreamingConfig.samples):
+            raise ValueError("Tx signal contains values above 1.0,")
+
         self.__usrpClients[usrpName].client.configureTx(txStreamingConfig)
         logging.info(f"Configured TX Streaming for USRP: {usrpName}.")
 

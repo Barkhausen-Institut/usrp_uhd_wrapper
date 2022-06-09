@@ -57,9 +57,16 @@ class MimoSignal:
             return np.sum([(a == b) for a, b in zip(self.signals, other.signals)])
 
 
-def containsClippedValue(mimoSignal: MimoSignal) -> bool:
+def rxContainsClippedValue(mimoSignal: MimoSignal) -> bool:
     for s in mimoSignal.signals:
         if np.any(np.abs(np.real(s)) >= 1.0) or np.any(np.abs(np.imag(s)) >= 1.0):
+            return True
+    return False
+
+
+def txContainsClippedValue(mimoSignal: MimoSignal) -> bool:
+    for s in mimoSignal.signals:
+        if np.any(np.abs(np.real(s)) > 1.0) or np.any(np.abs(np.imag(s)) > 1.0):
             return True
     return False
 

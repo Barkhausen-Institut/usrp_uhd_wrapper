@@ -139,6 +139,15 @@ class TestStreamingConfiguration(unittest.TestCase):
             ),
         )
 
+    def test_txSignalContainsValueThatAreExact1(self) -> None:
+        txStreamingConfig = TxStreamingConfig(
+            sendTimeOffset=2.0,
+            samples=MimoSignal(
+                signals=[0.1 * np.ones(int(20e3)), 1 * np.ones(int(20e3))]
+            ),
+        )
+        self.system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
+
 
 class TestMultiDeviceSync(unittest.TestCase):
     def setUp(self) -> None:

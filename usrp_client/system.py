@@ -9,7 +9,8 @@ import numpy as np
 
 from uhd_wrapper.utils.config import (
     MimoSignal,
-    containsClippedValue,
+    rxContainsClippedValue,
+    txContainsClippedValue,
     RfConfig,
     RxStreamingConfig,
     TxStreamingConfig,
@@ -131,8 +132,8 @@ class System:
             usrpName (str): Identifier of USRP.
             txStreamingConfig (TxStreamingConfig): Desired configuration.
         """
-        if containsClippedValue(txStreamingConfig.samples):
-            raise ValueError("Tx signal contains values above 1.0,")
+        if txContainsClippedValue(txStreamingConfig.samples):
+            raise ValueError("Tx signal contains values above 1.0.")
 
         self.__usrpClients[usrpName].client.configureTx(txStreamingConfig)
         logging.info(f"Configured TX Streaming for USRP: {usrpName}.")
@@ -251,7 +252,7 @@ class System:
     def __assertNoClippedValues(self, samples: Dict[str, List[MimoSignal]]) -> None:
         for usrpName, usrpConfigSamples in samples.items():
             if any(
-                containsClippedValue(mimoSignal) for mimoSignal in usrpConfigSamples
+                rxContainsClippedValue(mimoSignal) for mimoSignal in usrpConfigSamples
             ):
                 raise ValueError(
                     f"USRP {usrpName} contains clipped values. Please check your gains."

@@ -8,10 +8,10 @@ Network Setup
 
 Ensure that the USRPs are in the same network. It is advised to change their hostname. This can be done as follows:
 
-```bash
-$ ssh <usrp-ip>
-$ vi /data/network/hostname
-```
+.. code-block:: shell
+
+   $ ssh <usrp-ip>
+   $ vi /data/network/hostname
 
 Type in your desired hostname and restart the USRP.
 

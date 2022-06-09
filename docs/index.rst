@@ -10,6 +10,7 @@ Welcome to the documentation of the Usrp Uhd API.
    API description <modules>
    synchronisation
    architecture
+   setup
 
 
 .. mdinclude:: ../README.md

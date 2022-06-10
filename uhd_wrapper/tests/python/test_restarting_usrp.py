@@ -46,3 +46,6 @@ class TestUsrpStarts(unittest.TestCase):
         ]
         self.assertRaises(RuntimeError, lambda: RestartingUsrp("localhost"))
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 5)
+
+    def test_usrpIsNotX410(self) -> None:
+        self.assertRaises(RuntimeError, lambda: RestartingUsrp("localhost", "e310"))

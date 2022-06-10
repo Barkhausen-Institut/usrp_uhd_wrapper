@@ -2,7 +2,6 @@
 #include <sys/time.h>
 
 #include <chrono>
-#include <cstring>
 #include <ctime>
 #include <mutex>
 #include <thread>

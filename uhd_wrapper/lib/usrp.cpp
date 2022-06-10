@@ -312,11 +312,5 @@ void Usrp::waitOnThreadToJoin(std::thread &t) {
     if (t.joinable()) t.join();
 }
 
-bool Usrp::isUsrpType(const std::string &type) const {
-    std::string expectedType = type;
-    boost::to_upper(expectedType);
-    std::string actualType = usrpDevice_->get_mboard_name();
-    boost::to_upper(actualType);
-    return (actualType == expectedType);
-}
+std::string Usrp::getType() const { return usrpDevice_->get_mboard_name(); }
 }  // namespace bi

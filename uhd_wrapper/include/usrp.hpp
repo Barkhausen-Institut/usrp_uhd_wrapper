@@ -42,7 +42,7 @@ class Usrp : public UsrpInterface {
     double getMasterClockRate() const { return masterClockRate_; }
     RfConfig getRfConfig() const;
     void resetStreamingConfigs();
-    bool isUsrpType(const std::string&) const;
+    std::string getType() const;
 
    private:
     // constants

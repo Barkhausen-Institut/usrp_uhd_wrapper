@@ -50,7 +50,7 @@ To start the usrp server as a service, run: `systemctl enable rpc-server.service
 
 # Before Use
 
-We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., joint communication and sensing, local transmission, peer-to-peer-transmission...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding IP need to be set. Execute the command `pytest .` or, if you just want to execute the hardware stuff: `pytest . -m "hardware"`. **It is highly recommended to execute these tests before doing your measurements**:
+We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., joint communication and sensing (JCAS), local transmission, peer-to-peer-transmission...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding IP need to be set. Execute the command `pytest .` or, if you just want to execute the hardware-related tests: `pytest . -m "hardware"`. **It is highly recommended to execute these tests before conducting your measurements**:
 
 On client side:
 
@@ -63,7 +63,7 @@ $ pytest .
 
 # Use
 
-After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. radio frontend (RF) config, samples, etc.) to the USRP server. The `uhd_wrapper.utils` package contains dataclasses for the configurations (module `config`, check there!) and some serialization functions in the `serialization` module.
+After install, there are two python packages installed: `usrp_client` serving as the client that sends commands (e.g. radio frontend (RF) config, samples, etc.) to the USRP server. The `uhd_wrapper.utils` package contains dataclasses for the configurations (module `config`) and some serialization functions in the `serialization` module.
 
 Assuming you installed the client, always activate the virtual environment via:
 
@@ -84,7 +84,7 @@ Usage:
 $ python examples/usrp_p2p_transmission.py --usrp1-ip <ip> --usrp2-ip <ip> --carrier-frequency <carrier-frequency> --plot
 ```
 
-**jcas**: Implements the JCAS scenario, but using a random signal instead.
+**JCAS**: Implements the JCAS scenario, but using a random signal instead.
 Usage:
 
 ```bash
@@ -104,19 +104,18 @@ Creates four random signals, that are distributed to the antennas. They are shif
 
 ## hardware_tests
 
-We have some hardware tests, for testing/debugging purposes mainly. Samples are dumped as well for better analysis. They are to be run from the usrp directly. Files are located in the **hardware_tests** folder.
+We have some hardware tests, for testing/debugging purposes mainly. Samples are dumped as well for better analysis. They are to be run from the USRP directly. Files are located in the **hardware_tests** folder.
 
 **Note**: The Usrp service should be stopped for this purpose!
 
 
 # For Developers
 
-In the `snippets` directory, snippets can be found. As the testing capabilities for the hardware are strongly limited, the snippets are meant for evaluating the hardware. Feel free to play around with it!
+In the `snippets` directory, snippets can be found. As the testing capabilities for the hardware are strongly limited, the snippets are meant for evaluating the hardware. 
 
 We also have a **debug** folder that contains some files to be used for debugging:
 
-- tx_stream: streams white noise (mean 0, std 2) that may be analysed with the specci. **note**: undeflow occurs, i.e. samples are not buffered fast enough into the fpga. No clue how this can be fixed. however, we hope that the results are still valid...
-
+- tx_stream: streams white noise (mean 0, std 2) that may be analysed with a spectrum analyzer. **Note**: Underflow occurs, i.e. samples are not buffered fast enough into the FPGA. To verify if a signal is sent at all, this is sufficient however
 
 # Change History
 

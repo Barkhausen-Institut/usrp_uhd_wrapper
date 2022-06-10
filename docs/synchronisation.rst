@@ -7,12 +7,27 @@ This signal is provided by an external device.
 
 The USRPs have a built-in trigger that detects PPS signals. Once a PPS signal arrives,
 the internal USRP time can be set to zero. Each USRP has an interval FPGA time. If the USRPs are synced,
-the FPGA time is reset at the next PPS edge, cf. the following picture.
+the FPGA time is reset at the next PPS edge, cf. the following picture:
 
 .. image:: images/streaming_configs_timeline_gneral.png
 
-In the client, you need to specify ``TxStreamingConfig`` and ``RxStreamingConfig``.
-The offsets determine when the signal is sent and received. Based on these offsets, you can define
+After having created the system via ``system = System()`` and after having added the USRPs
+to the system with ``addUsrp`` (in the picture, we assume two USRPs to be added), we define
+their streaming configurations with the dataclasses ``TxStreamingConfig`` and ``RxStreamingConfig``.
+Within the streaming configurations, we set the time offsets that define the communcation pattern.
+In the example, we define a ``TxStreamingConfig`` with ``sendTimeOffset=2.0`` and a ``RxStreamingConfig``
+with ``receiveTimeOffset=2.0``. Afterwards, the ``execute()`` function is called.
+It is checked if the synchronisation is valid (i.e. if the FPGA times match). If not, the server
+waits on an external PPS edge for synchronisation. Afterwards, the defined offsets are relative to
+an implementation defined time-point denoted by ``t`` in the image. 
+
+The system may also be reused:
+
+.. image:: images/system_reuse_timeline.png
+
+It is to be noted, that ``t`` does not change if the system is reused and not resynced!
+
+Based on these offsets, you can define
 your own communcation patterns. The following illustrates a Request-Reply-Pattern:
 
 .. image:: images/request_reply_pattern.png

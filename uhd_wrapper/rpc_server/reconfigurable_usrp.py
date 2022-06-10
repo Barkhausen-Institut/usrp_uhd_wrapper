@@ -74,8 +74,8 @@ class RestartingUsrp:
 
 
 class MimoReconfiguringUsrp(RestartingUsrp):
-    def __init__(self, ip: str) -> None:
-        super().__init__(ip)
+    def __init__(self, ip: str, desiredType: str = "x410") -> None:
+        super().__init__(ip, desiredType)
         self._currentRfConfig: RfConfig = None
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:

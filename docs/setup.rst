@@ -26,7 +26,7 @@ Synchronization
     As a generator, we use a Meinberg Clock. Connect their PPS outs to the `PPS in`` of the USRP and the
     10MHz ooutput to `REF IN`. Ensure that the cables are the same length!
 
-   .. image:: sync.png
+   .. image:: images/sync.png
 
 Antennas
     - Note, that receiver ports of the USRP receive signals, although weak, even if no

@@ -16,15 +16,17 @@ class RestartingUsrp:
     RestartTrials = 5
     SleepTime = 5
 
-    def __init__(self, ip: str, type: str = "x410") -> None:
+    def __init__(self, ip: str, desiredType: str = "x410") -> None:
         self._ip = ip
 
         self._usrp = self._startUsrpMultipleTimes()
-        self._onCorrectUsrp(type)
+        self._onCorrectUsrp(desiredType)
 
-    def _onCorrectUsrp(self, type: str) -> None:
-        if self._usrp.type.upper() != type.upper():
-            raise RuntimeError("Wrong usrp.")
+    def _onCorrectUsrp(self, desiredType: str) -> None:
+        if self._usrp.type.upper() != desiredType.upper():
+            raise RuntimeError(
+                f"Current USRP is {self._usrp.type}, you requested to start on {desiredType}."
+            )
 
     def _startUsrpMultipleTimes(self) -> Usrp:
         for _ in range(self.RestartTrials):

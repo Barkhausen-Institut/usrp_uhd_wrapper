@@ -16,17 +16,24 @@ class RestartingUsrp:
     RestartTrials = 5
     SleepTime = 5
 
-    def __init__(self, ip: str) -> None:
+    def __init__(self, ip: str, type: str = "x410") -> None:
         self._ip = ip
 
         self._usrp = self._startUsrpMultipleTimes()
+        self._onCorrectUsrp(type)
+
+    def _onCorrectUsrp(self, type: str) -> None:
+        if self._usrp.type.upper() != type.upper():
+            raise RuntimeError("Wrong usrp.")
 
     def _startUsrpMultipleTimes(self) -> Usrp:
         for _ in range(self.RestartTrials):
             try:
                 return pybinding.createUsrp(self._ip)
             except RuntimeError:
-                print(f"Creation of USRP failed... Retrying after {self.SleepTime} seconds.")
+                print(
+                    f"Creation of USRP failed... Retrying after {self.SleepTime} seconds."
+                )
                 time.sleep(self.SleepTime)
         raise RuntimeError("Could not start USRP... exiting.")
 

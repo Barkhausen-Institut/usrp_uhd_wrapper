@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, PropertyMock
 
 from uhd_wrapper.rpc_server.reconfigurable_usrp import RestartingUsrp
 from uhd_wrapper.usrp_pybinding import Usrp
@@ -11,6 +11,7 @@ class TestUsrpStarts(unittest.TestCase):
         _ = self.sleepPatcher.start()
 
         self.usrpMock = Mock(spec=Usrp)
+        type(self.usrpMock).type = PropertyMock(return_value="x410")  # type: ignore
         self.usrpFactoryPatcher = patch(
             "uhd_wrapper.usrp_pybinding.createUsrp", return_value=self.usrpMock
         )
@@ -26,7 +27,11 @@ class TestUsrpStarts(unittest.TestCase):
         self.mockedUsrpFactoryFunction.assert_called_once_with(IP)
 
     def test_usrpCreatedAfterFirstFail(self) -> None:
-        self.mockedUsrpFactoryFunction.side_effect = [RuntimeError(), Mock(), Mock()]
+        self.mockedUsrpFactoryFunction.side_effect = [
+            RuntimeError(),
+            self.usrpMock,
+            self.usrpMock,
+        ]
         _ = RestartingUsrp("localhost")
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 2)
 
@@ -37,7 +42,7 @@ class TestUsrpStarts(unittest.TestCase):
             RuntimeError(),
             RuntimeError(),
             RuntimeError(),
-            Mock(),
+            self.usrpMock,
         ]
         self.assertRaises(RuntimeError, lambda: RestartingUsrp("localhost"))
         self.assertEqual(self.mockedUsrpFactoryFunction.call_count, 5)

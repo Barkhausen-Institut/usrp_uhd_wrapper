@@ -311,5 +311,7 @@ void Usrp::waitOnThreadToJoin(std::thread &t) {
     if (t.joinable()) t.join();
 }
 
-std::string Usrp::getType() const { return usrpDevice_->get_mboard_name(); }
+std::string Usrp::getDeviceType() const {
+    return usrpDevice_->get_mboard_name();
+}
 }  // namespace bi

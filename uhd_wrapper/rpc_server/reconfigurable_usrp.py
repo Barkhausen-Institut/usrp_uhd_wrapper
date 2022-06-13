@@ -16,16 +16,16 @@ class RestartingUsrp:
     RestartTrials = 5
     SleepTime = 5
 
-    def __init__(self, ip: str, desiredType: str = "x410") -> None:
+    def __init__(self, ip: str, desiredDeviceType: str = "x410") -> None:
         self._ip = ip
 
         self._usrp = self._startUsrpMultipleTimes()
-        self._onCorrectUsrp(desiredType)
+        self._onCorrectUsrp(desiredDeviceType)
 
-    def _onCorrectUsrp(self, desiredType: str) -> None:
-        if self._usrp.type.upper() != desiredType.upper():
+    def _onCorrectUsrp(self, desiredDeviceType: str) -> None:
+        if self._usrp.deviceType.upper() != desiredDeviceType.upper():
             raise RuntimeError(
-                f"Current USRP is {self._usrp.type}, you requested to start on {desiredType}."
+                f"Current USRP is {self._usrp.deviceType}, you requested to start on {desiredDeviceType}."
             )
 
     def _startUsrpMultipleTimes(self) -> Usrp:

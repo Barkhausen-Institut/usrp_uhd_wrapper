@@ -11,7 +11,7 @@ class TestUsrpStarts(unittest.TestCase):
         _ = self.sleepPatcher.start()
 
         self.usrpMock = Mock(spec=Usrp)
-        type(self.usrpMock).type = PropertyMock(return_value="x410")  # type: ignore
+        type(self.usrpMock).deviceType = PropertyMock(return_value="x410")  # type: ignore
         self.usrpFactoryPatcher = patch(
             "uhd_wrapper.usrp_pybinding.createUsrp", return_value=self.usrpMock
         )

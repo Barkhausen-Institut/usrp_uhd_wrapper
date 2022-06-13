@@ -9,7 +9,7 @@ The USRPs have a built-in trigger that detects PPS signals. Once a PPS signal ar
 the internal USRP time can be set to zero. Each USRP has an interval FPGA time. If the USRPs are synced,
 the FPGA time is reset at the next PPS edge, cf. the following picture:
 
-.. image:: images/streaming_configs_timeline_gneral.png
+.. image:: images/sync_timeline_general.png
 
 After having created the system via ``system = System()`` and after having added the USRPs
 to the system with ``addUsrp`` (in the picture, we assume two USRPs to be added), we define

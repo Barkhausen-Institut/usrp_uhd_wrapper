@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, Mock, PropertyMock
+from unittest.mock import patch, Mock
 
 from uhd_wrapper.rpc_server.reconfigurable_usrp import MimoReconfiguringUsrp
 from uhd_wrapper.usrp_pybinding import RfConfig, Usrp
@@ -9,9 +9,7 @@ from uhd_wrapper.utils.config import fillDummyRfConfig
 class TestMimoReconfigUsrp(unittest.TestCase):
     def setUp(self) -> None:
         self.usrpIp = "localhost"
-        self.usrpMock = Mock(spec=Usrp)
-        type(self.usrpMock).deviceType = PropertyMock(return_value="x410")  # type: ignore
-
+        self.usrpMock = Mock(spec=Usrp, deviceType="x410")
         self.usrpFactoryPatcher = patch(
             "uhd_wrapper.usrp_pybinding.createUsrp", return_value=self.usrpMock
         )

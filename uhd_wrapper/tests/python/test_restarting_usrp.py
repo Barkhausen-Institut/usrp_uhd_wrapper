@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock, patch, PropertyMock
+from unittest.mock import Mock, patch
 
 from uhd_wrapper.rpc_server.reconfigurable_usrp import RestartingUsrp
 from uhd_wrapper.usrp_pybinding import Usrp
@@ -10,8 +10,7 @@ class TestUsrpStarts(unittest.TestCase):
         self.sleepPatcher = patch("time.sleep", return_value=None)
         _ = self.sleepPatcher.start()
 
-        self.usrpMock = Mock(spec=Usrp)
-        type(self.usrpMock).deviceType = PropertyMock(return_value="x410")  # type: ignore
+        self.usrpMock = Mock(spec=Usrp, deviceType="x410")
         self.usrpFactoryPatcher = patch(
             "uhd_wrapper.usrp_pybinding.createUsrp", return_value=self.usrpMock
         )

@@ -1,5 +1,5 @@
-Synchronisation & Communcation Patterns
-=======================================
+Synchronisation & Communication Patterns
+========================================
 
 If a :py:class:`usrp_client.system.System` consists of multiple USRPs, their clocks and their carrier frequencies
 need to be synchronized. We assume that the USRPs have a `PPS in` port that accepts Pulse Per Second (PPS) signals. 
@@ -11,24 +11,34 @@ the FPGA time is reset at the next PPS edge, cf. the following picture:
 
 .. image:: images/sync_timeline_general.png
 
-After having created the system via ``system = System()`` and after having added the USRPs
-to the system with ``addUsrp`` (in the picture, we assume two USRPs to be added), we define
-their streaming configurations with the dataclasses ``TxStreamingConfig`` and ``RxStreamingConfig``.
-Within the streaming configurations, we set the time offsets that define the communcation pattern.
-In the example, we define a ``TxStreamingConfig`` with ``sendTimeOffset=2.0`` and a ``RxStreamingConfig``
-with ``receiveTimeOffset=2.0``. Afterwards, the ``execute()`` function is called.
-It is checked if the synchronisation is valid (i.e. if the FPGA times match). If not, the server
-waits on an external PPS edge for synchronisation. Afterwards, the defined offsets are relative to
-an implementation defined time-point denoted by ``t`` in the image. 
+It is to be noted that there are calls on the ``System`` itself (without explicitely accessing the USRP) and there
+are calls that access the USRPs within the ``System``. They need to be set in the API call.
 
-The system may also be reused:
+The following picture shows the usual workflow:
 
 .. image:: images/system_reuse_timeline.png
 
-It is to be noted, that ``t`` does not change if the system is reused and not resynced!
+After having created the system via ``system = System()`` and after having added the USRPs
+to the system with ``addUsrp`` (in the picture, we assume two USRPs to be added), we define
+their streaming configurations with the dataclasses ``TxStreamingConfig`` and ``RxStreamingConfig``.
+Within the streaming configurations, we set time offsets.
+In the example, we define a ``TxStreamingConfig`` with ``sendTimeOffset=1.0`` and a ``RxStreamingConfig``
+with ``receiveTimeOffset=1.0``. Afterwards, the ``execute()`` function is called.
+It is checked if the USRPs in sync. We assume the USRPs to be synchronized.
+
+After having defined the streaming configuration, ``execute()`` needs to be called. In order to
+collect the actual samples ``collect()`` needs to be called afterwards, which is a blocking call.
+It waits for transmission to be finished. The offsets defined in the streaming configurations (highlighted
+in green in the image) are with respect to the ``execute()`` call. On top of the defined offsets,
+a implementation-defined constant time offset ``t0`` is added.
+
+As depicted, the system can be reused if multiple packages need to be transmitted.
+
+Communication Patterns
+~~~~~~~~~~~~~~~~~~~~~~
 
 Based on these offsets, you can define
-your own communcation patterns. The following illustrates a Request-Reply-Pattern:
+your own communication patterns. The following illustrates a Request-Reply-Pattern:
 
 .. image:: images/request_reply_pattern.png
 

@@ -20,9 +20,9 @@ class RestartingUsrp:
         self._ip = ip
 
         self._usrp = self._startUsrpMultipleTimes()
-        self._onCorrectUsrp(desiredDeviceType)
+        self._checkIfOnCorrectUsrp(desiredDeviceType)
 
-    def _onCorrectUsrp(self, desiredDeviceType: str) -> None:
+    def _checkIfOnCorrectUsrp(self, desiredDeviceType: str) -> None:
         if self._usrp.deviceType.upper() != desiredDeviceType.upper():
             raise RuntimeError(
                 f"Current USRP is {self._usrp.deviceType}, you requested to start on {desiredDeviceType}."

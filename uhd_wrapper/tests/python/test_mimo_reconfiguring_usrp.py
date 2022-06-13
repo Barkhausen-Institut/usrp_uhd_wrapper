@@ -9,9 +9,9 @@ from uhd_wrapper.utils.config import fillDummyRfConfig
 class TestMimoReconfigUsrp(unittest.TestCase):
     def setUp(self) -> None:
         self.usrpIp = "localhost"
-        self.usrpMock = Mock(spec=Usrp, deviceType="x410")
         self.usrpFactoryPatcher = patch(
-            "uhd_wrapper.usrp_pybinding.createUsrp", return_value=self.usrpMock
+            "uhd_wrapper.usrp_pybinding.createUsrp",
+            return_value=Mock(spec=Usrp, deviceType="x410"),
         )
         self.mockedUsrpFactoryFunction = self.usrpFactoryPatcher.start()
         self.M = MimoReconfiguringUsrp(self.usrpIp)

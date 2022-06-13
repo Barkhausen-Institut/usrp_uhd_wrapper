@@ -19,6 +19,7 @@ class UsrpInterface {
     virtual void resetStreamingConfigs() = 0;
     virtual double getMasterClockRate() const = 0;
     virtual RfConfig getRfConfig() const = 0;
+    virtual std::string getDeviceType() const = 0;
 };
 
 std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);

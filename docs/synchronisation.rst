@@ -18,13 +18,14 @@ The following picture shows the usual workflow:
 
 .. image:: images/system_reuse_timeline.png
 
+In the following description, we assume the USRPs to be synchronized. 
 After having created the system via ``system = System()`` and after having added the USRPs
 to the system with ``addUsrp`` (in the picture, we assume two USRPs to be added), we define
 their streaming configurations with the dataclasses ``TxStreamingConfig`` and ``RxStreamingConfig``.
 Within the streaming configurations, we set time offsets.
 In the example, we define a ``TxStreamingConfig`` with ``sendTimeOffset=1.0`` and a ``RxStreamingConfig``
-with ``receiveTimeOffset=1.0``. Afterwards, the ``execute()`` function is called.
-It is checked if the USRPs in sync. We assume the USRPs to be synchronized.
+with ``receiveTimeOffset=1.0``. Afterwards, the ``execute()`` function is called, checking if 
+the USRPs are in sync.
 
 After having defined the streaming configuration, ``execute()`` needs to be called. In order to
 collect the actual samples ``collect()`` needs to be called afterwards, which is a blocking call.

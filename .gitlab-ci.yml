@@ -32,9 +32,9 @@ pages:
   stage: pages
   script:
     - pip install -e .
-    - cd docs && pip install -r ../requirements_doc.txt && cd ..
-    - cd docs && make api && cd ..
-    - sphinx-build docs public
+    - pip install -r ../requirements_doc.txt
+    - cd docs/source && make api && cd ../..
+    - sphinx-build docs/source public
   artifacts:
     paths:
       - public

@@ -15,6 +15,9 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev python3-wheel
 
+    - name: Checkout Repo
+      uses: actions/checkout@v2
+
     - name: Setup python environment
       run: |
         python3.9 -m venv .venv
@@ -25,6 +28,7 @@ jobs:
     
     - name: Build source code
       run: |
+        . .venv/bin/activate
         cd uhd_wrapper
         mkdir build && cd build
         cmake ..
@@ -32,18 +36,22 @@ jobs:
 
     - name: Run tests
       run: |
+        . .venv/bin/activate
+        cd uhd_wrapper/build/
         ctest -V
         cd ../../
+        sudo ldconfig
         pytest .
 
     - name: Create Documentation
       run: |
-        cd docs && pip install -r ../requirements_doc.txt && cd ..
-        cd docs && make api && cd ..
-        sphinx-build docs public
+        . .venv/bin/activate
+        pip install -r requirements_doc.txt
+        cd docs/source && make api && cd ../../
+        sphinx-build docs/source docs/build
     - name: Create github pages
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/head/main' }}
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       uses: JamesIves/github-pages-deploy-action@4.1.2
       with:
         branch: gh-pages
-        folder: docs/html
+        folder: docs/build/

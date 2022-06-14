@@ -132,10 +132,11 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("collect", &bi::UsrpInterface::collect)
         .def("resetStreamingConfigs", &bi::UsrpInterface::resetStreamingConfigs)
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
-        .def("getRfConfig", &bi::UsrpInterface::getRfConfig);
+        .def("getRfConfig", &bi::UsrpInterface::getRfConfig)
+        .def_property_readonly("deviceType", &bi::UsrpInterface::getDeviceType);
 
-    // takes a MimoSignal as the parameter from Python and creates a streaming
-    // config with it. Used only for testing
+    // takes a MimoSignal as the parameter from Python and creates a
+    // streaming config with it. Used only for testing
     m.def("_createTxConfig",
           [](const bi::MimoSignal& signal, float sendTimeOffset) {
               return bi::TxStreamingConfig(signal, sendTimeOffset);

@@ -16,17 +16,27 @@ class RestartingUsrp:
     RestartTrials = 5
     SleepTime = 5
 
-    def __init__(self, ip: str) -> None:
+    def __init__(self, ip: str, desiredDeviceType: str = "x410") -> None:
         self._ip = ip
 
         self._usrp = self._startUsrpMultipleTimes()
+        self._checkIfOnCorrectUsrp(desiredDeviceType)
+
+    def _checkIfOnCorrectUsrp(self, desiredDeviceType: str) -> None:
+        if self._usrp.deviceType.upper() != desiredDeviceType.upper():
+            raise RuntimeError(
+                f"""Current USRP is {self._usrp.deviceType},
+                you requested to start on {desiredDeviceType}."""
+            )
 
     def _startUsrpMultipleTimes(self) -> Usrp:
         for _ in range(self.RestartTrials):
             try:
                 return pybinding.createUsrp(self._ip)
             except RuntimeError:
-                print(f"Creation of USRP failed... Retrying after {self.SleepTime} seconds.")
+                print(
+                    f"Creation of USRP failed... Retrying after {self.SleepTime} seconds."
+                )
                 time.sleep(self.SleepTime)
         raise RuntimeError("Could not start USRP... exiting.")
 
@@ -65,8 +75,8 @@ class RestartingUsrp:
 
 
 class MimoReconfiguringUsrp(RestartingUsrp):
-    def __init__(self, ip: str) -> None:
-        super().__init__(ip)
+    def __init__(self, ip: str, desiredType: str = "x410") -> None:
+        super().__init__(ip, desiredType)
         self._currentRfConfig: RfConfig = None
 
     def setRfConfig(self, rfConfig: RfConfig) -> None:

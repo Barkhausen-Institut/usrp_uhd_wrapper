@@ -1,3 +1,5 @@
+"""This module contains classes and functions for configuring the USRPs"""
+
 from typing import List, Any
 from dataclasses import dataclass, field
 from dataclasses_json import dataclass_json
@@ -57,9 +59,17 @@ class MimoSignal:
             return np.sum([(a == b) for a, b in zip(self.signals, other.signals)])
 
 
-def containsClippedValue(mimoSignal: MimoSignal) -> bool:
+def rxContainsClippedValue(mimoSignal: MimoSignal) -> bool:
+    """Checks if `mimoSignal` contains values above 1.0 in absolute value."""
     for s in mimoSignal.signals:
         if np.any(np.abs(np.real(s)) >= 1.0) or np.any(np.abs(np.imag(s)) >= 1.0):
+            return True
+    return False
+
+
+def txContainsClippedValue(mimoSignal: MimoSignal) -> bool:
+    for s in mimoSignal.signals:
+        if np.any(np.abs(np.real(s)) > 1.0) or np.any(np.abs(np.imag(s)) > 1.0):
             return True
     return False
 
@@ -73,6 +83,7 @@ class TxStreamingConfig:
 
 
 def fillDummyRfConfig(conf: Any) -> Any:
+    """Used for testing. Fills a dummy Rf Config."""
     conf.txCarrierFrequency = 2e9
     conf.txGain = 30
     conf.txAnalogFilterBw = 200e6

@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstring>
 #include <numeric>
 #include <uhd/types/ref_vector.hpp>
 
@@ -310,4 +311,7 @@ void Usrp::waitOnThreadToJoin(std::thread &t) {
     if (t.joinable()) t.join();
 }
 
+std::string Usrp::getDeviceType() const {
+    return usrpDevice_->get_mboard_name();
+}
 }  // namespace bi

@@ -4,11 +4,14 @@ Usrp UHD Api
 Welcome to the documentation of the Usrp Uhd API.
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
    :glob:
 
-   self
-   API <modules>
+   API description <modules>
+   synchronisation
+   architecture
+   setup
+
 
 .. mdinclude:: ../README.md
 

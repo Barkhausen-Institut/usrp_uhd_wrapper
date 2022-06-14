@@ -22,16 +22,20 @@ LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
 
 
 class TimedFlag:
+    """Creates a flag that is reset after a certain time denoted by `resetTimeSec`."""
+
     def __init__(self, resetTimeSec: float) -> None:
         self._resetTimeSec = resetTimeSec
         self._value = False
         self.__resetSyncFlagTimer = Timer(10.0, lambda: None)
 
     def set(self) -> None:
+        """Sets the flag and resets after the specified time."""
         self._value = True
         self._startTimer()
 
     def reset(self) -> None:
+        """Reset flag."""
         self._value = False
 
     def _startTimer(self) -> None:
@@ -44,6 +48,7 @@ class TimedFlag:
         self.__resetSyncFlagTimer.start()
 
     def isSet(self) -> bool:
+        """Returns the value of the flag."""
         return self._value
 
 
@@ -52,25 +57,26 @@ class System:
 
     This module is the main interface for using the USRP. A system is to be defined to which
     USRPs can be added. Using the system functions defined in the `System` class gives you
-    direct access to the USRP configuration etc.
-
-    Attributes:
-        syncThresholdSec(float): In order to verify if the USRPs in the system are properly
-            synchronized, respective FPGA values are queried and compared. If the FPGA times
-            differ more than `syncThresholdSec`, an exception is thrown that the USRPs are not
-            synchronized. Default value: 0.2s.
-        baseTimeOffsetSec(float): This value is taken for setting the same base time for all
-            USRPs. For development use mainly. Do not change. Default value: 0.2s.
-        syncAttempts (int): Specifies number of synchronization attemps for USRP system.
-        timeBetweenSyncAttempts (float): Sleep time between two synchronisation attempts in s.
-        syncTimeOut (float): Timeout of synchronisation.
-    """
+    direct access to the USRP configuration etc."""
 
     syncThresholdSec = 0.2
+    """In order to verify if the USRPs in the system are properly
+       synchronized, respective FPGA values are queried and compared. If the FPGA times
+       differ more than `syncThresholdSec`, an exception is thrown that the USRPs are not
+       synchronized. Default value: 0.2s."""
+
     baseTimeOffsetSec = 0.2
+    """This value is taken for setting the same base time for all
+       USRPs. For development use mainly. Do not change. Default value: 0.2s."""
+
     syncAttempts = 3
+    """Specifies number of synchronization attemps for USRP system."""
+
     timeBetweenSyncAttempts = 0.3
+    """Sleep time between two synchronisation attempts in s."""
+
     syncTimeOut = 20 * 60.0  # every 20 minutes
+    """Timeout of synchronisation."""
 
     def __init__(self) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
@@ -191,6 +197,7 @@ class System:
         raise RuntimeError(f"Tried at least {self.syncAttempts} syncing wihout succes.")
 
     def synchronisationValid(self) -> bool:
+        """Returns true if synchronisation of the USRPs is valid."""
         currentFpgaTimes = self.__getCurrentFpgaTimes()
         return (
             np.max(currentFpgaTimes) - np.min(currentFpgaTimes)
@@ -204,6 +211,7 @@ class System:
         self.sleep(1.1)
 
     def sleep(self, delay: float) -> None:
+        """Let's the system sleep for `delay` seconds."""
         time.sleep(delay)
 
     def __calculateBaseTimeSec(self) -> float:

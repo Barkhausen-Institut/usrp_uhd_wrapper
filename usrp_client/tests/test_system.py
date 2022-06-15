@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import Mock
 import time
+from typing import Optional
 
 import numpy as np
 import numpy.testing as npt
@@ -13,6 +14,7 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
     RxStreamingConfig,
 )
+from uhd_wrapper.utils.annotated_usrp_exception import AnnotatedUsrpException
 
 
 class TestSystemInitialization(unittest.TestCase):
@@ -76,16 +78,18 @@ class FakeSystem(System):
 
     synchronisationValid: Mock
 
-    def addNewUsrp(self) -> Mock:
+    def addNewUsrp(self, usrpName: str = None) -> Mock:
         self.__noUsrps += 1
         mockedUsrp = Mock(spec=UsrpClient)
         mockedUsrp = self.__mockUsrpFunctions(mockedUsrp)
+        if usrpName is None:
+            usrpName = f"usrp{self.__noUsrps}"
+        mockedUsrp.name = usrpName
+
         self.createUsrpClient.side_effect = list(  # type: ignore
             self.createUsrpClient.side_effect  # type: ignore
         ) + [mockedUsrp]
-        super().addUsrp(
-            RfConfig(), f"localhost{self.__noUsrps}", f"usrp{self.__noUsrps}"
-        )
+        super().addUsrp(RfConfig(), f"localhost{self.__noUsrps}", mockedUsrp.name)
         return mockedUsrp
 
     def __mockUsrpFunctions(self, usrpClientMock: Mock) -> Mock:
@@ -191,6 +195,35 @@ class TestMultiDeviceSync(unittest.TestCase):
         self.system.execute()
         self.system.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.system.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
+
+
+class TestUsrpExceptionHandling(unittest.TestCase):
+    def setUp(self) -> None:
+        self.system = FakeSystem(1)
+
+    def test_executeThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
+        self.system.mockUsrps[0].execute.side_effect = AnnotatedUsrpException("foo")
+        try:
+            self.system.execute()
+        except AnnotatedUsrpException as e:
+            self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
+
+    def test_collectThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
+        self.system.mockUsrps[0].collect.side_effect = AnnotatedUsrpException("foo")
+        try:
+            self.system.collect()
+        except AnnotatedUsrpException as e:
+            self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
+
+    def test_mismatchRfConfigThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
+        self.system.mockUsrps[0].configureRfConfig.side_effect = AnnotatedUsrpException(
+            "foo"
+        )
+        usrpName = "newUsrp"
+        try:
+            self.system.addNewUsrp(usrpName=usrpName)
+        except AnnotatedUsrpException as e:
+            self.assertEqual(e.usrpName, usrpName)
 
 
 class TestSynchronisationValid(unittest.TestCase):

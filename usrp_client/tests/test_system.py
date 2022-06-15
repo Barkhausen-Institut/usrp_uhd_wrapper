@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import Mock
 import time
-from typing import Optional
 
 import numpy as np
 import numpy.testing as npt
@@ -78,11 +77,11 @@ class FakeSystem(System):
 
     synchronisationValid: Mock
 
-    def addNewUsrp(self, usrpName: str = None) -> Mock:
+    def addNewUsrp(self, usrpName: str = "") -> Mock:
         self.__noUsrps += 1
         mockedUsrp = Mock(spec=UsrpClient)
         mockedUsrp = self.__mockUsrpFunctions(mockedUsrp)
-        if usrpName is None:
+        if usrpName == "":
             usrpName = f"usrp{self.__noUsrps}"
         mockedUsrp.name = usrpName
 

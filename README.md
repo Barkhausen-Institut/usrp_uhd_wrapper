@@ -32,7 +32,7 @@ For installing the server on the USRP (needs to be done only once per USRP):
 1. `git clone <this repo> && cd <repo>`
 2. `python3 -m venv env && . env/bin/activate`
 3. `pip install -e .`
-4. `cd usrp_uhd_wrapper && mkdir build`
+4. `cd uhd_wrapper && mkdir build`
 5. `cd build`
 6. `cmake -DCMAKE_BUILD_TYPE=Release ..`
 7. `make`

@@ -7,14 +7,14 @@ def rethrowException_emptyUsrpField(msg: str) -> None:
     try:
         raise Exception(msg)
     except Exception as e:
-        raise AnnotatedUsrpException(e)
+        raise AnnotatedUsrpException(str(e))
 
 
 def rethrowException_setUsrpField(msg: str, usrpName: str) -> None:
     try:
         raise Exception(msg)
     except Exception as e:
-        raise AnnotatedUsrpException(e, usrpName)
+        raise AnnotatedUsrpException(str(e), usrpName)
 
 
 class TestAnnotatedUsrpException(unittest.TestCase):

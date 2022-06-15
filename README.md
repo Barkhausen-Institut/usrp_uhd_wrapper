@@ -35,7 +35,7 @@ For installing the server on the USRP (needs to be done only once per USRP):
 4. `cd uhd_wrapper && mkdir build`
 5. `cd build`
 6. `cmake -DCMAKE_BUILD_TYPE=Release ..`
-7. `make`
+7. `make -j4`
 8. `make install`
 9. `ctest -V` to check if the tests pass
 

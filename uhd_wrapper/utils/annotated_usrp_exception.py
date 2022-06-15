@@ -3,8 +3,8 @@ class AnnotatedUsrpException(Exception):
         self.actualUsrpMsg = actualUsrpMsg
         self.usrpName = usrpName
 
-        self.msg = self.createExceptionMsg()
+        self.msg = self.__createExceptionMsg()
         super().__init__(self.msg)
 
-    def createExceptionMsg(self) -> str:
+    def __createExceptionMsg(self) -> str:
         return f"Usrp {self.usrpName}: {self.actualUsrpMsg}"

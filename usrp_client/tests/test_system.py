@@ -68,7 +68,7 @@ class FakeSystem(System):
         super().__init__()
         self.__noUsrps = 0
         self.createUsrpClient = Mock(side_effect=[])  # type: ignore
-        self.sleep = Mock(spec=System.sleep)  # type: ignore
+        self._sleep = Mock(spec=System._sleep)  # type: ignore
         if mockSyncValid:
             self.synchronisationValid = Mock(return_value=True)  # type: ignore
         self._usrpsSynced = resyncFlag

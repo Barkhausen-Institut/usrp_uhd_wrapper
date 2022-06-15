@@ -193,7 +193,7 @@ class System:
             if self.synchronisationValid():
                 self._usrpsSynced.set()
                 return
-            self.sleep(System.timeBetweenSyncAttempts)
+            self._sleep(System.timeBetweenSyncAttempts)
         raise RuntimeError(f"Tried at least {self.syncAttempts} syncing wihout succes.")
 
     def synchronisationValid(self) -> bool:
@@ -208,9 +208,9 @@ class System:
         for usrp in self.__usrpClients.keys():
             self.__usrpClients[usrp].client.setTimeToZeroNextPps()
             logging.info("Set time to zero for PPS.")
-        self.sleep(1.1)
+        self._sleep(1.1)
 
-    def sleep(self, delay: float) -> None:
+    def _sleep(self, delay: float) -> None:
         """Let's the system sleep for `delay` seconds."""
         time.sleep(delay)
 

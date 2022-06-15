@@ -18,7 +18,8 @@ from uhd_wrapper.usrp_pybinding import (
     RxStreamingConfig,
     TxStreamingConfig,
 )
-from uhd_wrapper.utils.config import RfConfig, fillDummyRfConfig, MimoSignal
+from uhd_wrapper.utils.config import RfConfig, MimoSignal
+from uhd_wrapper.tests.python.utils import fillDummyRfConfig
 
 
 class TestSerializationComplexArr(unittest.TestCase):

@@ -3,7 +3,7 @@ from unittest.mock import patch, Mock
 
 from uhd_wrapper.rpc_server.reconfigurable_usrp import MimoReconfiguringUsrp
 from uhd_wrapper.usrp_pybinding import RfConfig, Usrp
-from uhd_wrapper.utils.config import fillDummyRfConfig
+from uhd_wrapper.tests.python.utils import fillDummyRfConfig
 
 
 class TestMimoReconfigUsrp(unittest.TestCase):

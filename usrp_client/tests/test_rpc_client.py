@@ -10,8 +10,8 @@ from uhd_wrapper.utils.config import (
     RfConfig,
     TxStreamingConfig,
     RxStreamingConfig,
-    fillDummyRfConfig,
 )
+from uhd_wrapper.tests.python.utils import fillDummyRfConfig
 
 
 class TestUsrpClient(unittest.TestCase):

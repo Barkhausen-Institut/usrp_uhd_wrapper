@@ -1,26 +1,28 @@
 import unittest
 
+from zerorpc.exceptions import RemoteError
+
 from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
 
 
-def rethrowException_emptyUsrpField(msg: str) -> None:
-    try:
-        raise Exception(msg)
-    except Exception as e:
-        raise RemoteUsrpError(str(e))
+def raiseRemoteError(msg: str) -> None:
+    raise RemoteError(msg)
 
 
-def rethrowException_setUsrpField(msg: str, usrpName: str) -> None:
+def handleRemoteError(msg: str, usrpName: str = "") -> None:
     try:
-        raise Exception(msg)
+        raiseRemoteError(msg)
     except Exception as e:
-        raise RemoteUsrpError(str(e), usrpName)
+        if usrpName == "":
+            raise RemoteUsrpError(e.msg)
+        else:
+            raise RemoteUsrpError(e.msg, usrpName)
 
 
 class TestRemoteUsrpError(unittest.TestCase):
     def test_standardExceptionContainsEmptyUsrpField(self) -> None:
         try:
-            rethrowException_emptyUsrpField("foo")
+            handleRemoteError("foo")
         except RemoteUsrpError as e:
             self.assertEqual(e.usrpName, "")
 
@@ -28,13 +30,13 @@ class TestRemoteUsrpError(unittest.TestCase):
         DUMMY_MSG = "foo"
         USRP_NAME = "usrp1"
         try:
-            rethrowException_setUsrpField(DUMMY_MSG, USRP_NAME)
+            handleRemoteError(DUMMY_MSG, USRP_NAME)
         except RemoteUsrpError as e:
             self.assertIn(USRP_NAME, str(e))
 
     def test_msgContainsMsgOfReraisedException(self) -> None:
         DUMMY_MSG = "foo"
         try:
-            rethrowException_setUsrpField(DUMMY_MSG, "usrp1")
+            handleRemoteError(DUMMY_MSG, "usrp1")
         except RemoteUsrpError as e:
             self.assertIn(DUMMY_MSG, str(e))

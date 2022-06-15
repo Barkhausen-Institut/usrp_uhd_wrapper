@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import numpy.testing as npt
+from zerorpc.exceptions import RemoteError
 
 from usrp_client.rpc_client import UsrpClient
 from usrp_client.system import System, TimedFlag
@@ -13,7 +14,7 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
     RxStreamingConfig,
 )
-from uhd_wrapper.utils.annotated_usrp_exception import AnnotatedUsrpException
+from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
 
 
 class TestSystemInitialization(unittest.TestCase):
@@ -201,27 +202,27 @@ class TestUsrpExceptionHandling(unittest.TestCase):
         self.system = FakeSystem(1)
 
     def test_executeThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
-        self.system.mockUsrps[0].execute.side_effect = AnnotatedUsrpException("foo")
+        self.system.mockUsrps[0].execute.side_effect = RemoteError("", "foo", "")
         try:
             self.system.execute()
-        except AnnotatedUsrpException as e:
+        except RemoteUsrpError as e:
             self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
 
     def test_collectThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
-        self.system.mockUsrps[0].collect.side_effect = AnnotatedUsrpException("foo")
+        self.system.mockUsrps[0].collect.side_effect = RemoteError("", "foo", "")
         try:
             self.system.collect()
-        except AnnotatedUsrpException as e:
+        except RemoteUsrpError as e:
             self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
 
     def test_mismatchRfConfigThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
-        self.system.mockUsrps[0].configureRfConfig.side_effect = AnnotatedUsrpException(
-            "foo"
+        self.system.mockUsrps[0].configureRfConfig.side_effect = RemoteError(
+            "", "foo", ""
         )
         usrpName = "newUsrp"
         try:
             self.system.addNewUsrp(usrpName=usrpName)
-        except AnnotatedUsrpException as e:
+        except RemoteUsrpError as e:
             self.assertEqual(e.usrpName, usrpName)
 
 

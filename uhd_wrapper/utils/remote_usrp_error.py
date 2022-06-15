@@ -1,4 +1,4 @@
-class AnnotatedUsrpException(Exception):
+class RemoteUsrpError(RuntimeError):
     def __init__(self, actualUsrpMsg: str, usrpName: str = "") -> None:
         self.actualUsrpMsg = actualUsrpMsg
         self.usrpName = usrpName

@@ -5,6 +5,7 @@ from collections import namedtuple
 from threading import Timer
 
 import zerorpc
+from zerorpc.exceptions import RemoteError
 import numpy as np
 
 from uhd_wrapper.utils.config import (
@@ -16,7 +17,7 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
 )
 from usrp_client.rpc_client import UsrpClient
-from uhd_wrapper.utils.annotated_usrp_exception import AnnotatedUsrpException
+from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
 
 
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
@@ -117,8 +118,8 @@ class System:
             usrpClient.configureRfConfig(rfConfig)
             usrpClient.resetStreamingConfigs()
             self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
-        except AnnotatedUsrpException as e:
-            raise AnnotatedUsrpException(e.actualUsrpMsg, usrpName)
+        except RemoteError as e:
+            raise RemoteUsrpError(e.msg, usrpName)
 
     def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
         self.__assertUniqueUsrpName(usrpName)
@@ -184,8 +185,8 @@ class System:
         try:
             for usrpName in self.__usrpClients.keys():
                 self.__usrpClients[usrpName].client.execute(baseTimeSec)
-        except AnnotatedUsrpException as e:
-            raise AnnotatedUsrpException(e.actualUsrpMsg, usrpName)
+        except RemoteError as e:
+            raise RemoteUsrpError(e.msg, usrpName)
 
     def __synchronizeUsrps(self) -> None:
         if self._usrpsSynced.isSet():
@@ -253,8 +254,8 @@ class System:
             for key, item in self.__usrpClients.items():
                 currentUsrpName = key
                 samples[currentUsrpName] = item.client.collect()
-        except AnnotatedUsrpException as e:
-            raise AnnotatedUsrpException(e.actualUsrpMsg, currentUsrpName)
+        except RemoteError as e:
+            raise RemoteUsrpError(e.msg, currentUsrpName)
 
         self.__assertNoClippedValues(samples)
         return samples

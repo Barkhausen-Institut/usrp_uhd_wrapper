@@ -79,6 +79,14 @@ $ . env/bin/activate
 
 The **examples** directory contains some examples. In each example file, we will print if the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. **Port 5555 is used.** We add the option to plot signals. Examples should be self-explanatory.
 
+**localhost_transmission**: Sends random signal from a dedicated USRP to itself, check file.
+
+Usage:
+
+```bash
+$ python examples/localhost_transmission.py --usrp1-ip <ip> --carrier-frequency <carrier-frequency> --plot
+```
+
 **usrp_p2p_transmission**: Sends random signal from Usrp1 to Usrp2, check file.
 
 Usage:

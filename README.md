@@ -40,6 +40,7 @@ For installing the server on the USRP (needs to be done only once per USRP):
 9. `ctest -V` to check if the tests pass
 
 To start the usrp server as a service, run: `systemctl enable rpc-server.service`. Restart.
+The USRP server needs a minute to start.
 
 ## Client
 
@@ -71,6 +72,8 @@ Assuming you installed the client, always activate the virtual environment via:
 $ cd <repo>
 $ . env/bin/activate
 ```
+
+**Note**: If you restart the USRP, the server needs a minute to start.
 
 ## Examples
 

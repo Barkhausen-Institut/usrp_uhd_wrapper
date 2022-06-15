@@ -31,7 +31,7 @@ jobs:
         . .venv/bin/activate
         cd uhd_wrapper
         mkdir build && cd build
-        cmake ..
+        cmake -DINSTALL_SERVICE=OFF ..
         make && make install
 
     - name: Run tests

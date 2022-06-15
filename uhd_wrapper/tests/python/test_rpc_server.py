@@ -13,10 +13,12 @@ from uhd_wrapper.utils.serialization import (
     serializeComplexArray,
     deserializeComplexArray,
 )
+from uhd_wrapper.utils.annotated_usrp_exception import AnnotatedUsrpException
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
     RxStreamingConfig,
     TxStreamingConfig,
+    UsrpException,
 )
 from uhd_wrapper.utils.config import RfConfig, fillDummyRfConfig, MimoSignal
 
@@ -70,6 +72,29 @@ class TestSerializationRfConfig(unittest.TestCase):
 
     def test_properRfConfigDeSerialization(self) -> None:
         self.assertEqual(self.conf, RfConfig.deserialize(self.serializedRfConf))
+
+
+class TestExceptionConversion(unittest.TestCase):
+    def setUp(self) -> None:
+        self.usrpMock = Mock(spec=Usrp)
+        self.usrpServer = UsrpServer(self.usrpMock)
+        self.conf = fillDummyRfConfig(RfConfig())
+        self.serializedRfConf = self.conf.serialize()
+
+    def test_configureRfConfigConverts(self) -> None:
+        self.usrpMock.setRfConfig.side_effect = UsrpException("foo")
+        self.assertRaises(
+            AnnotatedUsrpException,
+            lambda: self.usrpServer.configureRfConfig(self.serializedRfConf),
+        )
+
+    def test_executeConverts(self) -> None:
+        self.usrpMock.execute.side_effect = UsrpException("foo")
+        self.assertRaises(AnnotatedUsrpException, lambda: self.usrpServer.execute(1.0))
+
+    def test_collectConverts(self) -> None:
+        self.usrpMock.collect.side_effect = UsrpException("foo")
+        self.assertRaises(AnnotatedUsrpException, lambda: self.usrpServer.collect())
 
 
 class TestRfConfigCast(unittest.TestCase):

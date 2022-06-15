@@ -82,7 +82,7 @@ class System:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
         self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
 
-    def createUsrpClient(self, ip: str) -> UsrpClient:
+    def _createUsrpClient(self, ip: str) -> UsrpClient:
         """Connect to the USRP server. Developers only.
 
         Args:
@@ -111,7 +111,7 @@ class System:
         self._usrpsSynced.reset()
         self.__assertUniqueUsrp(ip, usrpName)
 
-        usrpClient = self.createUsrpClient(ip)
+        usrpClient = self._createUsrpClient(ip)
         usrpClient.configureRfConfig(rfConfig)
         usrpClient.resetStreamingConfigs()
         self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)

@@ -20,13 +20,13 @@ class TestSystemInitialization(unittest.TestCase):
         self.system = System()
         self.mockUsrpClient = Mock()
 
-        self.system.createUsrpClient = Mock()  # type: ignore
-        self.system.createUsrpClient.return_value = self.mockUsrpClient  # type: ignore
+        self.system._createUsrpClient = Mock()  # type: ignore
+        self.system._createUsrpClient.return_value = self.mockUsrpClient  # type: ignore
 
     def test_usrpClientGetsCreated(self) -> None:
         IP = "localhost"
         self.system.addUsrp(RfConfig(), IP, "dummyName")
-        self.system.createUsrpClient.assert_called_once_with(IP)  # type: ignore
+        self.system._createUsrpClient.assert_called_once_with(IP)  # type: ignore
 
     def test_throwExceptionIfIpDuplicate_ip(self) -> None:
         self.system.addUsrp(RfConfig(), "localhost", "testName")
@@ -67,7 +67,7 @@ class FakeSystem(System):
     ) -> None:
         super().__init__()
         self.__noUsrps = 0
-        self.createUsrpClient = Mock(side_effect=[])  # type: ignore
+        self._createUsrpClient = Mock(side_effect=[])  # type: ignore
         self._sleep = Mock(spec=System._sleep)  # type: ignore
         if mockSyncValid:
             self.synchronisationValid = Mock(return_value=True)  # type: ignore
@@ -80,8 +80,8 @@ class FakeSystem(System):
         self.__noUsrps += 1
         mockedUsrp = Mock(spec=UsrpClient)
         mockedUsrp = self.__mockUsrpFunctions(mockedUsrp)
-        self.createUsrpClient.side_effect = list(  # type: ignore
-            self.createUsrpClient.side_effect  # type: ignore
+        self._createUsrpClient.side_effect = list(  # type: ignore
+            self._createUsrpClient.side_effect  # type: ignore
         ) + [mockedUsrp]
         super().addUsrp(
             RfConfig(), f"localhost{self.__noUsrps}", f"usrp{self.__noUsrps}"

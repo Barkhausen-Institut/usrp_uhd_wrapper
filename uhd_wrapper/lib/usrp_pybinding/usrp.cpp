@@ -102,8 +102,6 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("noTxAntennas", &bi::RfConfig::noTxAntennas)
         .def(py::self == py::self);
 
-    py::class_<bi::UsrpException>(m, "UsrpException");
-
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
         .def(py::init<const unsigned int, const double>(), py::arg("noSamples"),
@@ -135,6 +133,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig)
         .def_property_readonly("deviceType", &bi::UsrpInterface::getDeviceType);
 
+    py::register_exception<bi::UsrpException>(m, "UsrpException");
     // takes a MimoSignal as the parameter from Python and creates a
     // streaming config with it. Used only for testing
     m.def("_createTxConfig",

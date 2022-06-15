@@ -55,13 +55,13 @@ class UsrpServer:
                 RfConfigToBinding(RfConfig.deserialize(serializedRfConfig))
             )
         except UsrpException as e:
-            raise AnnotatedUsrpException(str(e))
+            raise AnnotatedUsrpException(e)
 
     def execute(self, baseTime: float) -> None:
         try:
             self.__usrp.execute(baseTime)
         except UsrpException as e:
-            raise AnnotatedUsrpException(str(e))
+            raise AnnotatedUsrpException(e)
 
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
@@ -70,7 +70,7 @@ class UsrpServer:
         try:
             mimoSignals = [MimoSignal(signals=c) for c in self.__usrp.collect()]
         except UsrpException as e:
-            raise AnnotatedUsrpException(str(e))
+            raise AnnotatedUsrpException(e)
 
         return [s.serialize() for s in mimoSignals]
 

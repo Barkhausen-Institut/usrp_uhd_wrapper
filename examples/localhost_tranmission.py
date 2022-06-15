@@ -1,4 +1,5 @@
-from typing import Tuple
+from typing import Tuple, Any
+import argparse
 
 import numpy as np
 
@@ -9,7 +10,8 @@ from uhd_wrapper.utils.config import (
     RxStreamingConfig,
     MimoSignal,
 )
-from examples.helpers import createRandom, printDelays, plotP2pSiso,
+from examples.helpers import createRandom, printDelays, plotP2pSiso
+
 
 def readArgs() -> Any:
     parser = argparse.ArgumentParser()
@@ -27,6 +29,7 @@ def readArgs() -> Any:
     )
     args = parser.parse_args()
     return args
+
 
 def createSystem(
     fc: float, fs: float, txGain: float, rxGain: float, ipUsrp1: str
@@ -89,7 +92,7 @@ def main() -> None:
         fs=245.76e6,
         txGain=25,
         rxGain=25,
-        ipUsrp1=args.usrp1_ip,,
+        ipUsrp1=args.usrp1_ip,
     )
     txSignal = createRandom(noSamples=int(20e3))
 

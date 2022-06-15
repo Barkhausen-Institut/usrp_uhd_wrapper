@@ -44,6 +44,7 @@ class RxStreamingConfig:
 @dataclass
 class MimoSignal:
     signals: List[np.ndarray] = field(default_factory=list)
+    """Each List item corresponds to one antenna frame."""
 
     def serialize(self) -> List[SerializedComplexArray]:
         return [serializeComplexArray(s) for s in self.signals]

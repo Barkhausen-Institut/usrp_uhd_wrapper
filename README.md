@@ -32,14 +32,15 @@ For installing the server on the USRP (needs to be done only once per USRP):
 1. `git clone <this repo> && cd <repo>`
 2. `python3 -m venv env && . env/bin/activate`
 3. `pip install -e .`
-4. `cd usrp_uhd_wrapper && mkdir build`
+4. `cd uhd_wrapper && mkdir build`
 5. `cd build`
 6. `cmake -DCMAKE_BUILD_TYPE=Release ..`
-7. `make`
+7. `make -j4`
 8. `make install`
 9. `ctest -V` to check if the tests pass
 
 To start the usrp server as a service, run: `systemctl enable rpc-server.service`. Restart.
+The USRP server needs a minute to start.
 
 ## Client
 
@@ -72,9 +73,19 @@ $ cd <repo>
 $ . env/bin/activate
 ```
 
+**Note**: If you restart the USRP, the server needs a minute to start.
+
 ## Examples
 
 The **examples** directory contains some examples. In each example file, we will print if the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. **Port 5555 is used.** We add the option to plot signals. Examples should be self-explanatory.
+
+**localhost_transmission**: Sends random signal from a dedicated USRP to itself, check file.
+
+Usage:
+
+```bash
+$ python examples/localhost_transmission.py --usrp1-ip <ip> --carrier-frequency <carrier-frequency> --plot
+```
 
 **usrp_p2p_transmission**: Sends random signal from Usrp1 to Usrp2, check file.
 

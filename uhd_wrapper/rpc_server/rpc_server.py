@@ -8,9 +8,11 @@ from uhd_wrapper.usrp_pybinding import (
     Usrp,
     TxStreamingConfig,
     RxStreamingConfig,
+    UsrpException,
 )
 from uhd_wrapper.usrp_pybinding import RfConfig as RfConfigBinding
 from uhd_wrapper.utils.config import RfConfig, MimoSignal
+from uhd_wrapper.utils.annotated_usrp_exception import AnnotatedUsrpException
 
 
 def RfConfigFromBinding(rfConfigBinding: RfConfigBinding) -> RfConfig:
@@ -48,18 +50,28 @@ class UsrpServer:
         )
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
-        self.__usrp.setRfConfig(
-            RfConfigToBinding(RfConfig.deserialize(serializedRfConfig))
-        )
+        try:
+            self.__usrp.setRfConfig(
+                RfConfigToBinding(RfConfig.deserialize(serializedRfConfig))
+            )
+        except UsrpException as e:
+            raise AnnotatedUsrpException(e)
 
     def execute(self, baseTime: float) -> None:
-        self.__usrp.execute(baseTime)
+        try:
+            self.__usrp.execute(baseTime)
+        except UsrpException as e:
+            raise AnnotatedUsrpException(e)
 
     def setTimeToZeroNextPps(self) -> None:
         self.__usrp.setTimeToZeroNextPps()
 
     def collect(self) -> List[List[SerializedComplexArray]]:
-        mimoSignals = [MimoSignal(signals=c) for c in self.__usrp.collect()]
+        try:
+            mimoSignals = [MimoSignal(signals=c) for c in self.__usrp.collect()]
+        except UsrpException as e:
+            raise AnnotatedUsrpException(e)
+
         return [s.serialize() for s in mimoSignals]
 
     def getCurrentFpgaTime(self) -> int:

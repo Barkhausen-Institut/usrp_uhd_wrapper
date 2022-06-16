@@ -164,6 +164,13 @@ TEST_CASE("[ValidTxSignal]") {
             assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
             UsrpException);
     }
+
+    SECTION("UnevenAmountOfSamples") {
+        conf.samples = {samples_vec((size_t)99, sample(0, 0))};
+        REQUIRE_THROWS_AS(
+            assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
+            UsrpException);
+    }
 }
 
 TEST_CASE("[ValidRfConfig]") {

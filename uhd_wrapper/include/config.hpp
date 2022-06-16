@@ -4,6 +4,7 @@
 
 namespace bi {
 const int SAMPLES_PER_BUFFER = 2000;
+const int SAMPLES_PER_CYCLE = 2;
 typedef std::complex<float> sample;
 typedef std::vector<sample> samples_vec;
 typedef std::vector<samples_vec> MimoSignal;

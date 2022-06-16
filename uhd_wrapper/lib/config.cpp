@@ -90,6 +90,9 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
             throw UsrpException(
                 "The antenna signals need to have the same length.");
     }
+
+    if (lengthSignal % SAMPLES_PER_CYCLE != 0)
+        throw UsrpException("The amount of samples must be even.");
 }
 
 void assertValidRfConfig(const RfConfig& conf) {

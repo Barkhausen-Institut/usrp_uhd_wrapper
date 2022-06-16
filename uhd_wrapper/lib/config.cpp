@@ -92,7 +92,8 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
     }
 
     if (lengthSignal % SAMPLES_PER_CYCLE != 0)
-        throw UsrpException("The amount of samples must be even.");
+        throw UsrpException("The amount of samples must be a multiple of " +
+                            std::to_string(SAMPLES_PER_CYCLE));
 }
 
 void assertValidRfConfig(const RfConfig& conf) {

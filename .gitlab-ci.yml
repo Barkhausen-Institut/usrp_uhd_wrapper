@@ -22,7 +22,7 @@ build_test:
     - pip install -r requirements_tests.txt
     - cd uhd_wrapper
     - mkdir build && cd build
-    - cmake ..
+    - cmake -DINSTALL_SERVICE=OFF ..
     - make && make install
     - ctest -V
     - cd ../../

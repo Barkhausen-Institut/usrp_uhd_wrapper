@@ -119,6 +119,12 @@ TEST_CASE("[ValidRxStreamingConfig]") {
                                                        guardOffset, fs),
                           UsrpException);
     }
+    SECTION("UneventAmountOfSamples") {
+        newConfig.noSamples = 199;
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+                                                       guardOffset, fs),
+                          UsrpException);
+    }
 }
 
 TEST_CASE("[ValidTxSignal]") {

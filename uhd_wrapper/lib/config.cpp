@@ -71,6 +71,10 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
         throw UsrpException(
             "Invalid RX streaming config: the offset of the new config is too "
             "small.");
+    if (newConfig.noSamples % SAMPLES_PER_CYCLE != 0)
+        throw UsrpException(
+            "Number of samples to receive must be a multiple of " +
+            std::to_string(SAMPLES_PER_CYCLE));
 }
 
 void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,

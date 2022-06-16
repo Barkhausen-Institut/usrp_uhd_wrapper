@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import numpy.testing as npt
+from zerorpc.exceptions import RemoteError
 
 from usrp_client.rpc_client import UsrpClient
 from usrp_client.system import System, TimedFlag
@@ -13,6 +14,7 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
     RxStreamingConfig,
 )
+from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
 
 
 class TestSystemInitialization(unittest.TestCase):
@@ -76,16 +78,18 @@ class FakeSystem(System):
 
     synchronisationValid: Mock
 
-    def addNewUsrp(self) -> Mock:
+    def addNewUsrp(self, usrpName: str = "") -> Mock:
         self.__noUsrps += 1
         mockedUsrp = Mock(spec=UsrpClient)
         mockedUsrp = self.__mockUsrpFunctions(mockedUsrp)
+        if usrpName == "":
+            usrpName = f"usrp{self.__noUsrps}"
+        mockedUsrp.name = usrpName
+
         self._createUsrpClient.side_effect = list(  # type: ignore
             self._createUsrpClient.side_effect  # type: ignore
         ) + [mockedUsrp]
-        super().addUsrp(
-            RfConfig(), f"localhost{self.__noUsrps}", f"usrp{self.__noUsrps}"
-        )
+        super().addUsrp(RfConfig(), f"localhost{self.__noUsrps}", mockedUsrp.name)
         return mockedUsrp
 
     def __mockUsrpFunctions(self, usrpClientMock: Mock) -> Mock:
@@ -191,6 +195,35 @@ class TestMultiDeviceSync(unittest.TestCase):
         self.system.execute()
         self.system.mockUsrps[0].setTimeToZeroNextPps.assert_called_once()
         self.system.mockUsrps[1].setTimeToZeroNextPps.assert_called_once()
+
+
+class TestUsrpExceptionHandling(unittest.TestCase):
+    def setUp(self) -> None:
+        self.system = FakeSystem(1)
+
+    def test_executeThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
+        self.system.mockUsrps[0].execute.side_effect = RemoteError("", "foo", "")
+        try:
+            self.system.execute()
+        except RemoteUsrpError as e:
+            self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
+
+    def test_collectThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
+        self.system.mockUsrps[0].collect.side_effect = RemoteError("", "foo", "")
+        try:
+            self.system.collect()
+        except RemoteUsrpError as e:
+            self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
+
+    def test_mismatchRfConfigThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
+        self.system.mockUsrps[0].configureRfConfig.side_effect = RemoteError(
+            "", "foo", ""
+        )
+        usrpName = "newUsrp"
+        try:
+            self.system.addNewUsrp(usrpName=usrpName)
+        except RemoteUsrpError as e:
+            self.assertEqual(e.usrpName, usrpName)
 
 
 class TestSynchronisationValid(unittest.TestCase):

@@ -133,6 +133,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig)
         .def_property_readonly("deviceType", &bi::UsrpInterface::getDeviceType);
 
+    py::register_exception<bi::UsrpException>(m, "UsrpException");
     // takes a MimoSignal as the parameter from Python and creates a
     // streaming config with it. Used only for testing
     m.def("_createTxConfig",

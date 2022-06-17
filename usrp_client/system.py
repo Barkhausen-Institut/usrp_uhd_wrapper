@@ -17,7 +17,7 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
 )
 from usrp_client.rpc_client import UsrpClient
-from usrp_client.errors import RemoteUsrpError
+from usrp_client.errors import MultipleErrors, RemoteUsrpError
 
 
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
@@ -182,11 +182,17 @@ class System:
         self.__synchronizeUsrps()
         baseTimeSec = self.__calculateBaseTimeSec()
         logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
-        try:
-            for usrpName in self.__usrpClients.keys():
+        errors: List[RemoteError] = []
+        for usrpName in self.__usrpClients.keys():
+            try:
                 self.__usrpClients[usrpName].client.execute(baseTimeSec)
-        except RemoteError as e:
-            raise RemoteUsrpError(e.msg, usrpName)
+            except RemoteError as e:
+                errors.append(RemoteUsrpError(e.msg, usrpName))
+
+        if len(errors) == 1:
+            raise errors[0]
+        elif len(errors) > 1:
+            raise MultipleErrors(errors)
 
     def __synchronizeUsrps(self) -> None:
         if self._usrpsSynced.isSet():
@@ -250,12 +256,18 @@ class System:
         """
         samples = dict()
         currentUsrpName = ""
-        try:
-            for key, item in self.__usrpClients.items():
-                currentUsrpName = key
+        errors: List[RemoteUsrpError] = []
+        for key, item in self.__usrpClients.items():
+            currentUsrpName = key
+            try:
                 samples[currentUsrpName] = item.client.collect()
-        except RemoteError as e:
-            raise RemoteUsrpError(e.msg, currentUsrpName)
+            except RemoteError as e:
+                errors.append(RemoteUsrpError(e.msg, currentUsrpName))
+
+        if len(errors) == 1:
+            raise errors[0]
+        elif len(errors) > 1:
+            raise MultipleErrors(errors)
 
         self.__assertNoClippedValues(samples)
         return samples

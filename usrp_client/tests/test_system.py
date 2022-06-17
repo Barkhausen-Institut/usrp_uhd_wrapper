@@ -8,7 +8,7 @@ from zerorpc.exceptions import RemoteError
 
 from usrp_client.rpc_client import UsrpClient
 from usrp_client.system import System, TimedFlag
-from usrp_client.errors import RemoteUsrpError
+from usrp_client.errors import MultipleErrors, RemoteUsrpError
 from uhd_wrapper.utils.config import (
     MimoSignal,
     RfConfig,
@@ -199,7 +199,7 @@ class TestMultiDeviceSync(unittest.TestCase):
 
 class TestUsrpExceptionHandling(unittest.TestCase):
     def setUp(self) -> None:
-        self.system = FakeSystem(1)
+        self.system = FakeSystem(2)
 
     def test_executeThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
         self.system.mockUsrps[0].execute.side_effect = RemoteError("", "foo", "")
@@ -224,6 +224,42 @@ class TestUsrpExceptionHandling(unittest.TestCase):
             self.system.addNewUsrp(usrpName=usrpName)
         except RemoteUsrpError as e:
             self.assertEqual(e.usrpName, usrpName)
+
+    def test_executeBothUsrpsThrowError(self) -> None:
+        errorMsgUsrp1 = "foo"
+        errorMsgUsrp2 = "bar"
+        self.system.mockUsrps[0].execute.side_effect = RemoteError(
+            "", errorMsgUsrp1, ""
+        )
+        self.system.mockUsrps[1].execute.side_effect = RemoteError(
+            "", errorMsgUsrp2, ""
+        )
+
+        try:
+            self.system.execute()
+        except MultipleErrors as e:
+            self.assertIn(self.system.mockUsrps[0].name, str(e))
+            self.assertIn(self.system.mockUsrps[1].name, str(e))
+            self.assertIn(errorMsgUsrp1, str(e))
+            self.assertIn(errorMsgUsrp2, str(e))
+
+    def test_collectBothUsrpsThrowError(self) -> None:
+        errorMsgUsrp1 = "foo"
+        errorMsgUsrp2 = "bar"
+        self.system.mockUsrps[0].collect.side_effect = RemoteError(
+            "", errorMsgUsrp1, ""
+        )
+        self.system.mockUsrps[1].collect.side_effect = RemoteError(
+            "", errorMsgUsrp2, ""
+        )
+
+        try:
+            self.system.collect()
+        except MultipleErrors as e:
+            self.assertIn(self.system.mockUsrps[0].name, str(e))
+            self.assertIn(self.system.mockUsrps[1].name, str(e))
+            self.assertIn(errorMsgUsrp1, str(e))
+            self.assertIn(errorMsgUsrp2, str(e))
 
 
 class TestSynchronisationValid(unittest.TestCase):

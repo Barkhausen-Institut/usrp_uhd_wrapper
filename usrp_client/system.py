@@ -17,7 +17,7 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
 )
 from usrp_client.rpc_client import UsrpClient
-from usrp_client.remote_usrp_error import RemoteUsrpError
+from usrp_client.errors import RemoteUsrpError
 
 
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")

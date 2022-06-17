@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import Dict, List, Callable
 import time
 from collections import namedtuple
 from threading import Timer
@@ -174,26 +174,6 @@ class System:
             for usrpName in self.__usrpClients.keys()
         }
 
-    def execute(self) -> None:
-        """Executes all streaming configurations.
-
-        Samples are buffered, timeouts are calculated, Usrps are synchronized...
-        """
-        self.__synchronizeUsrps()
-        baseTimeSec = self.__calculateBaseTimeSec()
-        logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
-        errors: List[RemoteError] = []
-        for usrpName in self.__usrpClients.keys():
-            try:
-                self.__usrpClients[usrpName].client.execute(baseTimeSec)
-            except RemoteError as e:
-                errors.append(RemoteUsrpError(e.msg, usrpName))
-
-        if len(errors) == 1:
-            raise errors[0]
-        elif len(errors) > 1:
-            raise MultipleErrors(errors)
-
     def __synchronizeUsrps(self) -> None:
         if self._usrpsSynced.isSet():
             return
@@ -242,6 +222,33 @@ class System:
             item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]
 
+    def __catchRemoteUsrpErrors(self, f: Callable[[str], None]) -> None:
+        errors = []
+
+        for usrpName in self.__usrpClients.keys():
+            try:
+                f(usrpName)
+            except RemoteError as e:
+                errors.append(RemoteUsrpError(e.msg, usrpName))
+        if len(errors) == 1:
+            raise errors[0]
+        elif len(errors) > 1:
+            raise MultipleErrors(errors)
+
+    def execute(self) -> None:
+        """Executes all streaming configurations.
+
+        Samples are buffered, timeouts are calculated, Usrps are synchronized...
+        """
+        self.__synchronizeUsrps()
+        baseTimeSec = self.__calculateBaseTimeSec()
+        logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
+
+        def callExecuteAtUsrp(usrpName: str) -> None:
+            self.__usrpClients[usrpName].client.execute(baseTimeSec)
+
+        self.__catchRemoteUsrpErrors(callExecuteAtUsrp)
+
     def collect(self) -> Dict[str, List[MimoSignal]]:
         """Collects the samples at each USRP.
 
@@ -255,20 +262,11 @@ class System:
                 The key represents the usrp identifier.
         """
         samples = dict()
-        currentUsrpName = ""
-        errors: List[RemoteUsrpError] = []
-        for key, item in self.__usrpClients.items():
-            currentUsrpName = key
-            try:
-                samples[currentUsrpName] = item.client.collect()
-            except RemoteError as e:
-                errors.append(RemoteUsrpError(e.msg, currentUsrpName))
 
-        if len(errors) == 1:
-            raise errors[0]
-        elif len(errors) > 1:
-            raise MultipleErrors(errors)
+        def callCollectAtUsrp(usrpName: str) -> None:
+            samples[usrpName] = self.__usrpClients[usrpName].client.collect()
 
+        self.__catchRemoteUsrpErrors(callCollectAtUsrp)
         self.__assertNoClippedValues(samples)
         return samples
 

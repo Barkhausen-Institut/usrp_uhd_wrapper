@@ -1,4 +1,3 @@
-import logging
 from typing import Dict, List
 import time
 from collections import namedtuple
@@ -147,7 +146,6 @@ class System:
             raise ValueError("Tx signal contains values above 1.0.")
 
         self.__usrpClients[usrpName].client.configureTx(txStreamingConfig)
-        logging.info(f"Configured TX Streaming for USRP: {usrpName}.")
 
     def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
         """Configure receiver streaming.
@@ -159,7 +157,6 @@ class System:
             rxStreamingConfig (RxStreamingConfig): Desired configuration.
         """
         self.__usrpClients[usrpName].client.configureRx(rxStreamingConfig)
-        logging.info(f"Configured RX streaming for USRP: {usrpName}.")
 
     def getRfConfigs(self) -> Dict[str, RfConfig]:
         """Returns actual Radio Frontend configurations of the USRPs in the system.
@@ -181,7 +178,6 @@ class System:
         """
         self.__synchronizeUsrps()
         baseTimeSec = self.__calculateBaseTimeSec()
-        logging.info(f"Calling execution of usrps with base time: {baseTimeSec}")
         try:
             for usrpName in self.__usrpClients.keys():
                 self.__usrpClients[usrpName].client.execute(baseTimeSec)
@@ -215,7 +211,6 @@ class System:
     def __setTimeToZeroNextPps(self) -> None:
         for usrp in self.__usrpClients.keys():
             self.__usrpClients[usrp].client.setTimeToZeroNextPps()
-            logging.info("Set time to zero for PPS.")
         self._sleep(1.1)
 
     def _sleep(self, delay: float) -> None:
@@ -224,10 +219,6 @@ class System:
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()
-        logging.info(
-            f"For calculating the base time, I received the "
-            f"following fpgaTimes: {currentFpgaTimesSec}"
-        )
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec
 

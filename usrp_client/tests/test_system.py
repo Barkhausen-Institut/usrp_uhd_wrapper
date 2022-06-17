@@ -8,13 +8,13 @@ from zerorpc.exceptions import RemoteError
 
 from usrp_client.rpc_client import UsrpClient
 from usrp_client.system import System, TimedFlag
+from usrp_client.remote_usrp_error import RemoteUsrpError
 from uhd_wrapper.utils.config import (
     MimoSignal,
     RfConfig,
     TxStreamingConfig,
     RxStreamingConfig,
 )
-from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
 
 
 class TestSystemInitialization(unittest.TestCase):

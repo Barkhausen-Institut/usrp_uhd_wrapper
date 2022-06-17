@@ -1,6 +1,6 @@
 import unittest
 
-from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
+from usrp_client.remote_usrp_error import RemoteUsrpError
 
 
 class TestRemoteUsrpError(unittest.TestCase):

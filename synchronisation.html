@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Synchronisation &amp; Communication Patterns &mdash; USRP UHD API  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/msmb.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/js/versions.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Software Architecture" href="architecture.html" />
+    <link rel="prev" title="usrp_client package" href="usrp_client.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> USRP UHD API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API description</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Synchronisation &amp; Communication Patterns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#communication-patterns">Communication Patterns</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Physical &amp; Network Setup</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">USRP UHD API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Synchronisation &amp; Communication Patterns</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/synchronisation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="synchronisation-communication-patterns">
+<h1>Synchronisation &amp; Communication Patterns<a class="headerlink" href="#synchronisation-communication-patterns" title="Permalink to this headline">¶</a></h1>
+<p>If a <a class="reference internal" href="usrp_client.html#usrp_client.system.System" title="usrp_client.system.System"><code class="xref py py-class docutils literal notranslate"><span class="pre">usrp_client.system.System</span></code></a> consists of multiple USRPs, their clocks and their carrier frequencies
+need to be synchronized. We assume that the USRPs have a <cite>PPS in</cite> port that accepts Pulse Per Second (PPS) signals.
+This signal is provided by an external device.</p>
+<p>The USRPs have a built-in trigger that detects PPS signals. Once a PPS signal arrives,
+the internal USRP time can be set to zero. Each USRP has an interval FPGA time. If the USRPs are synced,
+the FPGA time is reset at the next PPS edge, cf. the following picture:</p>
+<img alt="_images/sync_timeline_general.png" src="_images/sync_timeline_general.png" />
+<p>It is to be noted that there are calls on the <code class="docutils literal notranslate"><span class="pre">System</span></code> itself (without explicitely accessing the USRP) and there
+are calls that access the USRPs within the <code class="docutils literal notranslate"><span class="pre">System</span></code>. They need to be set in the API call.</p>
+<p>The following picture shows the usual workflow:</p>
+<img alt="_images/system_reuse_timeline.png" src="_images/system_reuse_timeline.png" />
+<p>In the following description, we assume the USRPs to be synchronized.
+After having created the system via <code class="docutils literal notranslate"><span class="pre">system</span> <span class="pre">=</span> <span class="pre">System()</span></code> and after having added the USRPs
+to the system with <code class="docutils literal notranslate"><span class="pre">addUsrp</span></code> (in the picture, we assume two USRPs to be added), we define
+their streaming configurations with the dataclasses <code class="docutils literal notranslate"><span class="pre">TxStreamingConfig</span></code> and <code class="docutils literal notranslate"><span class="pre">RxStreamingConfig</span></code>.
+Within the streaming configurations, we set time offsets.
+In the example, we define a <code class="docutils literal notranslate"><span class="pre">TxStreamingConfig</span></code> with <code class="docutils literal notranslate"><span class="pre">sendTimeOffset=1.0</span></code> and a <code class="docutils literal notranslate"><span class="pre">RxStreamingConfig</span></code>
+with <code class="docutils literal notranslate"><span class="pre">receiveTimeOffset=1.0</span></code>. Afterwards, the <code class="docutils literal notranslate"><span class="pre">execute()</span></code> function is called, checking if
+the USRPs are in sync.</p>
+<p>After having defined the streaming configuration, <code class="docutils literal notranslate"><span class="pre">execute()</span></code> needs to be called. In order to
+collect the actual samples <code class="docutils literal notranslate"><span class="pre">collect()</span></code> needs to be called afterwards, which is a blocking call.
+It waits for transmission to be finished. The offsets defined in the streaming configurations (highlighted
+in green in the image) are with respect to the <code class="docutils literal notranslate"><span class="pre">execute()</span></code> call. On top of the defined offsets,
+a implementation-defined constant time offset <code class="docutils literal notranslate"><span class="pre">t0</span></code> is added.</p>
+<p>As depicted, the system can be reused if multiple packages need to be transmitted.</p>
+<section id="communication-patterns">
+<h2>Communication Patterns<a class="headerlink" href="#communication-patterns" title="Permalink to this headline">¶</a></h2>
+<p>Based on these offsets, you can define
+your own communication patterns. The following illustrates a Request-Reply-Pattern:</p>
+<img alt="_images/request_reply_pattern.png" src="_images/request_reply_pattern.png" />
+<p>If you want to define a multi-cast pattern, the streaming configurations look as follows (pseudo-code):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tUsrp1</span> <span class="o">=</span> <span class="n">TxStreamingConfig</span><span class="p">(</span><span class="n">sendTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="n">rUsrp2</span> <span class="o">=</span> <span class="n">RxStreamingConfig</span><span class="p">(</span><span class="n">receiveTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">rUsrp3</span> <span class="o">=</span> <span class="n">RxStreamingConfig</span><span class="p">(</span><span class="n">receiveTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>JCAS looks as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tUsrp1</span> <span class="o">=</span> <span class="n">TxStreamingConfig</span><span class="p">(</span><span class="n">sendTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">rUsrp1</span> <span class="o">=</span> <span class="n">RxStreamingConfig</span><span class="p">(</span><span class="n">receiveTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="n">rUsrp2</span> <span class="o">=</span> <span class="n">RxStreamingConfig</span><span class="p">(</span><span class="n">receiveTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Assume you want to send a multi-cast from USRP1 to USRPs 2 and 3 and afterwards send a unicast to USRP4 from USRP1:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">system</span> <span class="o">=</span> <span class="n">System</span><span class="p">()</span>
+<span class="n">system</span><span class="o">.</span><span class="n">addUsrp</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>  <span class="c1"># add your usrps here</span>
+
+
+<span class="c1"># multi-cast</span>
+<span class="n">tUsrp1</span> <span class="o">=</span> <span class="n">TxStreamingConfig</span><span class="p">(</span><span class="n">sendTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="n">rUsrp2</span> <span class="o">=</span> <span class="n">RxStreamingConfig</span><span class="p">(</span><span class="n">receiveTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">rUsrp3</span> <span class="o">=</span> <span class="n">RxStreamingConfig</span><span class="p">(</span><span class="n">receiveTimeOffset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="n">system</span><span class="o">.</span><span class="n">configureTx</span><span class="p">(</span><span class="n">usrpName</span><span class="o">=</span><span class="s2">&quot;usrp1&quot;</span><span class="p">,</span> <span class="n">txStreamingConfig</span><span class="o">=</span><span class="n">tUsrp1</span><span class="p">)</span>
+
+<span class="n">system</span><span class="o">.</span><span class="n">configureRx</span><span class="p">(</span><span class="n">usrpName</span><span class="o">=</span><span class="s2">&quot;usrp2&quot;</span><span class="p">,</span> <span class="n">rxStreamingConfig</span><span class="o">=</span><span class="n">rUsrp2</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">configureRx</span><span class="p">(</span><span class="n">usrpName</span><span class="o">=</span><span class="s2">&quot;usrp3&quot;</span><span class="p">,</span> <span class="n">rxStreamingConfig</span><span class="o">=</span><span class="n">rUsrp3</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="n">samplesMulticast</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+<span class="c1"># unicast</span>
+
+<span class="n">tUsrp1</span> <span class="o">=</span> <span class="n">TxStreamingConfig</span><span class="p">(</span><span class="n">sendTimeOffset</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+<span class="n">rUsrp4</span> <span class="o">=</span> <span class="n">RxStreamingConfig</span><span class="p">(</span><span class="n">receiveTimeOffset</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="n">system</span><span class="o">.</span><span class="n">configureTx</span><span class="p">(</span><span class="n">usrpName</span><span class="o">=</span><span class="s2">&quot;usrp1&quot;</span><span class="p">,</span> <span class="n">txStreamingConfig</span><span class="o">=</span><span class="n">tUsrp1</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">configureRx</span><span class="p">(</span><span class="n">usrpName</span><span class="o">=</span><span class="s2">&quot;usrp4&quot;</span><span class="p">,</span> <span class="n">rxStreamingConfig</span><span class="o">=</span><span class="n">rUsrp4</span><span class="p">)</span>
+<span class="n">system</span><span class="o">.</span><span class="n">execute</span><span class="p">()</span>
+<span class="n">samplesUnicast</span> <span class="o">=</span> <span class="n">system</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="usrp_client.html" class="btn btn-neutral float-left" title="usrp_client package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="architecture.html" class="btn btn-neutral float-right" title="Software Architecture" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Connected Robotics Lab.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+    var versions_json_url = ''
+</script>
+
+<div class="rst-versions" data-toggle="rst-versions" role="note"
+     aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"></span>
+        
+      <span class="fa fa-caret-down"></span>
+    </span>
+
+    <div class="rst-other-versions">
+        <dl id="versionselector">
+            <dt>Other Versions</dt>
+        </dl>
+
+    </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Physical &amp; Network Setup &mdash; USRP UHD API  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/msmb.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/js/versions.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Software Architecture" href="architecture.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> USRP UHD API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="modules.html">API description</a></li>
+<li class="toctree-l1"><a class="reference internal" href="synchronisation.html">Synchronisation &amp; Communication Patterns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Software Architecture</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Physical &amp; Network Setup</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#network-setup">Network Setup</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#physical-setup">Physical Setup</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">USRP UHD API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+      <li>Physical &amp; Network Setup</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/setup.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="physical-network-setup">
+<h1>Physical &amp; Network Setup<a class="headerlink" href="#physical-network-setup" title="Permalink to this headline">¶</a></h1>
+<p>There are important preliminary steps to get the USRPs running, involving a physical and a network setup.</p>
+<section id="network-setup">
+<h2>Network Setup<a class="headerlink" href="#network-setup" title="Permalink to this headline">¶</a></h2>
+<p>Ensure that the USRPs are in the same network. It is advised to change their hostname. This can be done as follows:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$ ssh &lt;usrp-ip&gt;
+$ vi /data/network/hostname
+</pre></div>
+</div>
+<p>Type in your desired hostname and restart the USRP.</p>
+<p>We use ZeroMQ for communication between client and server. Therefore, the port <cite>5555</cite> should be opened
+for TCP packets.</p>
+</section>
+<section id="physical-setup">
+<h2>Physical Setup<a class="headerlink" href="#physical-setup" title="Permalink to this headline">¶</a></h2>
+<dl>
+<dt>Synchronization</dt><dd><blockquote>
+<div><p>The USRPs are synchronized via PPS signals and a 10 MHz reference radio signal.
+As a generator, we use a Meinberg Clock. Connect their PPS outs to the <cite>PPS in`</cite> of the USRP and the
+10MHz ooutput to <cite>REF IN</cite>. Ensure that the cables are the same length!</p>
+</div></blockquote>
+<img alt="_images/sync.png" src="_images/sync.png" />
+</dd>
+<dt>Antennas</dt><dd><ul class="simple">
+<li><p>Note, that receiver ports of the USRP receive signals, although weak, even if no
+antenna is connected!</p></li>
+<li><p><cite>TX/RX0</cite> ports of the USRP are transmit antennas by default!</p></li>
+<li><p>if you connect two antennas via cable (to mitigate effects of the channel), make sure to add add
+30dB attenuator at transmit side</p></li>
+</ul>
+</dd>
+</dl>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="architecture.html" class="btn btn-neutral float-left" title="Software Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Connected Robotics Lab.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+    var versions_json_url = ''
+</script>
+
+<div class="rst-versions" data-toggle="rst-versions" role="note"
+     aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"></span>
+        
+      <span class="fa fa-caret-down"></span>
+    </span>
+
+    <div class="rst-other-versions">
+        <dl id="versionselector">
+            <dt>Other Versions</dt>
+        </dl>
+
+    </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

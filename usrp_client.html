@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>usrp_client package &mdash; USRP UHD API  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/msmb.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/js/versions.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Synchronisation &amp; Communication Patterns" href="synchronisation.html" />
+    <link rel="prev" title="uhd_wrapper.utils package" href="uhd_wrapper.utils.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> USRP UHD API
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API description</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="uhd_wrapper.html">uhd_wrapper package</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">usrp_client package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-usrp_client.errors">usrp_client.errors module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-usrp_client.rpc_client">usrp_client.rpc_client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-usrp_client.system">usrp_client.system module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-usrp_client">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="synchronisation.html">Synchronisation &amp; Communication Patterns</a></li>
+<li class="toctree-l1"><a class="reference internal" href="architecture.html">Software Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="setup.html">Physical &amp; Network Setup</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">USRP UHD API</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a> &raquo;</li>
+          <li><a href="modules.html">usrp_uhd_wrapper</a> &raquo;</li>
+      <li>usrp_client package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/usrp_client.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="usrp-client-package">
+<h1>usrp_client package<a class="headerlink" href="#usrp-client-package" title="Permalink to this headline">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module-usrp_client.errors">
+<span id="usrp-client-errors-module"></span><h2>usrp_client.errors module<a class="headerlink" href="#module-usrp_client.errors" title="Permalink to this headline">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="usrp_client.errors.RemoteUsrpError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">usrp_client.errors.</span></span><span class="sig-name descname"><span class="pre">RemoteUsrpError</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actualUsrpMsg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usrpName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#usrp_client.errors.RemoteUsrpError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.errors.RemoteUsrpError.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actualUsrpMsg</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usrpName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.errors.RemoteUsrpError.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py exception">
+<dt class="sig sig-object py" id="usrp_client.errors.MultipleRemoteUsrpErrors">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">usrp_client.errors.</span></span><span class="sig-name descname"><span class="pre">MultipleRemoteUsrpErrors</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#usrp_client.errors.RemoteUsrpError" title="usrp_client.errors.RemoteUsrpError"><span class="pre">usrp_client.errors.RemoteUsrpError</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#usrp_client.errors.MultipleRemoteUsrpErrors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.errors.MultipleRemoteUsrpErrors.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#usrp_client.errors.RemoteUsrpError" title="usrp_client.errors.RemoteUsrpError"><span class="pre">usrp_client.errors.RemoteUsrpError</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.errors.MultipleRemoteUsrpErrors.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-usrp_client.rpc_client">
+<span id="usrp-client-rpc-client-module"></span><h2>usrp_client.rpc_client module<a class="headerlink" href="#module-usrp_client.rpc_client" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">usrp_client.rpc_client.</span></span><span class="sig-name descname"><span class="pre">UsrpClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rpcClient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">zerorpc.core.Client</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>This class is the RPC client to the RPC server running on the USRP</p>
+<p>Under the hood, we communicate with the UsrpServer class which wraps zerorpc. ZeroRPC
+implements remote procedure call client-server architecture using zeromq as a communication
+protocol. <cite>UsrpClient</cite> forwards user calls to the RPC server and serializes them if
+required.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rpcClient</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">zerorpc.core.Client</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initializes the UsrpClient.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rpcClient</strong> (<em>zerorpc.Client</em>) – zerorpc.Client that is already connected to RPC server.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.configureRx">
+<span class="sig-name descname"><span class="pre">configureRx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig" title="uhd_wrapper.utils.config.RxStreamingConfig"><span class="pre">uhd_wrapper.utils.config.RxStreamingConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.configureRx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call <cite>configureRx</cite> on server and serialize <cite>rxConfig</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>rxConfig</strong> (<a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig" title="uhd_wrapper.utils.config.RxStreamingConfig"><em>RxStreamingConfig</em></a>) – Streaming config.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.configureTx">
+<span class="sig-name descname"><span class="pre">configureTx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">txConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.TxStreamingConfig" title="uhd_wrapper.utils.config.TxStreamingConfig"><span class="pre">uhd_wrapper.utils.config.TxStreamingConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.configureTx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call <cite>configureTx</cite> on server and serialize <cite>txConfig</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseTime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the current configuration at the receiver side.</p>
+<p>Set the baseTime on the receiver to the desired value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>baseTime</strong> (<em>float</em>) – FPGA time all streaming config time offsets refer to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.MimoSignal" title="uhd_wrapper.utils.config.MimoSignal"><span class="pre">uhd_wrapper.utils.config.MimoSignal</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collect samples from RPC server and deserialize them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Each list item corresponds to the samples of one streaming configuration.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[<a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.MimoSignal" title="uhd_wrapper.utils.config.MimoSignal">MimoSignal</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.configureRfConfig">
+<span class="sig-name descname"><span class="pre">configureRfConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rfConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">uhd_wrapper.utils.config.RfConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.configureRfConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize <cite>rfConfig</cite> and request configuration on RPC server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.setTimeToZeroNextPps">
+<span class="sig-name descname"><span class="pre">setTimeToZeroNextPps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.setTimeToZeroNextPps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the time to zero on the next PPS edge.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.getCurrentFpgaTime">
+<span class="sig-name descname"><span class="pre">getCurrentFpgaTime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.getCurrentFpgaTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries current FPGA time from RPC server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.getCurrentSystemTime">
+<span class="sig-name descname"><span class="pre">getCurrentSystemTime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.getCurrentSystemTime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries current system time from RPC server.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.getRfConfig">
+<span class="sig-name descname"><span class="pre">getRfConfig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">uhd_wrapper.utils.config.RfConfig</span></a></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.getRfConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries RfConfig from RPC server and deserializes it.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.getMasterClockRate">
+<span class="sig-name descname"><span class="pre">getMasterClockRate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.getMasterClockRate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries the master clock rate of the USRP.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.getSupportedDecimationRatios">
+<span class="sig-name descname"><span class="pre">getSupportedDecimationRatios</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.getSupportedDecimationRatios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the supported decimation ratios.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.getSupportedSamplingRates">
+<span class="sig-name descname"><span class="pre">getSupportedSamplingRates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.getSupportedSamplingRates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Queries USRP for the supported sampling rates.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.resetStreamingConfigs">
+<span class="sig-name descname"><span class="pre">resetStreamingConfigs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.resetStreamingConfigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Tells USRP to reset streaming configs.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-usrp_client.system">
+<span id="usrp-client-system-module"></span><h2>usrp_client.system module<a class="headerlink" href="#module-usrp_client.system" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="usrp_client.system.LabeledUsrp">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">usrp_client.system.</span></span><span class="sig-name descname"><span class="pre">LabeledUsrp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ip</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">client</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#usrp_client.system.LabeledUsrp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tuple</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.LabeledUsrp.client">
+<span class="sig-name descname"><span class="pre">client</span></span><a class="headerlink" href="#usrp_client.system.LabeledUsrp.client" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 2</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.LabeledUsrp.ip">
+<span class="sig-name descname"><span class="pre">ip</span></span><a class="headerlink" href="#usrp_client.system.LabeledUsrp.ip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 1</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.LabeledUsrp.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#usrp_client.system.LabeledUsrp.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Alias for field number 0</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="usrp_client.system.TimedFlag">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">usrp_client.system.</span></span><span class="sig-name descname"><span class="pre">TimedFlag</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resetTimeSec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#usrp_client.system.TimedFlag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Creates a flag that is reset after a certain time denoted by <cite>resetTimeSec</cite>.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.TimedFlag.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resetTimeSec</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.TimedFlag.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.TimedFlag.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.TimedFlag.set" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the flag and resets after the specified time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.TimedFlag.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.TimedFlag.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset flag.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.TimedFlag.isSet">
+<span class="sig-name descname"><span class="pre">isSet</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#usrp_client.system.TimedFlag.isSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the value of the flag.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="usrp_client.system.System">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">usrp_client.system.</span></span><span class="sig-name descname"><span class="pre">System</span></span><a class="headerlink" href="#usrp_client.system.System" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>User interface for accessing multiple USRPs.</p>
+<p>This module is the main interface for using the USRP. A system is to be defined to which
+USRPs can be added. Using the system functions defined in the <cite>System</cite> class gives you
+direct access to the USRP configuration etc.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.System.syncThresholdSec">
+<span class="sig-name descname"><span class="pre">syncThresholdSec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></em><a class="headerlink" href="#usrp_client.system.System.syncThresholdSec" title="Permalink to this definition">¶</a></dt>
+<dd><p>In order to verify if the USRPs in the system are properly
+synchronized, respective FPGA values are queried and compared. If the FPGA times
+differ more than <cite>syncThresholdSec</cite>, an exception is thrown that the USRPs are not
+synchronized. Default value: 0.2s.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.System.baseTimeOffsetSec">
+<span class="sig-name descname"><span class="pre">baseTimeOffsetSec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.2</span></em><a class="headerlink" href="#usrp_client.system.System.baseTimeOffsetSec" title="Permalink to this definition">¶</a></dt>
+<dd><p>This value is taken for setting the same base time for all
+USRPs. For development use mainly. Do not change. Default value: 0.2s.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.System.syncAttempts">
+<span class="sig-name descname"><span class="pre">syncAttempts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#usrp_client.system.System.syncAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Specifies number of synchronization attemps for USRP system.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.System.timeBetweenSyncAttempts">
+<span class="sig-name descname"><span class="pre">timeBetweenSyncAttempts</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></em><a class="headerlink" href="#usrp_client.system.System.timeBetweenSyncAttempts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sleep time between two synchronisation attempts in s.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="usrp_client.system.System.syncTimeOut">
+<span class="sig-name descname"><span class="pre">syncTimeOut</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1200.0</span></em><a class="headerlink" href="#usrp_client.system.System.syncTimeOut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timeout of synchronisation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.System.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.addUsrp">
+<span class="sig-name descname"><span class="pre">addUsrp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rfConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">uhd_wrapper.utils.config.RfConfig</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">usrpName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.System.addUsrp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a new USRP to the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rfConfig</strong> (<a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><em>RfConfig</em></a>) – Configuration of the Radio Frontend.</p></li>
+<li><p><strong>ip</strong> (<em>str</em>) – IP of the USRP.</p></li>
+<li><p><strong>usrpName</strong> (<em>str</em>) – Identifier of the USRP to be added.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.configureTx">
+<span class="sig-name descname"><span class="pre">configureTx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usrpName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">txStreamingConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.TxStreamingConfig" title="uhd_wrapper.utils.config.TxStreamingConfig"><span class="pre">uhd_wrapper.utils.config.TxStreamingConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.System.configureTx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure transmitter streaming.</p>
+<p>Use this function to configure the transmission streaming of your desired USRP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>usrpName</strong> (<em>str</em>) – Identifier of USRP.</p></li>
+<li><p><strong>txStreamingConfig</strong> (<a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.TxStreamingConfig" title="uhd_wrapper.utils.config.TxStreamingConfig"><em>TxStreamingConfig</em></a>) – Desired configuration.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.configureRx">
+<span class="sig-name descname"><span class="pre">configureRx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usrpName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rxStreamingConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig" title="uhd_wrapper.utils.config.RxStreamingConfig"><span class="pre">uhd_wrapper.utils.config.RxStreamingConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.System.configureRx" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configure receiver streaming.</p>
+<p>Use this function to configure the receiving of your desired USRP.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>usrpName</strong> (<em>str</em>) – Identifier of USRP.</p></li>
+<li><p><strong>rxStreamingConfig</strong> (<a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig" title="uhd_wrapper.utils.config.RxStreamingConfig"><em>RxStreamingConfig</em></a>) – Desired configuration.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.getRfConfigs">
+<span class="sig-name descname"><span class="pre">getRfConfigs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">uhd_wrapper.utils.config.RfConfig</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#usrp_client.system.System.getRfConfigs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns actual Radio Frontend configurations of the USRPs in the system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dict-keys denote the identifier/name of the USRPs.
+Values are the Radio Frontend configurations.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[str, <a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig">RfConfig</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.synchronisationValid">
+<span class="sig-name descname"><span class="pre">synchronisationValid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#usrp_client.system.System.synchronisationValid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns true if synchronisation of the USRPs is valid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.System.execute" title="Permalink to this definition">¶</a></dt>
+<dd><p>Executes all streaming configurations.</p>
+<p>Samples are buffered, timeouts are calculated, Usrps are synchronized…</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.collect">
+<span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.MimoSignal" title="uhd_wrapper.utils.config.MimoSignal"><span class="pre">uhd_wrapper.utils.config.MimoSignal</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#usrp_client.system.System.collect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collects the samples at each USRP.</p>
+<p>This is a blocking call. In the streaming configurations, the user defined when to send
+and receive the samples at which USRP. This method waits until all the samples are
+received (hence blocking) and returns them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Dictionary containing the samples received.
+The key represents the usrp identifier.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>Dict[str, List[<a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.MimoSignal" title="uhd_wrapper.utils.config.MimoSignal">MimoSignal</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.getSupportedSamplingRates">
+<span class="sig-name descname"><span class="pre">getSupportedSamplingRates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usrpName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">numpy.ndarray</span></span></span><a class="headerlink" href="#usrp_client.system.System.getSupportedSamplingRates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns supported sampling rates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>usrpName</strong> (<em>str</em>) – Identifier of USRP to be queried.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of supported sampling rates.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-usrp_client">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-usrp_client" title="Permalink to this headline">¶</a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="uhd_wrapper.utils.html" class="btn btn-neutral float-left" title="uhd_wrapper.utils package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="synchronisation.html" class="btn btn-neutral float-right" title="Synchronisation &amp; Communication Patterns" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Connected Robotics Lab.</p>
+  </div>
+
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+    var versions_json_url = ''
+</script>
+
+<div class="rst-versions" data-toggle="rst-versions" role="note"
+     aria-label="versions">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      <span class="fa fa-book"></span>
+        
+      <span class="fa fa-caret-down"></span>
+    </span>
+
+    <div class="rst-other-versions">
+        <dl id="versionselector">
+            <dt>Other Versions</dt>
+        </dl>
+
+    </div>
+</div><script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

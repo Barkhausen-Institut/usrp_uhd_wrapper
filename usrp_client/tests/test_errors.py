@@ -1,6 +1,6 @@
 import unittest
 
-from usrp_client.errors import RemoteUsrpError, MultipleErrors
+from usrp_client.errors import RemoteUsrpError, MultipleRemoteUsrpErrors
 
 
 class TestRemoteUsrpError(unittest.TestCase):
@@ -17,17 +17,17 @@ class TestRemoteUsrpError(unittest.TestCase):
 class TestMultipleErrors(unittest.TestCase):
     def test_oneError(self) -> None:
         errorMsg = "foo"
-        e = RuntimeError(errorMsg)
-        multipleE = MultipleErrors([e])
+        e = RemoteUsrpError(errorMsg)
+        multipleE = MultipleRemoteUsrpErrors([e])
         self.assertIn(errorMsg, str(multipleE))
 
     def test_multipleErrors(self) -> None:
         errorMsg1 = "foo"
         errorMsg2 = "bar"
 
-        e1 = RuntimeError(errorMsg1)
-        e2 = RuntimeError(errorMsg2)
+        e1 = RemoteUsrpError(errorMsg1)
+        e2 = RemoteUsrpError(errorMsg2)
 
-        multipleE = MultipleErrors([e1, e2])
+        multipleE = MultipleRemoteUsrpErrors([e1, e2])
         self.assertIn(errorMsg1, str(multipleE))
         self.assertIn(errorMsg2, str(multipleE))

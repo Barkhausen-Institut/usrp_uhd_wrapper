@@ -17,7 +17,7 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
 )
 from usrp_client.rpc_client import UsrpClient
-from usrp_client.errors import MultipleErrors, RemoteUsrpError
+from usrp_client.errors import MultipleRemoteUsrpErrors, RemoteUsrpError
 
 
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
@@ -233,7 +233,7 @@ class System:
         if len(errors) == 1:
             raise errors[0]
         elif len(errors) > 1:
-            raise MultipleErrors(errors)
+            raise MultipleRemoteUsrpErrors(errors)
 
     def execute(self) -> None:
         """Executes all streaming configurations.

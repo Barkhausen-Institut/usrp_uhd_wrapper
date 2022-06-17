@@ -8,7 +8,7 @@ from zerorpc.exceptions import RemoteError
 
 from usrp_client.rpc_client import UsrpClient
 from usrp_client.system import System, TimedFlag
-from usrp_client.errors import MultipleErrors, RemoteUsrpError
+from usrp_client.errors import MultipleRemoteUsrpErrors, RemoteUsrpError
 from uhd_wrapper.utils.config import (
     MimoSignal,
     RfConfig,
@@ -237,7 +237,7 @@ class TestUsrpExceptionHandling(unittest.TestCase):
 
         try:
             self.system.execute()
-        except MultipleErrors as e:
+        except MultipleRemoteUsrpErrors as e:
             self.assertIn(self.system.mockUsrps[0].name, str(e))
             self.assertIn(self.system.mockUsrps[1].name, str(e))
             self.assertIn(errorMsgUsrp1, str(e))
@@ -255,7 +255,7 @@ class TestUsrpExceptionHandling(unittest.TestCase):
 
         try:
             self.system.collect()
-        except MultipleErrors as e:
+        except MultipleRemoteUsrpErrors as e:
             self.assertIn(self.system.mockUsrps[0].name, str(e))
             self.assertIn(self.system.mockUsrps[1].name, str(e))
             self.assertIn(errorMsgUsrp1, str(e))

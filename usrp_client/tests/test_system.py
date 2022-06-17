@@ -205,15 +205,15 @@ class TestUsrpExceptionHandling(unittest.TestCase):
         self.system.mockUsrps[0].execute.side_effect = RemoteError("", "foo", "")
         try:
             self.system.execute()
-        except RemoteUsrpError as e:
-            self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
+        except MultipleRemoteUsrpErrors as e:
+            self.assertEqual(e.errors[0].usrpName, self.system.mockUsrps[0].name)
 
     def test_collectThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
         self.system.mockUsrps[0].collect.side_effect = RemoteError("", "foo", "")
         try:
             self.system.collect()
-        except RemoteUsrpError as e:
-            self.assertEqual(e.usrpName, self.system.mockUsrps[0].name)
+        except MultipleRemoteUsrpErrors as e:
+            self.assertEqual(e.errors[0].usrpName, self.system.mockUsrps[0].name)
 
     def test_mismatchRfConfigThrowsUsrpException_usrpNameFieldGetsSet(self) -> None:
         self.system.mockUsrps[0].configureRfConfig.side_effect = RemoteError(

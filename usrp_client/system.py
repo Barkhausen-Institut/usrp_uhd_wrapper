@@ -230,9 +230,7 @@ class System:
                 f(usrpName)
             except RemoteError as e:
                 errors.append(RemoteUsrpError(e.msg, usrpName))
-        if len(errors) == 1:
-            raise errors[0]
-        elif len(errors) > 1:
+        if errors:
             raise MultipleRemoteUsrpErrors(errors)
 
     def execute(self) -> None:

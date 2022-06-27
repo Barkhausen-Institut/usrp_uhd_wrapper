@@ -80,6 +80,125 @@
 </ul>
 </div>
 </section>
+<section id="purpose">
+<h1>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h1>
+<p>This repo wraps the <a class="reference external" href="https://github.com/EttusResearch/uhd">Universal Hardware Driver</a> (UHD) for <a class="reference external" href="https://www.ni.com/de-de/support/model.ettus-usrp-x410.html">USRP X410</a>. Since the authors of UHD point out that the driver is device-independent, this wrapper should support other USRPs out-of-the-box as well. It is to be noted that the configuration is different for the USRPs, therefore, some modifications most likely need to be made for other USRPs</p>
+<p>We cover the following use-case: The USRP can be used with the full-mimo setup, i.e. four transmitting and four receiving antennas. The user creates the signal on his/her laptop, sends them <strong>as bursts</strong> to the USRP via network and collects the received samples. Post-processing happens on the laptop of the user. <strong>We strongly emphasize that this wrapper is not meant for streaming. On top of that, USRPs are mainly designed for streaming use-cases. Therefore some adjustments had to be made to the wrapper.</strong></p>
+<p>This repository contains the <strong>client as well as the server code</strong>. The client is to be used by the user for signal processing purposes and sending the commands to the USRP, which serves as a server. The server code is to be deployed on the USRP. Once built and installed, the USRP does not need to be touched again.</p>
+</section>
+<section id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<p>Documentation can be found <a class="reference external" href="https://barkhauseninstitut.gitlab.io/corola-infrastructure/usrp-x410/usrp_uhd_api/">here</a>.</p>
+<p>Read this in conjunction with our example files located in <strong>examples/</strong>!</p>
+</section>
+<section id="getting-started">
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h1>
+<section id="usrp-is-already-setup">
+<h2>USRP is already setup<a class="headerlink" href="#usrp-is-already-setup" title="Permalink to this headline">¶</a></h2>
+<p>Assume somebody already deployed the USRP server code (cf. Install section) and gives you the IP address of the USRPs you may use. As a first step, you want to transmit some samples from USRP1 to USRP2.</p>
+<p>Follow the Steps of Install/Client below to install the client. Afterwards proceed to the Examples section.</p>
+</section>
+<section id="usrp-is-not-setup">
+<h2>USRP is not setup<a class="headerlink" href="#usrp-is-not-setup" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ssh</span></code> to the USRP and follow the steps of Install/Server below. Afterwards proceed with the steps of the previous section. Ensure that the USRP was restarted.</p>
+</section>
+</section>
+<section id="install">
+<h1>Install<a class="headerlink" href="#install" title="Permalink to this headline">¶</a></h1>
+<section id="server">
+<h2>Server<a class="headerlink" href="#server" title="Permalink to this headline">¶</a></h2>
+<p>For installing the server on the USRP (needs to be done only once per USRP):</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">clone</span> <span class="pre">&lt;this</span> <span class="pre">repo&gt;</span> <span class="pre">&amp;&amp;</span> <span class="pre">cd</span> <span class="pre">&lt;repo&gt;</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">python3</span> <span class="pre">-m</span> <span class="pre">venv</span> <span class="pre">env</span> <span class="pre">&amp;&amp;</span> <span class="pre">.</span> <span class="pre">env/bin/activate</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">uhd_wrapper</span> <span class="pre">&amp;&amp;</span> <span class="pre">mkdir</span> <span class="pre">build</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cd</span> <span class="pre">build</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cmake</span> <span class="pre">-DCMAKE_BUILD_TYPE=Release</span> <span class="pre">..</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">-j4</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">install</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ctest</span> <span class="pre">-V</span></code> to check if the tests pass</p></li>
+</ol>
+<p>To start the usrp server as a service, run: <code class="docutils literal notranslate"><span class="pre">systemctl</span> <span class="pre">enable</span> <span class="pre">rpc-server.service</span></code>. Restart.
+The USRP server needs a minute to start.</p>
+</section>
+<section id="client">
+<h2>Client<a class="headerlink" href="#client" title="Permalink to this headline">¶</a></h2>
+<ol class="arabic simple">
+<li><p>Ensure that you use at least python3.9.</p></li>
+<li><p>Create and activate virtual env (on linux: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">venv</span> <span class="pre">env</span> <span class="pre">&amp;&amp;</span> <span class="pre">.</span> <span class="pre">env/bin/activate</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code></p></li>
+<li><p><strong>For running tests:</strong> <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">requirements_tests.txt</span></code></p></li>
+</ol>
+</section>
+</section>
+<section id="before-use">
+<h1>Before Use<a class="headerlink" href="#before-use" title="Permalink to this headline">¶</a></h1>
+<p>We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., joint communication and sensing (JCAS), local transmission, peer-to-peer-transmission…). If you want to execute them, the environment variables <code class="docutils literal notranslate"><span class="pre">USRP1_IP</span></code> and <code class="docutils literal notranslate"><span class="pre">USRP2_IP</span></code> with the corresponding IP need to be set. Execute the command <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">.</span></code> or, if you just want to execute the hardware-related tests: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">.</span> <span class="pre">-m</span> <span class="pre">&quot;hardware&quot;</span></code>. <strong>It is highly recommended to execute these tests before conducting your measurements</strong>:</p>
+<p>On client side:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> &lt;repo&gt;
+$ . env/bin/activate
+$ <span class="nv">USRP1_IP</span><span class="o">=</span>&lt;usrp1-ip&gt; <span class="nv">USRP2_IP</span><span class="o">=</span>&lt;usrp2-ip&gt; pytest . -m <span class="s2">&quot;hardware&quot;</span>
+$ pytest .
+</pre></div>
+</div>
+</section>
+<section id="use">
+<h1>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h1>
+<p>After install, there are two python packages installed: <code class="docutils literal notranslate"><span class="pre">usrp_client</span></code> serving as the client that sends commands (e.g. radio frontend (RF) config, samples, etc.) to the USRP server. The <code class="docutils literal notranslate"><span class="pre">uhd_wrapper.utils</span></code> package contains dataclasses for the configurations (module <code class="docutils literal notranslate"><span class="pre">config</span></code>) and some serialization functions in the <code class="docutils literal notranslate"><span class="pre">serialization</span></code> module.</p>
+<p>Assuming you installed the client, always activate the virtual environment via:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> &lt;repo&gt;
+$ . env/bin/activate
+</pre></div>
+</div>
+<p><strong>Note</strong>: If you restart the USRP, the server needs a minute to start.</p>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>examples</strong> directory contains some examples. In each example file, we will print if the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. <strong>Port 5555 is used.</strong> We add the option to plot signals. Examples should be self-explanatory.</p>
+<p><strong>localhost_transmission</strong>: Sends random signal from a dedicated USRP to itself, check file.</p>
+<p>Usage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/localhost_transmission.py --usrp1-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+</pre></div>
+</div>
+<p><strong>usrp_p2p_transmission</strong>: Sends random signal from Usrp1 to Usrp2, check file.</p>
+<p>Usage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/usrp_p2p_transmission.py --usrp1-ip &lt;ip&gt; --usrp2-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+</pre></div>
+</div>
+<p><strong>JCAS</strong>: Implements the JCAS scenario, but using a random signal instead.
+Usage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/jcas.py --usrp1-ip &lt;ip&gt; --usrp2-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+</pre></div>
+</div>
+<p>Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well. If <code class="docutils literal notranslate"><span class="pre">--plot</span></code> argument is omitted, the signal will be sent/received 10 times a row.</p>
+<p><strong>mimo_p2p_transmission</strong>: Implements a 4x4 MIMO scenario.
+Usage:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/mimo_p2p_transmission.py --usrp1-ip &lt;ip&gt; --usrp2-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+</pre></div>
+</div>
+<p>Creates four random signals, that are distributed to the antennas. They are shifted by 10k samples. Usrp2 receives the signals at four antennas.</p>
+</section>
+<section id="hardware-tests">
+<h2>hardware_tests<a class="headerlink" href="#hardware-tests" title="Permalink to this headline">¶</a></h2>
+<p>We have some hardware tests, for testing/debugging purposes mainly. Samples are dumped as well for better analysis. They are to be run from the USRP directly. Files are located in the <strong>hardware_tests</strong> folder.</p>
+<p><strong>Note</strong>: The Usrp service should be stopped for this purpose!</p>
+</section>
+</section>
+<section id="for-developers">
+<h1>For Developers<a class="headerlink" href="#for-developers" title="Permalink to this headline">¶</a></h1>
+<p>In the <code class="docutils literal notranslate"><span class="pre">snippets</span></code> directory, snippets can be found. As the testing capabilities for the hardware are strongly limited, the snippets are meant for evaluating the hardware.</p>
+<p>We also have a <strong>debug</strong> folder that contains some files to be used for debugging:</p>
+<ul class="simple">
+<li><p>tx_stream: streams white noise (mean 0, std 2) that may be analysed with a spectrum analyzer. <strong>Note</strong>: Underflow occurs, i.e. samples are not buffered fast enough into the FPGA. To verify if a signal is sent at all, this is sufficient however</p></li>
+</ul>
+</section>
+<section id="change-history">
+<h1>Change History<a class="headerlink" href="#change-history" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">0.0-siso-jcas</span></code>: One antenna for transmitting and receiving is supported. Further, we support receiving and transmitting at one USRP with a second USRP receiving only. This covers the usecase of JCAS.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">0.1-mimo</span></code>: Full-fledged MIMO support.</p></li>
+</ul>
+</section>
 <section id="indices-and-tables">
 <h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
 <ul class="simple">

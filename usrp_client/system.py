@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List
+from typing import Dict, List, Any
 import time
 from collections import namedtuple
 from threading import Timer
@@ -21,7 +21,6 @@ from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
 
 
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
-logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 
 
 class TimedFlag:
@@ -81,9 +80,24 @@ class System:
     syncTimeOut = 20 * 60.0  # every 20 minutes
     """Timeout of synchronisation."""
 
-    def __init__(self) -> None:
+    def __init__(self, logLevel: Any = logging.INFO) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
         self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
+        self.__logger = self.__createLogger(logLevel)
+
+    def __createLogger(self, logLevel: Any) -> logging.Logger:
+        handler = logging.StreamHandler()
+        handler.setLevel(logLevel)
+
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+        )
+        handler.setFormatter(formatter)
+        logger = logging.getLogger(__name__)
+        logger.setLevel(logLevel)
+        logger.debug("Created system")
+        logger.addHandler(handler)
+        return logger
 
     def _createUsrpClient(self, ip: str) -> UsrpClient:
         """Connect to the USRP server. Developers only.
@@ -96,6 +110,7 @@ class System:
         """
         zeroRpcClient = zerorpc.Client()
         zeroRpcClient.connect(f"tcp://{ip}:5555")
+        self.__logger.debug(f"Created USRP RPC client at IP: {ip} and Port 5555.")
         return UsrpClient(rpcClient=zeroRpcClient)
 
     def addUsrp(
@@ -148,7 +163,7 @@ class System:
             raise ValueError("Tx signal contains values above 1.0.")
 
         self.__usrpClients[usrpName].client.configureTx(txStreamingConfig)
-        logging.debug(f"Configured TX Streaming for USRP: {usrpName}.")
+        self.__logger.debug(f"Configured TX Streaming for USRP: {usrpName}.")
 
     def configureRx(self, usrpName: str, rxStreamingConfig: RxStreamingConfig) -> None:
         """Configure receiver streaming.
@@ -160,7 +175,7 @@ class System:
             rxStreamingConfig (RxStreamingConfig): Desired configuration.
         """
         self.__usrpClients[usrpName].client.configureRx(rxStreamingConfig)
-        logging.debug(f"Configured RX streaming for USRP: {usrpName}.")
+        self.__logger.debug(f"Configured RX streaming for USRP: {usrpName}.")
 
     def getRfConfigs(self) -> Dict[str, RfConfig]:
         """Returns actual Radio Frontend configurations of the USRPs in the system.
@@ -182,7 +197,7 @@ class System:
         """
         self.__synchronizeUsrps()
         baseTimeSec = self.__calculateBaseTimeSec()
-        logging.debug(f"Calling execution of usrps with base time: {baseTimeSec}")
+        self.__logger.debug(f"Calling execution of usrps with base time: {baseTimeSec}")
         try:
             for usrpName in self.__usrpClients.keys():
                 self.__usrpClients[usrpName].client.execute(baseTimeSec)
@@ -216,7 +231,7 @@ class System:
     def __setTimeToZeroNextPps(self) -> None:
         for usrp in self.__usrpClients.keys():
             self.__usrpClients[usrp].client.setTimeToZeroNextPps()
-            logging.debug("Set time to zero for PPS.")
+            self.__logger.debug("Set time to zero for PPS.")
         self._sleep(1.1)
 
     def _sleep(self, delay: float) -> None:
@@ -225,7 +240,7 @@ class System:
 
     def __calculateBaseTimeSec(self) -> float:
         currentFpgaTimesSec = self.__getCurrentFpgaTimes()
-        logging.debug(
+        self.__logger.debug(
             f"For calculating the base time, I received the "
             f"following fpgaTimes: {currentFpgaTimesSec}"
         )

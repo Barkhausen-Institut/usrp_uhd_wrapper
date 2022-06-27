@@ -8,7 +8,7 @@ This repository contains the **client as well as the server code**. The client i
 
 # Documentation
 
-Documentation can be found [here](https://barkhauseninstitut.gitlab.io/corola-infrastructure/usrp-x410/usrp_uhd_api/).
+Documentation can be found [here](https://barkhausen-institut.github.io/usrp_uhd_wrapper/index.html).
 
 Read this in conjunction with our example files located in **examples/**!
 

@@ -132,3 +132,7 @@ We also have a **debug** folder that contains some files to be used for debuggin
 
 - `0.0-siso-jcas`: One antenna for transmitting and receiving is supported. Further, we support receiving and transmitting at one USRP with a second USRP receiving only. This covers the usecase of JCAS.
 - `0.1-mimo`: Full-fledged MIMO support.
+
+# Authors
+
+Authors are affiliated to the [Barkhausen Institut](barkhauseninstitut.org), namely [Maximilian Matthe](https://github.com/mmatthe) and [Tobias Kronauer](https://github.com/tokr-bit).

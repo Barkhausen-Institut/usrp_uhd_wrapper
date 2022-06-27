@@ -13,7 +13,7 @@ Welcome to the documentation of the Usrp Uhd API.
    setup
 
 
-.. mdinclude:: ../README.md
+.. mdinclude:: ../../README.md
 
 
 Indices and tables

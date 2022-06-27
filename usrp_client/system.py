@@ -21,6 +21,7 @@ from uhd_wrapper.utils.remote_usrp_error import RemoteUsrpError
 
 
 LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
+logging.basicConfig(format="%(levelname)s:%(message)s", level=logging.INFO)
 
 
 class TimedFlag:

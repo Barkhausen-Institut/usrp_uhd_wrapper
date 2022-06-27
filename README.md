@@ -135,4 +135,4 @@ We also have a **debug** folder that contains some files to be used for debuggin
 
 # Authors
 
-Authors are affiliated to the [Barkhausen Institut](barkhauseninstitut.org), namely [Maximilian Matthe](https://github.com/mmatthe) and [Tobias Kronauer](https://github.com/tokr-bit).
+Authors are affiliated to the [Barkhausen Institut](https://barkhauseninstitut.org), namely [Maximilian Matthe](https://github.com/mmatthe) and [Tobias Kronauer](https://github.com/tokr-bit).

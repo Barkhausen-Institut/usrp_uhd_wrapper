@@ -93,10 +93,11 @@ class System:
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         )
         handler.setFormatter(formatter)
+
         logger = logging.getLogger(__name__)
         logger.setLevel(logLevel)
-        logger.debug("Created system")
         logger.addHandler(handler)
+        logger.debug("Created system")
         return logger
 
     def _createUsrpClient(self, ip: str) -> UsrpClient:

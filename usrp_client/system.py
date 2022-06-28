@@ -80,12 +80,12 @@ class System:
     syncTimeOut = 20 * 60.0  # every 20 minutes
     """Timeout of synchronisation."""
 
-    def __init__(self, logLevel: Any = logging.INFO) -> None:
+    def __init__(self, logLevel: int = logging.INFO) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
         self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
         self.__logger = self.__createLogger(logLevel)
 
-    def __createLogger(self, logLevel: Any) -> logging.Logger:
+    def __createLogger(self, logLevel: int) -> logging.Logger:
         handler = logging.StreamHandler()
         handler.setLevel(logLevel)
 

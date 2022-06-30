@@ -248,12 +248,21 @@ class TestHardwareSystemTests(unittest.TestCase):
             samplesSystem = system.collect()
             rxSamplesUsrpAnt1 = samplesSystem["usrp1"][0].signals[0]
 
+            # norm signal
+            mvAvgFilter = np.convolve(
+                np.ones(signalLength // 2, dtype=np.complex64),
+                np.abs(rxSamplesUsrpAnt1) ** 2,
+                "same",
+            )
+            rxSamplesUsrpAnt1 /= np.sqrt(mvAvgFilter)
+
             signalStartsInFrame = [
                 findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[0]),
                 findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[1]),
                 findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
                 findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
             ]
+
             for antIdx in range(1, 4):
                 self.assertEqual(
                     first=signalStartsInFrame[antIdx] - signalStartsInFrame[antIdx - 1],

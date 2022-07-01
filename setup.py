@@ -1,4 +1,4 @@
-from setuptools import setup  # type: ignore
+from setuptools import setup, find_packages  # type: ignore
 import os
 
 
@@ -8,7 +8,6 @@ NAME = "usrp_uhd_api"
 lsb = os.popen("lsb_release -a").read()
 
 runningOnUsrp = "Description:\tAlchemy" in lsb
-
 if runningOnUsrp:
     print("Setting up for USRP Development")
     setup(
@@ -26,7 +25,7 @@ else:
     setup(
         name=NAME,
         version=VERSION,
-        packages=["usrp_client", "uhd_wrapper"],
+        packages=find_packages(exclude=["examples"]),
         python_requires=">=3.9",
         install_requires=[
             "zerorpc~=0.6.3",

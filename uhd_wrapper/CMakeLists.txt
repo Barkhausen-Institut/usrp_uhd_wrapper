@@ -7,6 +7,7 @@ add_compile_options(-Wall -Werror)
 option(INSTALL_SERVICE "Specifies if the service is to be installed" ON)
 
 find_package(UHD REQUIRED)
+find_package(Boost 1.65 REQUIRED COMPONENTS system)
 
 add_subdirectory(3rdparty)
 add_subdirectory(lib)

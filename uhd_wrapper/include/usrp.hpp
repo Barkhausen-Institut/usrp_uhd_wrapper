@@ -15,20 +15,9 @@ namespace bi {
 
 class Usrp : public UsrpInterface {
    public:
-    Usrp(const std::string& ip) {
-        ip_ = ip;
-        usrpDevice_ =
-            uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
-        usrpDevice_->set_sync_source("external", "external");
-        masterClockRate_ = usrpDevice_->get_master_clock_rate();
-    }
-    ~Usrp() {
-        usrpDevice_->set_sync_source("internal", "internal");
-        if (transmitThread_.joinable()) transmitThread_.join();
-        if (receiveThread_.joinable()) receiveThread_.join();
-        if (setTimeToZeroNextPpsThread_.joinable())
-            setTimeToZeroNextPpsThread_.join();
-    }
+    Usrp(const std::string& ip);
+    ~Usrp();
+
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);

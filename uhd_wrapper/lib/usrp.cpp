@@ -7,6 +7,22 @@
 
 namespace bi {
 
+Usrp::Usrp(const std::string& ip) {
+    ip_ = ip;
+    usrpDevice_ =
+        uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
+    usrpDevice_->set_sync_source("external", "external");
+    masterClockRate_ = usrpDevice_->get_master_clock_rate();
+}
+
+Usrp::~Usrp() {
+    usrpDevice_->set_sync_source("internal", "internal");
+    if (transmitThread_.joinable()) transmitThread_.join();
+    if (receiveThread_.joinable()) receiveThread_.join();
+    if (setTimeToZeroNextPpsThread_.joinable())
+        setTimeToZeroNextPpsThread_.join();
+}
+
 RfConfig Usrp::getRfConfig() const {
     RfConfig conf;
     std::scoped_lock lock(fpgaAccessMutex_);

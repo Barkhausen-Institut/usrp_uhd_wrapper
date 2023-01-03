@@ -90,6 +90,29 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
         return self.system
 
+@pytest.mark.hardware
+class TestHardwareClocks(unittest.TestCase):
+    def setUp(self) -> None:
+        pass
+
+    def test_singleUsrpZeroPPS(self) -> None:
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup.rfConfig.rxSamplingRate = 245.76e6;
+        setup.rfConfig.txSamplingRate = 245.76e6;
+        system = setup.connectUsrps();
+        import time
+
+        print("Time ", system.getCurrentFpgaTimes())
+        time.sleep(0.5)
+        print("Time ", system.getCurrentFpgaTimes())
+        time.sleep(0.5)
+        system.resetFpgaTimes()
+        time.sleep(0.5)
+        print("Time ", system.getCurrentFpgaTimes())
+        time.sleep(0.5)
+        print("Time ", system.getCurrentFpgaTimes())
+
+
 
 @pytest.mark.hardware
 class TestHardwareSystemTests(unittest.TestCase):

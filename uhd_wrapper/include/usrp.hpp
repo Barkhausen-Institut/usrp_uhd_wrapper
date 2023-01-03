@@ -6,6 +6,11 @@
 #include <mutex>
 #include <thread>
 
+#include <uhd/rfnoc/block_id.hpp>
+#include <uhd/rfnoc/radio_control.hpp>
+#include <uhd/rfnoc/replay_block_control.hpp>
+#include <uhd/rfnoc_graph.hpp>
+
 #include "config.hpp"
 #include "uhd/usrp/multi_usrp.hpp"
 #include "usrp_exception.hpp"
@@ -33,6 +38,21 @@ class Usrp : public UsrpInterface {
     std::string getDeviceType() const;
 
    private:
+    // RfNoC components
+    uhd::rfnoc::rfnoc_graph::sptr graph_;
+    uhd::rfnoc::block_id_t radioId1_, radioId2_;
+    uhd::rfnoc::block_id_t replayId_;
+
+    uhd::rfnoc::radio_control::sptr radioCtrl1_, radioCtrl2_;
+    uhd::rfnoc::replay_block_control::sptr replayCtrl_;
+
+    uhd::rx_streamer::sptr currentRxStreamer_;
+    uhd::tx_streamer::sptr currentTxStreamer_;
+
+    void createRfNocBlocks();
+    typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
+    RadioChannelPair getRadioChannelPair(int antenna);
+
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
     const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;

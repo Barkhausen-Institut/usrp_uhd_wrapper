@@ -151,6 +151,18 @@ class System:
             if self.__usrpClients[usrp].ip == ip:
                 raise ValueError("Connection to USRP already exists!")
 
+    def resetFpgaTimes(self) -> None:
+        """
+        Reset the time to 0 at all connected USRPs upon the next received PPS
+        """
+        self.__setTimeToZeroNextPps()
+
+    def getCurrentFpgaTimes(self) -> List[float]:
+        """
+        Returns the timestamps the connected USRPs consider in their FPGAs.
+        """
+        return self.__getCurrentFpgaTimes()
+
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
         """Configure transmitter streaming.
 
@@ -234,7 +246,7 @@ class System:
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec
 
-    def __getCurrentFpgaTimes(self) -> List[int]:
+    def __getCurrentFpgaTimes(self) -> List[float]:
         return [
             item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]

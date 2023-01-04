@@ -66,9 +66,12 @@ class Usrp : public UsrpInterface {
     void configureReplayForDownload(size_t numRxSamples);
     MimoSignal performDownload(size_t numRxSamples);
 
+    void clearReplayBlockRecorder();
+
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
     const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;
+    const size_t PACKET_SIZE = 8192;
 
     // variables
     std::string ip_;

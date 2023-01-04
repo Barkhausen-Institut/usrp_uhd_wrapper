@@ -34,10 +34,8 @@ Usrp::Usrp(const std::string& ip) :
     radioId1_("0/Radio#0"), radioId2_("0/Radio#1"), replayId_("0/Replay#0") {
     ip_ = ip;
     graph_ = rfnoc_graph::make("addr="+ip);
-    //usrpDevice_ = uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
 
     graph_->get_mb_controller()->set_sync_source("external", "external");
-    //usrpDevice_->set_sync_source("external", "external");
 
     masterClockRate_ = 245.76e6; // TODO!
     //masterClockRate_ = usrpDevice_->get_master_clock_rate();
@@ -47,7 +45,6 @@ Usrp::Usrp(const std::string& ip) :
 
 Usrp::~Usrp() {
     graph_->get_mb_controller()->set_sync_source("internal", "internal");
-    //usrpDevice_->set_sync_source("internal", "internal");
 
     if (transmitThread_.joinable()) transmitThread_.join();
     if (receiveThread_.joinable()) receiveThread_.join();
@@ -69,7 +66,6 @@ void Usrp::createRfNocBlocks() {
 }
 
 void Usrp::connectForUpload(){
-    std::cout << "----> Connecting for UPLOAD..." << std::endl;
     disconnectAll();
 
     graph_->release();
@@ -77,13 +73,11 @@ void Usrp::connectForUpload(){
     uhd::stream_args_t streamArgs("fc32", "sc16");
     currentTxStreamer_ = graph_->create_tx_streamer(CHANNELS, streamArgs);
 
-    std::cout << "Connecting TX streamer" << std::endl;
-    for (int i = 0; i < CHANNELS; i++) {
+    for (int i = 0; i < CHANNELS; i++)
         graph_->connect(currentTxStreamer_, i, replayId_, i);
-    }
 
     graph_->commit();
-    _showRfNoCConnections(graph_);
+    // _showRfNoCConnections(graph_);
 }
 
 void Usrp::configureReplayForUpload(int numSamples) {
@@ -93,6 +87,8 @@ void Usrp::configureReplayForUpload(int numSamples) {
     for (int channel = 0; channel < CHANNELS; channel++) {
         replayCtrl_->record(channel*memStride, numBytes, channel);
     }
+
+    clearReplayBlockRecorder();
 }
 
 void Usrp::performUpload(const MimoSignal& txSignal) {
@@ -102,8 +98,6 @@ void Usrp::performUpload(const MimoSignal& txSignal) {
     const size_t numSamples = txSignal[0].size();
     configureReplayForUpload(numSamples);
 
-    size_t totalSamplesSent = 0;
-    size_t maxPacketSize = 8192;
 
     float timeout = 0.1;
 
@@ -111,20 +105,19 @@ void Usrp::performUpload(const MimoSignal& txSignal) {
     mdTx.start_of_burst = false;
     mdTx.end_of_burst = false;
     mdTx.has_time_spec = true;
-    mdTx.time_spec = graph_->get_mb_controller()->get_timekeeper(0)->get_time_now() + 0.1;
+    mdTx.time_spec = getCurrentFpgaTime() + 0.1;
 
+    size_t totalSamplesSent = 0;
     while(totalSamplesSent < numSamples) {
         std::vector<const sample*> buffers;
         for(int txI = 0; txI < CHANNELS; txI++) {
             buffers.push_back(txSignal[txI].data() + totalSamplesSent);
         }
-        size_t samplesToSend = std::min(numSamples - totalSamplesSent, maxPacketSize);
+        size_t samplesToSend = std::min(numSamples - totalSamplesSent, PACKET_SIZE);
         size_t samplesSent = currentTxStreamer_->send(buffers, samplesToSend, mdTx, timeout);
 
         mdTx.has_time_spec = false;
         totalSamplesSent += samplesSent;
-
-        std::cout << "upload: " << totalSamplesSent << " " << samplesSent << std::endl;
     }
     mdTx.end_of_burst = true;
     currentTxStreamer_->send("", 0, mdTx);
@@ -152,7 +145,6 @@ void Usrp::performUpload(const MimoSignal& txSignal) {
 }
 
 void Usrp::connectForStreaming() {
-    std::cout << "----> Connecting for STREAMING..." << std::endl;
     disconnectAll();
 
     graph_->release();
@@ -164,15 +156,12 @@ void Usrp::connectForStreaming() {
             radioChan = i - 2;
         }
 
-        std::cout << "Connecting " << radioId << " " << radioChan << " to " << replayId_ << " " << i << std::endl;
-        /*graph->connect(replayId, i, radioId, radioChan, false);
-            graph->connect(radioId, radioChan, replayId, i, true);*/
-        ::uhd::rfnoc::connect_through_blocks(graph_, replayId_, i, radioId, radioChan, false);
-        ::uhd::rfnoc::connect_through_blocks(graph_, radioId, radioChan, replayId_, i, true);
+        uhd::rfnoc::connect_through_blocks(graph_, replayId_, i, radioId, radioChan, false);
+        uhd::rfnoc::connect_through_blocks(graph_, radioId, radioChan, replayId_, i, true);
     }
 
     graph_->commit();
-    _showRfNoCConnections(graph_);
+    // _showRfNoCConnections(graph_);
 }
 
 void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples) {
@@ -191,9 +180,12 @@ void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples)
             replayCtrl_->config_play(channel*txMemStride, numTxBytes, channel);
     }
 
+    clearReplayBlockRecorder();
+}
+
+void Usrp::clearReplayBlockRecorder() {
     std::this_thread::sleep_for(10ms);
 
-    // Clear Replay block
     bool needClear = false;
     for(int t = 0; t < 3; t++) {
         needClear = false;
@@ -219,23 +211,30 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     txStreamCmd.stream_now = false;
     txStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
-    uhd::stream_cmd_t rxStreamCmd = txStreamCmd;
+    uhd::stream_cmd_t rxStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     rxStreamCmd.num_samps = numRxSamples;
     rxStreamCmd.stream_now = false;
-    std::cout << "current fpga time: " << getCurrentFpgaTime() << " stream time: " << streamTime << std::endl;
     rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
     for (int channel = 0; channel < CHANNELS; channel++) {
-        auto rcp = getRadioChannelPair(channel);
-        std::get<0>(rcp)->issue_stream_cmd(rxStreamCmd, std::get<1>(rcp));
+        auto [radio, radioChan] = getRadioChannelPair(channel);
+        radio->issue_stream_cmd(rxStreamCmd, radioChan);
         replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
     }
 
-    for(int c = 0; c < CHANNELS; c++) {
-        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
-        std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
+    uhd::async_metadata_t asyncMd;
+    double timeout = streamTime - getCurrentFpgaTime() + 0.1;
+    uhd::async_metadata_t::event_code_t lastEventCode = uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
+    while (replayCtrl_->get_play_async_metadata(asyncMd, timeout)) {
+        if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
+            lastEventCode = asyncMd.event_code;
+        timeout = 0.1;
     }
-    std::this_thread::sleep_for(2000ms);
+    if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
+        throw UsrpException("Error occured at data replaying with event code: "
+                        + std::to_string(lastEventCode));
+
+    // TOOD! Factor out into separate function or class
     for(int c = 0; c < CHANNELS; c++) {
         std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
         std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
@@ -243,7 +242,6 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
 }
 
 void Usrp::connectForDownload() {
-    std::cout << "----> Connecting for DOWNLOAD ..." << std::endl;
     disconnectAll();
 
     graph_->release();
@@ -255,7 +253,7 @@ void Usrp::connectForDownload() {
         graph_->connect(replayId_, i, currentRxStreamer_, i);
     graph_->commit();
 
-    _showRfNoCConnections(graph_);
+    //_showRfNoCConnections(graph_);
 }
 
 void Usrp::configureReplayForDownload(size_t numRxSamples) {
@@ -274,26 +272,25 @@ MimoSignal Usrp::performDownload(size_t numRxSamples) {
 
     MimoSignal result;
     result.resize(CHANNELS);
-    for(int c = 0; c < CHANNELS; c++) {
+    for(int c = 0; c < CHANNELS; c++)
         result[c].resize(numRxSamples);
-    }
 
     uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     streamCmd.num_samps = numRxSamples;
     streamCmd.stream_now = false;
-    streamCmd.time_spec = graph_->get_mb_controller()->get_timekeeper(0)->get_time_now() + 0.1;
+    streamCmd.time_spec = getCurrentFpgaTime() + 0.1;
 
     currentRxStreamer_->issue_stream_cmd(streamCmd);
+
     uhd::rx_metadata_t mdRx;
     size_t totalSamplesReceived = 0;
-    size_t maxPacketSize = 8192;
 
     while (totalSamplesReceived < numRxSamples) {
         std::vector<sample*> buffers;
         for(int c = 0; c < CHANNELS; c++)
             buffers.push_back(result[c].data() + totalSamplesReceived);
         size_t remainingSamples = numRxSamples - totalSamplesReceived;
-        size_t reqSamples = std::min(remainingSamples, maxPacketSize);
+        size_t reqSamples = std::min(remainingSamples, PACKET_SIZE);
         size_t numSamplesReceived = currentRxStreamer_->recv(buffers, reqSamples, mdRx, 0.1, false);
 
         totalSamplesReceived += numSamplesReceived;
@@ -341,25 +338,15 @@ RfConfig Usrp::getRfConfig() const {
     RfConfig conf;
     std::scoped_lock lock(fpgaAccessMutex_);
     conf.txCarrierFrequency = radioCtrl1_->get_tx_frequency(0);
-    //conf.txCarrierFrequency = usrpDevice_->get_tx_freq(0);
-
     conf.txGain = radioCtrl1_->get_tx_gain(0);
-    //conf.txGain = usrpDevice_->get_tx_gain(0);
-
     conf.txAnalogFilterBw = radioCtrl1_->get_tx_bandwidth(0);
-    //conf.txAnalogFilterBw = usrpDevice_->get_tx_bandwidth(0);
 
     conf.txSamplingRate = masterClockRate_;  // TODO!
     //conf.txSamplingRate = usrpDevice_->get_tx_rate(0);
 
     conf.rxCarrierFrequency = radioCtrl1_->get_rx_frequency(0);
-    //conf.rxCarrierFrequency = usrpDevice_->get_rx_freq(0);
-
     conf.rxGain = radioCtrl1_->get_rx_gain(0);
-    //conf.rxGain = usrpDevice_->get_rx_gain(0);
-
     conf.rxAnalogFilterBw = radioCtrl1_->get_rx_bandwidth(0);
-    //conf.rxAnalogFilterBw = usrpDevice_->get_rx_bandwidth(0);
 
     conf.rxSamplingRate = masterClockRate_; // TODO!
     //conf.rxSamplingRate = usrpDevice_->get_rx_rate(0);
@@ -421,15 +408,6 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
     for (int idxTxAntenna = 0; idxTxAntenna < conf.noTxAntennas; idxTxAntenna++)
         setRfConfigForTxAntenna(conf, idxTxAntenna);
-
-    // TODO! remove?
-    // if (!subdevSpecSet_) {
-    //     usrpDevice_->set_rx_subdev_spec(
-    //         uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noRxAntennas - 1]), 0);
-    //     usrpDevice_->set_tx_subdev_spec(
-    //         uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noTxAntennas - 1]), 0);
-    //     subdevSpecSet_ = true;
-    // }
 
     rfConfig_ = getRfConfig();
     if (rfConfig_ != conf) {
@@ -531,8 +509,6 @@ double Usrp::getCurrentFpgaTime() {
 }
 
 void Usrp::execute(const double baseTime) {
-    std::cout << "execute STUB!" << std::endl;
-
     if (txStreamingConfigs_.size() > 1)
         throw UsrpException("Only 1 TX Config currently allowed!");
     if (rxStreamingConfigs_.size() > 1)
@@ -545,8 +521,6 @@ void Usrp::execute(const double baseTime) {
     performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime + 1,
                      txStreamingConfigs_[0].samples[0].size(),
                      rxStreamingConfigs_[0].noSamples);
-
-
 
     connectForDownload();
 

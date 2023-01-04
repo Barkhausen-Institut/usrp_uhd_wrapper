@@ -2,6 +2,7 @@ from typing import Tuple
 import unittest
 import pytest
 import os
+import time
 
 import numpy as np
 
@@ -51,12 +52,12 @@ class HardwareSetup:
     def __init__(
         self,
         *,
-        txGain: float = 26,
-        rxGain: float = 25,
+        txGain: float = 30,
+        rxGain: float = 20,
         rxSampleRate: float = 12.288e6,
         txSampleRate: float = 12.288e6,
-        txFc: float = 2e9,
-        rxFc: float = 2e9,
+        txFc: float = 3.75e9,
+        rxFc: float = 3.75e9,
         noRxAntennas: int,
         noTxAntennas: int,
     ) -> None:
@@ -89,6 +90,35 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         self.system = System()
         self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
         return self.system
+
+
+@pytest.mark.hardware
+class TestHardwareClocks(unittest.TestCase):
+    def _createSystem(self, SetupClass: type) -> System:
+        setup = SetupClass(noRxAntennas=1, noTxAntennas=1)
+        setup.rfConfig.rxSamplingRate = 245.76e6
+        setup.rfConfig.txSamplingRate = 245.76e6
+
+        return setup.connectUsrps()
+
+    def test_singleUsrpResetFpgaTimes(self) -> None:
+        system = self._createSystem(LocalTransmissionHardwareSetup)
+        DELAY = 0.5
+
+        system.resetFpgaTimes()
+        fpgaTime1 = system.getCurrentFpgaTimes()[0]
+        self.assertLess(fpgaTime1, 1.5)
+
+        time.sleep(DELAY)
+        fpgaTime2 = system.getCurrentFpgaTimes()[0]
+        self.assertAlmostEqual(fpgaTime1 + DELAY, fpgaTime2, delta=0.1)
+
+    def test_twoUsrpsAreSynchronized(self) -> None:
+        system = self._createSystem(P2pHardwareSetup)
+
+        system.resetFpgaTimes()
+        fpgaTimes = system.getCurrentFpgaTimes()
+        self.assertLess(abs(fpgaTimes[0] - fpgaTimes[1]), 0.05)
 
 
 @pytest.mark.hardware
@@ -159,6 +189,9 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup.rfConfig.rxSamplingRate = 245.76e6
+        setup.rfConfig.txSamplingRate = 245.76e6
+
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -176,7 +209,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=50,
+            second=268,
             delta=10,
         )
 

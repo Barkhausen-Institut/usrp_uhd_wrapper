@@ -6,6 +6,11 @@
 #include <mutex>
 #include <thread>
 
+#include <uhd/rfnoc/block_id.hpp>
+#include <uhd/rfnoc/radio_control.hpp>
+#include <uhd/rfnoc/replay_block_control.hpp>
+#include <uhd/rfnoc_graph.hpp>
+
 #include "config.hpp"
 #include "uhd/usrp/multi_usrp.hpp"
 #include "usrp_exception.hpp"
@@ -15,20 +20,9 @@ namespace bi {
 
 class Usrp : public UsrpInterface {
    public:
-    Usrp(const std::string& ip) {
-        ip_ = ip;
-        usrpDevice_ =
-            uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
-        usrpDevice_->set_sync_source("external", "external");
-        masterClockRate_ = usrpDevice_->get_master_clock_rate();
-    }
-    ~Usrp() {
-        usrpDevice_->set_sync_source("internal", "internal");
-        if (transmitThread_.joinable()) transmitThread_.join();
-        if (receiveThread_.joinable()) receiveThread_.join();
-        if (setTimeToZeroNextPpsThread_.joinable())
-            setTimeToZeroNextPpsThread_.join();
-    }
+    Usrp(const std::string& ip);
+    ~Usrp();
+
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
@@ -44,16 +38,43 @@ class Usrp : public UsrpInterface {
     std::string getDeviceType() const;
 
    private:
+    // RfNoC components
+    uhd::rfnoc::rfnoc_graph::sptr graph_;
+    uhd::rfnoc::block_id_t radioId1_, radioId2_;
+    uhd::rfnoc::block_id_t replayId_;
+
+    uhd::rfnoc::radio_control::sptr radioCtrl1_, radioCtrl2_;
+    uhd::rfnoc::replay_block_control::sptr replayCtrl_;
+
+    uhd::rx_streamer::sptr currentRxStreamer_;
+    uhd::tx_streamer::sptr currentTxStreamer_;
+
+    void createRfNocBlocks();
+    typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
+    RadioChannelPair getRadioChannelPair(int antenna);
+
+    void disconnectAll();
+    void connectForUpload();
+    void configureReplayForUpload(int numSamples);
+    void performUpload(const MimoSignal& txSignal);
+
+    void connectForStreaming();
+    void configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples);
+    void performStreaming(double baseTime, size_t numTxSamples, size_t numRxSamples);
+
+    void connectForDownload();
+    void configureReplayForDownload(size_t numRxSamples);
+    MimoSignal performDownload(size_t numRxSamples);
+
+    void clearReplayBlockRecorder();
+
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
     const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;
-    const std::vector<std::string> SUBDEV_SPECS = {
-        "A:0", "A:0 A:1", "A:0 A:1 B:0", "A:0 A:1 B:0 B:1"};
+    const size_t PACKET_SIZE = 8192;
+
     // variables
-    uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
-    uhd::tx_streamer::sptr txStreamer_;
-    uhd::rx_streamer::sptr rxStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_ = false;
@@ -67,7 +88,6 @@ class Usrp : public UsrpInterface {
     RfConfig rfConfig_;
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
-    bool subdevSpecSet_ = false;
 
     // configuration functions
     void setTxSamplingRate(const double samplingRate,
@@ -80,8 +100,6 @@ class Usrp : public UsrpInterface {
     void setRfConfigForTxAntenna(const RfConfig& conf,
                                  const size_t txAntennaIdx);
 
-    void configureRxStreamer(const RfConfig& conf);
-    void configureTxStreamer(const RfConfig& conf);
 
     // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);

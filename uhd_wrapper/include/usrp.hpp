@@ -69,8 +69,7 @@ class Usrp : public UsrpInterface {
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
     const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;
-    const std::vector<std::string> SUBDEV_SPECS = {
-        "A:0", "A:0 A:1", "A:0 A:1 B:0", "A:0 A:1 B:0 B:1"};
+
     // variables
     std::string ip_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
@@ -98,8 +97,6 @@ class Usrp : public UsrpInterface {
     void setRfConfigForTxAntenna(const RfConfig& conf,
                                  const size_t txAntennaIdx);
 
-    void configureRxStreamer(const RfConfig& conf);
-    void configureTxStreamer(const RfConfig& conf);
 
     // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);

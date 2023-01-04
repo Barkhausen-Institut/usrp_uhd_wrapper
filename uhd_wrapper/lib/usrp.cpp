@@ -2,18 +2,15 @@
 #include <cstring>
 #include <numeric>
 #include <uhd/types/ref_vector.hpp>
-#include <uhd/rfnoc/block_id.hpp>
-#include <uhd/rfnoc/duc_block_control.hpp>
 #include <uhd/rfnoc/mb_controller.hpp>
-#include <uhd/rfnoc/radio_control.hpp>
-#include <uhd/rfnoc/replay_block_control.hpp>
-#include <uhd/rfnoc_graph.hpp>
+#include <uhd/utils/graph_utils.hpp>
 
 #include "usrp.hpp"
 
 namespace bi {
 
-const int NUM_CHANNELS = 4;
+const int MAX_ANTENNAS = 4;
+const int CHANNELS = 1;
 
 using uhd::rfnoc::block_id_t;
 using uhd::rfnoc::rfnoc_graph;
@@ -61,12 +58,106 @@ void Usrp::createRfNocBlocks() {
     radioCtrl2_ = graph_->get_block<uhd::rfnoc::radio_control>(radioId2_);
 
     replayCtrl_ = graph_->get_block<uhd::rfnoc::replay_block_control>(replayId_);
-    for(int c = 0; c < NUM_CHANNELS; c++) {
+    for(int c = 0; c < MAX_ANTENNAS; c++) {
         replayCtrl_->set_play_type("sc16", c);
         replayCtrl_->set_record_type("sc16", c);
     }
 
     graph_->commit();
+}
+
+void Usrp::connectForUpload(){
+    std::cout << "----> Connecting for UPLOAD..." << std::endl;
+    disconnectAll();
+
+    graph_->release();
+    currentTxStreamer_.reset();
+    uhd::stream_args_t streamArgs("fc32", "sc16");
+    currentTxStreamer_ = graph_->create_tx_streamer(CHANNELS, streamArgs);
+
+    std::cout << "Connecting TX streamer" << std::endl;
+    for (int i = 0; i < CHANNELS; i++) {
+        graph_->connect(currentTxStreamer_, i, replayId_, i);
+    }
+
+    graph_->commit();
+    _showRfNoCConnections(graph_);
+}
+
+void Usrp::connectForStreaming() {
+    std::cout << "----> Connecting for Streaming..." << std::endl;
+    disconnectAll();
+
+    graph_->release();
+    for (int i = 0; i < CHANNELS; i++) {
+        auto radioId = radioId1_;
+        int radioChan = i;
+        if (i >= 2) {
+            radioId = radioId2_;
+            radioChan = i - 2;
+        }
+
+        std::cout << "Connecting " << radioId << " " << radioChan << " to " << replayId_ << " " << i << std::endl;
+        /*graph->connect(replayId, i, radioId, radioChan, false);
+            graph->connect(radioId, radioChan, replayId, i, true);*/
+        ::uhd::rfnoc::connect_through_blocks(graph_, replayId_, i, radioId, radioChan, false);
+        ::uhd::rfnoc::connect_through_blocks(graph_, radioId, radioChan, replayId_, i, true);
+    }
+
+    graph_->commit();
+    _showRfNoCConnections(graph_);
+}
+
+void Usrp::connectForDownload() {
+    std::cout << "----> Connecting for DOWNLOAD ..." << std::endl;
+    disconnectAll();
+
+    graph_->release();
+    currentRxStreamer_.reset();
+    uhd::stream_args_t streamArgs("fc32", "sc16");
+    currentRxStreamer_ = graph_->create_rx_streamer(CHANNELS, streamArgs);
+
+    for(int i = 0; i < CHANNELS; i++)
+        graph_->connect(replayId_, i, currentRxStreamer_, i);
+    graph_->commit();
+
+    _showRfNoCConnections(graph_);
+}
+
+void Usrp::disconnectAll() {
+    graph_->release();
+    for (auto& edge : graph_->enumerate_active_connections()) {
+        std::cout << "Disconnecting edge " << edge << std::endl;
+        if (edge.dst_blockid.find("RxStreamer") != std::string::npos) {
+            std::cout << "  Disconnecting RX STreamer" << std::endl;
+            graph_->disconnect(edge.src_blockid, edge.src_port);
+        }
+        else if (edge.src_blockid.find("TxStreamer") != std::string::npos) {
+            graph_->disconnect(edge.dst_blockid, edge.dst_port);
+            std::cout << "  Disconnecting TX Streamer" << std::endl;
+        }
+        else {
+            graph_->disconnect(edge.src_blockid, edge.src_port, edge.dst_blockid, edge.dst_port);
+            std::cout << "  Disconnecting Normal edge" << std::endl;
+        }
+    }
+
+    if (currentTxStreamer_) {
+        std::cout << "Explicitely disconnecting TX Streamer" << std::endl;
+        for(int i = 0; i < CHANNELS; i++)
+            graph_->disconnect("TxStreamer#0", i);
+        graph_->disconnect("TxStreamer#0");
+        currentTxStreamer_.reset();
+    }
+    if (currentRxStreamer_) {
+        std::cout << "Explicitely disconnecting RX Streamer" << std::endl;
+        for(int i = 0; i < CHANNELS; i++)
+            graph_->disconnect("RxStreamer#0", i);
+        currentRxStreamer_.reset();
+    }
+
+    graph_->commit();
+    _showRfNoCConnections(graph_);
 }
 
 RfConfig Usrp::getRfConfig() const {
@@ -366,6 +457,9 @@ double Usrp::getCurrentFpgaTime() {
 
 void Usrp::execute(const double baseTime) {
     std::cout << "execute STUB!" << std::endl;
+    connectForUpload();
+    connectForStreaming();
+    connectForDownload();
     return;
 
     waitOnThreadToJoin(setTimeToZeroNextPpsThread_);

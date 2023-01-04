@@ -53,6 +53,11 @@ class Usrp : public UsrpInterface {
     typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
     RadioChannelPair getRadioChannelPair(int antenna);
 
+    void disconnectAll();
+    void connectForUpload();
+    void connectForStreaming();
+    void connectForDownload();
+
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
     const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;

@@ -189,6 +189,9 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup.rfConfig.rxSamplingRate = 245.76e6
+        setup.rfConfig.txSamplingRate = 245.76e6
+
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])

@@ -72,10 +72,7 @@ class Usrp : public UsrpInterface {
     const std::vector<std::string> SUBDEV_SPECS = {
         "A:0", "A:0 A:1", "A:0 A:1 B:0", "A:0 A:1 B:0 B:1"};
     // variables
-    uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
-    uhd::tx_streamer::sptr txStreamer_;
-    uhd::rx_streamer::sptr rxStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_ = false;
@@ -89,7 +86,6 @@ class Usrp : public UsrpInterface {
     RfConfig rfConfig_;
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
-    bool subdevSpecSet_ = false;
 
     // configuration functions
     void setTxSamplingRate(const double samplingRate,

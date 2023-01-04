@@ -194,8 +194,9 @@ void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples)
     std::this_thread::sleep_for(10ms);
 
     // Clear Replay block
+    bool needClear = false;
     for(int t = 0; t < 3; t++) {
-        bool needClear = false;
+        needClear = false;
         for(int c = 0; c < CHANNELS; c++)
             needClear |= (replayCtrl_->get_record_fullness(c) > 0);
 
@@ -299,6 +300,8 @@ MimoSignal Usrp::performDownload(size_t numRxSamples) {
         if (mdRx.error_code != uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
             throw std::runtime_error("error at Rx streamer " + mdRx.strerror());
     }
+    if (!mdRx.end_of_burst)
+        throw UsrpException("I did not receive an end_of_burst.");
 
     std::cout << "Returning... " << std::endl;
     return result;
@@ -372,7 +375,6 @@ RfConfig Usrp::getRfConfig() const {
 
 void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
-    if (!rxStreamer_) configureRxStreamer(getRfConfig());
     try {
         std::vector<RxStreamingConfig> rxStreamingConfigs =
             std::move(rxStreamingConfigs_);
@@ -390,41 +392,6 @@ void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
 
 void Usrp::processRxStreamingConfig(const RxStreamingConfig &config,
                                     MimoSignal &buffer, const double baseTime) {
-    buffer = MimoSignal((size_t)rfConfig_.noRxAntennas,
-                        samples_vec((size_t)config.noSamples, sample(0, 0)));
-    uhd::stream_cmd_t streamCmd =
-        uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE;
-    streamCmd.num_samps = config.noSamples;
-    streamCmd.stream_now = false;
-    streamCmd.time_spec = uhd::time_spec_t(baseTime + config.receiveTimeOffset);
-
-    rxStreamer_->issue_stream_cmd(streamCmd);
-    uhd::rx_metadata_t mdRx;
-    double timeout =
-        (baseTime + config.receiveTimeOffset) - getCurrentFpgaTime() + 0.2;
-    size_t totalSamplesRecvd = 0;
-    size_t maxPacketSize = rxStreamer_->get_max_num_samps();
-    while (totalSamplesRecvd < config.noSamples) {
-        std::vector<sample *> buffers;
-        for (int rxAntennaIdx = 0; rxAntennaIdx < rfConfig_.noRxAntennas;
-             rxAntennaIdx++) {
-            buffers.push_back(buffer[rxAntennaIdx].data() + totalSamplesRecvd);
-        }
-        size_t remainingNoSamples = config.noSamples - totalSamplesRecvd;
-        size_t noSamplesNextPkg = std::min(remainingNoSamples, maxPacketSize);
-        size_t noSamplesRcvd =
-            rxStreamer_->recv(buffers, noSamplesNextPkg, mdRx, timeout, true);
-
-        totalSamplesRecvd += noSamplesRcvd;
-
-        timeout = 0.1f;
-        if (mdRx.error_code !=
-            uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
-            throw UsrpException("error occurred on the receiver: " +
-                                mdRx.strerror());
-    }
-    if (!mdRx.end_of_burst)
-        throw UsrpException("I did not receive an end_of_burst.");
 }
 
 void Usrp::transmit(const double baseTime, std::exception_ptr &exceptionPtr) {
@@ -443,52 +410,8 @@ void Usrp::transmit(const double baseTime, std::exception_ptr &exceptionPtr) {
 
 void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
                                     const double baseTime) {
-    // specifiy on specifications of how to stream the command
-    uhd::tx_metadata_t mdTx;
-    mdTx.start_of_burst = false;
-    mdTx.end_of_burst = false;
-    mdTx.has_time_spec = true;
-
-    mdTx.time_spec = uhd::time_spec_t(baseTime + conf.sendTimeOffset);
-    double timeout =
-        baseTime + conf.sendTimeOffset - getCurrentFpgaTime() + 0.1;
-
-    size_t totalSamplesSent = 0;
-    size_t noSampsTxSignal = conf.samples[0].size();
-    size_t maxPacketSize = txStreamer_->get_max_num_samps();
-
-    while (totalSamplesSent < noSampsTxSignal) {
-        std::vector<const sample *> buffers;
-        for (int txAntennaIdx = 0; txAntennaIdx < rfConfig_.noTxAntennas;
-             txAntennaIdx++)
-            buffers.push_back(conf.samples[txAntennaIdx].data() +
-                              totalSamplesSent);
-        size_t sampsToSend =
-            std::min(noSampsTxSignal - totalSamplesSent, maxPacketSize);
-        size_t samplesSent =
-            txStreamer_->send(buffers, sampsToSend, mdTx, timeout);
-        mdTx.has_time_spec = false;
-
-        totalSamplesSent += samplesSent;
-    }
-    mdTx.end_of_burst = true;
-    txStreamer_->send("", 0, mdTx);
-    uhd::async_metadata_t asyncMd;
-    // loop through all messages for the ACK packet (may have underflow messages
-    // in queue)
-    uhd::async_metadata_t::event_code_t lastEventCode =
-        uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
-    while (txStreamer_->recv_async_msg(asyncMd, timeout)) {
-        if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
-            lastEventCode = asyncMd.event_code;
-        timeout = 0.1f;
-    }
-
-    if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK) {
-        throw UsrpException("Error occoured at Tx Streamer with event code: " +
-                            std::to_string(lastEventCode));
-    }
 }
+
 void Usrp::setRfConfig(const RfConfig &conf) {
     assertValidRfConfig(conf);
     std::scoped_lock lock(fpgaAccessMutex_);
@@ -507,7 +430,6 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     //         uhd::usrp::subdev_spec_t(SUBDEV_SPECS[conf.noTxAntennas - 1]), 0);
     //     subdevSpecSet_ = true;
     // }
-    configureTxStreamer(conf);
 
     rfConfig_ = getRfConfig();
     if (rfConfig_ != conf) {
@@ -521,28 +443,7 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     }
 }
 
-void Usrp::configureRxStreamer(const RfConfig &conf) {
-    return;
-    if (rxStreamer_) rxStreamer_.reset();
-    uhd::stream_args_t rxStreamArgs("fc32", "sc16");
-    rxStreamArgs.channels = std::vector<size_t>({});
-    for (int rxAntennaIdx = 0; rxAntennaIdx < conf.noRxAntennas; rxAntennaIdx++)
-        rxStreamArgs.channels.push_back(rxAntennaIdx);
-    rxStreamer_ = usrpDevice_->get_rx_stream(rxStreamArgs);
-}
 
-void Usrp::configureTxStreamer(const RfConfig &conf) {
-    return;
-    if (!txStreamer_) {
-        uhd::stream_args_t txStreamArgs("fc32", "sc16");
-        txStreamArgs.channels = std::vector<size_t>({});
-
-        for (int txAntennaIdx = 0; txAntennaIdx < conf.noTxAntennas;
-             txAntennaIdx++)
-            txStreamArgs.channels.push_back(txAntennaIdx);
-        txStreamer_ = usrpDevice_->get_tx_stream(txStreamArgs);
-    }
-}
 void Usrp::setRfConfigForRxAntenna(const RfConfig &conf,
                                    const size_t rxAntennaIdx) {
     auto [radio, channel] = getRadioChannelPair(rxAntennaIdx);
@@ -692,20 +593,18 @@ void Usrp::resetStreamingConfigs() {
 void Usrp::setTxSamplingRate(const double samplingRate,
                              const size_t idxTxAntenna) {
     std::cout << "STUB tx sampling rate!" << std::endl;
+    // TODO!
     return;
 
-    usrpDevice_->set_tx_rate(samplingRate, idxTxAntenna);
-    double actualSamplingRate = usrpDevice_->get_tx_rate();
-    assertSamplingRate(actualSamplingRate, masterClockRate_);
+    //assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
 void Usrp::setRxSamplingRate(const double samplingRate,
                              const size_t idxRxAntenna) {
     std::cout << "STUB rx sampling rate!" << std::endl;
+    // TODO!
     return;
 
-    usrpDevice_->set_rx_rate(samplingRate, idxRxAntenna);
-    double actualSamplingRate = usrpDevice_->get_rx_rate(idxRxAntenna);
-    assertSamplingRate(actualSamplingRate, masterClockRate_);
+    //assertSamplingRate(actualSamplingRate, masterClockRate_);
 }
 
 void Usrp::waitOnThreadToJoin(std::thread &t) {
@@ -714,7 +613,6 @@ void Usrp::waitOnThreadToJoin(std::thread &t) {
 
 std::string Usrp::getDeviceType() const {
     return graph_->get_mb_controller()->get_mboard_name();
-    //return usrpDevice_->get_mboard_name();
 }
 
 Usrp::RadioChannelPair Usrp::getRadioChannelPair(int antenna) {

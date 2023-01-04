@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List, Optional
 import unittest
 import pytest
 import os
@@ -94,6 +94,25 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
         return self.system
 
+    def propagateSignal(self, txSignals: List[np.ndarray],
+                        system: Optional[System] = None) -> List[np.ndarray]:
+        if system is None:
+            system = self.connectUsrps()
+
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0, samples=MimoSignal(signals=txSignals)
+        )
+        rxStreamingConfig1 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+
+        system.execute()
+        samplesSystem = system.collect()
+        return samplesSystem["usrp1"][0].signals
+
 
 @pytest.mark.hardware
 class TestHardwareClocks(unittest.TestCase):
@@ -123,6 +142,78 @@ class TestHardwareClocks(unittest.TestCase):
         fpgaTimes = system.getCurrentFpgaTimes()
         self.assertLess(abs(fpgaTimes[0] - fpgaTimes[1]), 0.05)
 
+
+@pytest.mark.hardware
+class TestSampleRateSettings(unittest.TestCase):
+    def setUp(self) -> None:
+        self.transmitF = 0.05;
+        self.txSignal = np.exp(1j*2*np.pi*self.transmitF*np.arange(20e3))
+
+    def _transmitAndGetRxPeakFrequency(self, rxRate: float, txRate: float) -> np.ndarray:
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup.rfConfig.rxSamplingRate = rxRate
+        setup.rfConfig.txSamplingRate = txRate
+
+        rxSamples = setup.propagateSignal([self.txSignal])[0]
+
+        N = len(rxSamples)
+        spec = np.fft.fft(rxSamples)[:N//2]
+        peak = np.argmax(spec) / N
+
+        return peak
+
+    def test_equalSampleRateTxRx(self):
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 2, txRate=245.76e6 / 2)
+
+        self.assertAlmostEqual(fPeak, self.transmitF, delta=0.01)
+
+    def test_HigherTxSampleRate(self):
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 4, txRate=245.76e6 / 2)
+
+        self.assertAlmostEqual(fPeak, self.transmitF * 2, delta=0.01)
+
+    def test_LowerTxSampleRate(self):
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 2, txRate=245.76e6 / 6)
+
+        self.assertAlmostEqual(fPeak, self.transmitF / 3 , delta=0.01)
+
+
+@pytest.mark.hardware
+class TestCarrierFrequencySettings(unittest.TestCase):
+    def setUp(self) -> None:
+        self.transmitF = 25e6;
+        self.R = 245.76e6 / 2
+        self.Fc = 3.75e9
+
+        self.txSignal = np.exp(1j*2*np.pi*self.transmitF/self.R*np.arange(20e3))
+
+    def _transmitAndGetRxPeakFrequency(self, sampleRate: float,
+                                       txCarrier: float, rxCarrier: float) -> np.ndarray:
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup.rfConfig.rxSamplingRate = sampleRate
+        setup.rfConfig.txSamplingRate = sampleRate
+        setup.rfConfig.txCarrierFrequency = txCarrier
+        setup.rfConfig.rxCarrierFrequency = rxCarrier
+
+        rxSamples = setup.propagateSignal([self.txSignal])[0]
+
+        N = len(rxSamples)
+        spec = np.fft.fft(rxSamples)[:N//2]
+        peak = np.argmax(spec) / N
+
+        return peak * self.R
+
+    def test_equalCarriers(self) -> None:
+        fPeak = self._transmitAndGetRxPeakFrequency(
+            sampleRate=self.R, txCarrier=self.Fc, rxCarrier=self.Fc)
+        self.assertAlmostEqual(fPeak, self.transmitF  , delta=10e3)
+
+    def test_10MHzOffset(self) -> None:
+        Fo = 10e6
+
+        fPeak = self._transmitAndGetRxPeakFrequency(
+            sampleRate=self.R, txCarrier=self.Fc, rxCarrier=self.Fc+Fo)
+        self.assertAlmostEqual(fPeak, self.transmitF-Fo  , delta=10e3)
 
 @pytest.mark.hardware
 class TestHardwareSystemTests(unittest.TestCase):

@@ -4,6 +4,9 @@ import pytest
 import os
 import time
 
+import matplotlib.pyplot as plt
+
+
 import numpy as np
 
 from uhd_wrapper.utils.config import (
@@ -129,6 +132,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             np.random.sample((self.noSamples,))
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
+        # self.randomSignal *= np.linspace(0, 1, self.noSamples)
 
     def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
@@ -189,8 +193,8 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = 245.76e6
-        setup.rfConfig.txSamplingRate = 245.76e6
+        setup.rfConfig.rxSamplingRate = 245.76e6 / 4
+        setup.rfConfig.txSamplingRate = 245.76e6 / 1
 
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -206,6 +210,8 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.execute()
         samplesSystem = system.collect()
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
+
+        plt.plot(abs(rxSamplesUsrp1)); plt.show()
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),

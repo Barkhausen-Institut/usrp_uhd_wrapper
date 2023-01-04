@@ -41,6 +41,7 @@ Usrp::Usrp(const std::string& ip) :
     //masterClockRate_ = usrpDevice_->get_master_clock_rate();
 
     createRfNocBlocks();
+    connectForStreaming();
 }
 
 Usrp::~Usrp() {
@@ -55,6 +56,13 @@ Usrp::~Usrp() {
 void Usrp::createRfNocBlocks() {
     radioCtrl1_ = graph_->get_block<uhd::rfnoc::radio_control>(radioId1_);
     radioCtrl2_ = graph_->get_block<uhd::rfnoc::radio_control>(radioId2_);
+
+    using uhd::rfnoc::block_id_t;
+    ddcControl1_ = graph_->get_block<uhd::rfnoc::ddc_block_control>(block_id_t("0/DDC#0"));
+    ducControl1_ = graph_->get_block<uhd::rfnoc::duc_block_control>(block_id_t("0/DUC#0"));
+    ddcControl2_ = graph_->get_block<uhd::rfnoc::ddc_block_control>(block_id_t("0/DDC#1"));
+    ducControl2_ = graph_->get_block<uhd::rfnoc::duc_block_control>(block_id_t("0/DUC#1"));
+
 
     replayCtrl_ = graph_->get_block<uhd::rfnoc::replay_block_control>(replayId_);
     for(int c = 0; c < MAX_ANTENNAS; c++) {
@@ -206,13 +214,22 @@ void Usrp::clearReplayBlockRecorder() {
 void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRxSamples) {
     configureReplayForStreaming(numTxSamples, numRxSamples);
 
+    int rxDecimFactor = ddcControl1_->get_property<int>("decim", 0);
+
+    std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
+    std::cout << "RF config\n" << getRfConfig() << std::endl;
+
     uhd::stream_cmd_t txStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     txStreamCmd.num_samps = numTxSamples;
     txStreamCmd.stream_now = false;
     txStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
     uhd::stream_cmd_t rxStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
-    rxStreamCmd.num_samps = numRxSamples;
+    // We need to multiply with the rx decim factor because we instruct the radio to create
+    // a given amount of samples, which are subsequentcy decimated by the DDC.
+    // On the TX side, we instruct the replay block to create a given amount of samples, which is
+    // equal to the amount of baseband samples
+    rxStreamCmd.num_samps = numRxSamples * rxDecimFactor;
     rxStreamCmd.stream_now = false;
     rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
@@ -300,7 +317,6 @@ MimoSignal Usrp::performDownload(size_t numRxSamples) {
     if (!mdRx.end_of_burst)
         throw UsrpException("I did not receive an end_of_burst.");
 
-    std::cout << "Returning... " << std::endl;
     return result;
 }
 
@@ -340,17 +356,12 @@ RfConfig Usrp::getRfConfig() const {
     conf.txCarrierFrequency = radioCtrl1_->get_tx_frequency(0);
     conf.txGain = radioCtrl1_->get_tx_gain(0);
     conf.txAnalogFilterBw = radioCtrl1_->get_tx_bandwidth(0);
-
-    conf.txSamplingRate = masterClockRate_;  // TODO!
-    //conf.txSamplingRate = usrpDevice_->get_tx_rate(0);
+    conf.txSamplingRate = ducControl1_->get_input_rate(0);
 
     conf.rxCarrierFrequency = radioCtrl1_->get_rx_frequency(0);
     conf.rxGain = radioCtrl1_->get_rx_gain(0);
     conf.rxAnalogFilterBw = radioCtrl1_->get_rx_bandwidth(0);
-
-    conf.rxSamplingRate = masterClockRate_; // TODO!
-    //conf.rxSamplingRate = usrpDevice_->get_rx_rate(0);
-
+    conf.rxSamplingRate = ddcControl1_->get_output_rate(0);
 
     // TODO!
     conf.noRxAntennas = 1;
@@ -409,7 +420,8 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     for (int idxTxAntenna = 0; idxTxAntenna < conf.noTxAntennas; idxTxAntenna++)
         setRfConfigForTxAntenna(conf, idxTxAntenna);
 
-    rfConfig_ = getRfConfig();
+    auto tmp = getRfConfig();
+    rfConfig_ = tmp;
     if (rfConfig_ != conf) {
         std::ostringstream confStream;
         confStream << "Actual Rf Config:" << std::endl
@@ -429,13 +441,9 @@ void Usrp::setRfConfigForRxAntenna(const RfConfig &conf,
     radio->set_rx_gain(conf.rxGain, channel);
     radio->set_rx_bandwidth(conf.rxAnalogFilterBw, channel);
 
-    // TODO! Set Sampling rate
-
-    // setRxSamplingRate(conf.rxSamplingRate, rxAntennaIdx);
-    // uhd::tune_request_t rxTuneRequest(conf.rxCarrierFrequency);
-    // usrpDevice_->set_rx_freq(rxTuneRequest, rxAntennaIdx);
-    // usrpDevice_->set_rx_gain(conf.rxGain, rxAntennaIdx);
-    // usrpDevice_->set_rx_bandwidth(conf.rxAnalogFilterBw, rxAntennaIdx);
+    assertSamplingRate(conf.rxSamplingRate, masterClockRate_);
+    auto [ddc, channelddc] = getDDCChannelPair(rxAntennaIdx);
+    ddc->set_output_rate(conf.rxSamplingRate, channelddc);
 }
 
 void Usrp::setRfConfigForTxAntenna(const RfConfig &conf,
@@ -445,11 +453,9 @@ void Usrp::setRfConfigForTxAntenna(const RfConfig &conf,
     radio->set_tx_gain(conf.txGain, channel);
     radio->set_tx_bandwidth(conf.txAnalogFilterBw, channel);
 
-    // setTxSamplingRate(conf.txSamplingRate, txAntennaIdx);
-    // uhd::tune_request_t txTuneRequest(conf.txCarrierFrequency);
-    // usrpDevice_->set_tx_freq(txTuneRequest, txAntennaIdx);
-    // usrpDevice_->set_tx_gain(conf.txGain, txAntennaIdx);
-    // usrpDevice_->set_tx_bandwidth(conf.txAnalogFilterBw, txAntennaIdx);
+    assertSamplingRate(conf.txSamplingRate, masterClockRate_);
+    auto [duc, channelduc] = getDUCChannelPair(txAntennaIdx);
+    duc->set_input_rate(conf.txSamplingRate, channelduc);
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
@@ -564,22 +570,6 @@ void Usrp::resetStreamingConfigs() {
     txStreamingConfigs_.clear();
     rxStreamingConfigs_.clear();
 }
-void Usrp::setTxSamplingRate(const double samplingRate,
-                             const size_t idxTxAntenna) {
-    std::cout << "STUB tx sampling rate!" << std::endl;
-    // TODO!
-    return;
-
-    //assertSamplingRate(actualSamplingRate, masterClockRate_);
-}
-void Usrp::setRxSamplingRate(const double samplingRate,
-                             const size_t idxRxAntenna) {
-    std::cout << "STUB rx sampling rate!" << std::endl;
-    // TODO!
-    return;
-
-    //assertSamplingRate(actualSamplingRate, masterClockRate_);
-}
 
 void Usrp::waitOnThreadToJoin(std::thread &t) {
     if (t.joinable()) t.join();
@@ -594,5 +584,19 @@ Usrp::RadioChannelPair Usrp::getRadioChannelPair(int antenna) {
         return {radioCtrl1_, antenna};
     else
         return {radioCtrl2_, antenna - 2};
+}
+
+Usrp::DDCChannelPair Usrp::getDDCChannelPair(int antenna) {
+    if (antenna < 2)
+        return {ddcControl1_, antenna};
+    else
+        return {ddcControl2_, antenna - 2};
+}
+
+Usrp::DUCChannelPair Usrp::getDUCChannelPair(int antenna) {
+    if (antenna < 2)
+        return {ducControl1_, antenna};
+    else
+        return {ducControl2_, antenna - 2};
 }
 }  // namespace bi

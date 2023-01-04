@@ -1,8 +1,11 @@
-from typing import Tuple
+from typing import Tuple, List, Optional
 import unittest
 import pytest
 import os
 import time
+
+import matplotlib.pyplot as plt
+
 
 import numpy as np
 
@@ -91,13 +94,31 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
         return self.system
 
+    def propagateSignal(self, txSignals: List[np.ndarray],
+                        system: Optional[System] = None) -> List[np.ndarray]:
+        if system is None:
+            system = self.connectUsrps()
+
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0, samples=MimoSignal(signals=txSignals)
+        )
+        rxStreamingConfig1 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+
+        system.execute()
+        samplesSystem = system.collect()
+        return samplesSystem["usrp1"][0].signals
+
 
 @pytest.mark.hardware
 class TestHardwareClocks(unittest.TestCase):
     def _createSystem(self, SetupClass: type) -> System:
-        setup = SetupClass(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = 245.76e6
-        setup.rfConfig.txSamplingRate = 245.76e6
+        setup = SetupClass(noRxAntennas=1, noTxAntennas=1,
+                           txSampleRate=245.76e6, rxSampleRate=245.76e6)
 
         return setup.connectUsrps()
 
@@ -122,6 +143,77 @@ class TestHardwareClocks(unittest.TestCase):
 
 
 @pytest.mark.hardware
+class TestSampleRateSettings(unittest.TestCase):
+    def setUp(self) -> None:
+        self.transmitF = 0.05
+        self.txSignal = np.exp(1j*2*np.pi*self.transmitF*np.arange(20e3))
+
+    def _transmitAndGetRxPeakFrequency(self, rxRate: float, txRate: float) -> float:
+        setup = LocalTransmissionHardwareSetup(
+            noRxAntennas=1, noTxAntennas=1, txSampleRate=txRate, rxSampleRate=rxRate)
+
+        rxSamples = setup.propagateSignal([self.txSignal])[0]
+
+        N = len(rxSamples)
+        spec = np.fft.fft(rxSamples)[:N//2]
+        peak = np.argmax(spec).item() / N
+
+        return peak
+
+    def test_equalSampleRateTxRx(self) -> None:
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 2, txRate=245.76e6 / 2)
+
+        self.assertAlmostEqual(fPeak, self.transmitF, delta=0.01)
+
+    def test_HigherTxSampleRate(self) -> None:
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 4, txRate=245.76e6 / 2)
+
+        self.assertAlmostEqual(fPeak, self.transmitF * 2, delta=0.01)
+
+    def test_LowerTxSampleRate(self) -> None:
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 2, txRate=245.76e6 / 6)
+
+        self.assertAlmostEqual(fPeak, self.transmitF / 3, delta=0.01)
+
+
+@pytest.mark.hardware
+class TestCarrierFrequencySettings(unittest.TestCase):
+    def setUp(self) -> None:
+        self.transmitF = 25e6
+        self.R = 245.76e6 / 2
+        self.Fc = 3.75e9
+
+        self.txSignal = np.exp(1j*2*np.pi*self.transmitF/self.R*np.arange(20e3))
+
+    def _transmitAndGetRxPeakFrequency(self, sampleRate: float,
+                                       txCarrier: float, rxCarrier: float) -> float:
+        setup = LocalTransmissionHardwareSetup(
+            noRxAntennas=1, noTxAntennas=1,
+            txFc=txCarrier, rxFc=rxCarrier,
+            txSampleRate=sampleRate, rxSampleRate=sampleRate)
+
+        rxSamples = setup.propagateSignal([self.txSignal])[0]
+
+        N = len(rxSamples)
+        spec = np.fft.fft(rxSamples)[:N//2]
+        peak = np.argmax(spec).item() / N
+
+        return peak * self.R
+
+    def test_equalCarriers(self) -> None:
+        fPeak = self._transmitAndGetRxPeakFrequency(
+            sampleRate=self.R, txCarrier=self.Fc, rxCarrier=self.Fc)
+        self.assertAlmostEqual(fPeak, self.transmitF, delta=10e3)
+
+    def test_10MHzOffset(self) -> None:
+        Fo = 10e6
+
+        fPeak = self._transmitAndGetRxPeakFrequency(
+            sampleRate=self.R, txCarrier=self.Fc, rxCarrier=self.Fc+Fo)
+        self.assertAlmostEqual(fPeak, self.transmitF-Fo, delta=10e3)
+
+
+@pytest.mark.hardware
 class TestHardwareSystemTests(unittest.TestCase):
     def setUp(self) -> None:
         self.noSamples = int(20e3)
@@ -129,6 +221,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             np.random.sample((self.noSamples,))
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
+        # self.randomSignal *= np.linspace(0, 1, self.noSamples)
 
     def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
@@ -189,8 +282,8 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = 245.76e6
-        setup.rfConfig.txSamplingRate = 245.76e6
+        setup.rfConfig.rxSamplingRate = 245.76e6 / 1
+        setup.rfConfig.txSamplingRate = 245.76e6 / 1
 
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -206,6 +299,9 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.execute()
         samplesSystem = system.collect()
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
+
+        plt.plot(abs(rxSamplesUsrp1))
+        plt.show()
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),

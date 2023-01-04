@@ -9,6 +9,8 @@
 #include <uhd/rfnoc/block_id.hpp>
 #include <uhd/rfnoc/radio_control.hpp>
 #include <uhd/rfnoc/replay_block_control.hpp>
+#include <uhd/rfnoc/duc_block_control.hpp>
+#include <uhd/rfnoc/ddc_block_control.hpp>
 #include <uhd/rfnoc_graph.hpp>
 
 #include "config.hpp"
@@ -45,6 +47,8 @@ class Usrp : public UsrpInterface {
 
     uhd::rfnoc::radio_control::sptr radioCtrl1_, radioCtrl2_;
     uhd::rfnoc::replay_block_control::sptr replayCtrl_;
+    uhd::rfnoc::duc_block_control::sptr ducControl1_, ducControl2_;
+    uhd::rfnoc::ddc_block_control::sptr ddcControl1_, ddcControl2_;
 
     uhd::rx_streamer::sptr currentRxStreamer_;
     uhd::tx_streamer::sptr currentTxStreamer_;
@@ -52,6 +56,12 @@ class Usrp : public UsrpInterface {
     void createRfNocBlocks();
     typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
     RadioChannelPair getRadioChannelPair(int antenna);
+
+    typedef std::tuple<uhd::rfnoc::ddc_block_control::sptr, int> DDCChannelPair;
+    DDCChannelPair getDDCChannelPair(int antenna);
+
+    typedef std::tuple<uhd::rfnoc::duc_block_control::sptr, int> DUCChannelPair;
+    DUCChannelPair getDUCChannelPair(int antenna);
 
     void disconnectAll();
     void connectForUpload();
@@ -90,15 +100,12 @@ class Usrp : public UsrpInterface {
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
 
     // configuration functions
-    void setTxSamplingRate(const double samplingRate,
-                           const size_t txAntennaIdx);
-    void setRxSamplingRate(const double samplingRate,
-                           const size_t rxAntennaIdx);
-
     void setRfConfigForRxAntenna(const RfConfig& conf,
                                  const size_t rxAntennaIdx);
     void setRfConfigForTxAntenna(const RfConfig& conf,
                                  const size_t txAntennaIdx);
+    void setRxSampleRate(double rate);
+    void setTxSampleRate(double rate);
 
 
     // transmission related functions

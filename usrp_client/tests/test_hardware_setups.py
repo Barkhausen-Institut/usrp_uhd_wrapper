@@ -2,6 +2,7 @@ from typing import Tuple
 import unittest
 import pytest
 import os
+import time
 
 import numpy as np
 
@@ -90,28 +91,34 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
         return self.system
 
+
 @pytest.mark.hardware
 class TestHardwareClocks(unittest.TestCase):
-    def setUp(self) -> None:
-        pass
+    def _createSystem(self, SetupClass: type) -> System:
+        setup = SetupClass(noRxAntennas=1, noTxAntennas=1)
+        setup.rfConfig.rxSamplingRate = 245.76e6
+        setup.rfConfig.txSamplingRate = 245.76e6
 
-    def test_singleUsrpZeroPPS(self) -> None:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = 245.76e6;
-        setup.rfConfig.txSamplingRate = 245.76e6;
-        system = setup.connectUsrps();
-        import time
+        return setup.connectUsrps()
 
-        print("Time ", system.getCurrentFpgaTimes())
-        time.sleep(0.5)
-        print("Time ", system.getCurrentFpgaTimes())
-        time.sleep(0.5)
+    def test_singleUsrpResetFpgaTimes(self) -> None:
+        system = self._createSystem(LocalTransmissionHardwareSetup)
+        DELAY = 0.5
+
         system.resetFpgaTimes()
-        time.sleep(0.5)
-        print("Time ", system.getCurrentFpgaTimes())
-        time.sleep(0.5)
-        print("Time ", system.getCurrentFpgaTimes())
+        fpgaTime1 = system.getCurrentFpgaTimes()[0]
+        self.assertLess(fpgaTime1, 1.5)
 
+        time.sleep(DELAY)
+        fpgaTime2 = system.getCurrentFpgaTimes()[0]
+        self.assertAlmostEqual(fpgaTime1 + DELAY, fpgaTime2, delta=0.1)
+
+    def test_twoUsrpsAreSynchronized(self) -> None:
+        system = self._createSystem(P2pHardwareSetup)
+
+        system.resetFpgaTimes()
+        fpgaTimes = system.getCurrentFpgaTimes()
+        self.assertLess(abs(fpgaTimes[0] - fpgaTimes[1]), 0.05)
 
 
 @pytest.mark.hardware

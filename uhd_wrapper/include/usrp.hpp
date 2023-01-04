@@ -104,6 +104,8 @@ class Usrp : public UsrpInterface {
                                  const size_t rxAntennaIdx);
     void setRfConfigForTxAntenna(const RfConfig& conf,
                                  const size_t txAntennaIdx);
+    void setRxSampleRate(double rate);
+    void setTxSampleRate(double rate);
 
 
     // transmission related functions

@@ -193,7 +193,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = 245.76e6 / 4
+        setup.rfConfig.rxSamplingRate = 245.76e6 / 1
         setup.rfConfig.txSamplingRate = 245.76e6 / 1
 
         system = setup.connectUsrps()

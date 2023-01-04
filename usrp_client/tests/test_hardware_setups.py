@@ -117,9 +117,8 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
 @pytest.mark.hardware
 class TestHardwareClocks(unittest.TestCase):
     def _createSystem(self, SetupClass: type) -> System:
-        setup = SetupClass(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = 245.76e6
-        setup.rfConfig.txSamplingRate = 245.76e6
+        setup = SetupClass(noRxAntennas=1, noTxAntennas=1,
+                           txSampleRate=245.76e6, rxSampleRate=245.76e6)
 
         return setup.connectUsrps()
 
@@ -150,9 +149,8 @@ class TestSampleRateSettings(unittest.TestCase):
         self.txSignal = np.exp(1j*2*np.pi*self.transmitF*np.arange(20e3))
 
     def _transmitAndGetRxPeakFrequency(self, rxRate: float, txRate: float) -> float:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = rxRate
-        setup.rfConfig.txSamplingRate = txRate
+        setup = LocalTransmissionHardwareSetup(
+            noRxAntennas=1, noTxAntennas=1, txSampleRate=txRate, rxSampleRate=rxRate)
 
         rxSamples = setup.propagateSignal([self.txSignal])[0]
 
@@ -189,11 +187,10 @@ class TestCarrierFrequencySettings(unittest.TestCase):
 
     def _transmitAndGetRxPeakFrequency(self, sampleRate: float,
                                        txCarrier: float, rxCarrier: float) -> float:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = sampleRate
-        setup.rfConfig.txSamplingRate = sampleRate
-        setup.rfConfig.txCarrierFrequency = txCarrier
-        setup.rfConfig.rxCarrierFrequency = rxCarrier
+        setup = LocalTransmissionHardwareSetup(
+            noRxAntennas=1, noTxAntennas=1,
+            txFc=txCarrier, rxFc=rxCarrier,
+            txSampleRate=sampleRate, rxSampleRate=sampleRate)
 
         rxSamples = setup.propagateSignal([self.txSignal])[0]
 

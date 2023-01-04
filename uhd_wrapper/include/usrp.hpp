@@ -55,8 +55,16 @@ class Usrp : public UsrpInterface {
 
     void disconnectAll();
     void connectForUpload();
+    void configureReplayForUpload(int numSamples);
+    void performUpload(const MimoSignal& txSignal);
+
     void connectForStreaming();
+    void configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples);
+    void performStreaming(double baseTime, size_t numTxSamples, size_t numRxSamples);
+
     void connectForDownload();
+    void configureReplayForDownload(size_t numRxSamples);
+    MimoSignal performDownload(size_t numRxSamples);
 
     // constants
     const double GUARD_OFFSET_S_ = 0.05;

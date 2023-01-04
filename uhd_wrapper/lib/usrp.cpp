@@ -7,6 +7,8 @@
 
 #include "usrp.hpp"
 
+using namespace std::literals::chrono_literals;
+
 namespace bi {
 
 const int MAX_ANTENNAS = 4;
@@ -84,8 +86,73 @@ void Usrp::connectForUpload(){
     _showRfNoCConnections(graph_);
 }
 
+void Usrp::configureReplayForUpload(int numSamples) {
+    size_t numBytes = numSamples * 4;
+    size_t memStride = numBytes;
+
+    for (int channel = 0; channel < CHANNELS; channel++) {
+        replayCtrl_->record(channel*memStride, numBytes, channel);
+    }
+}
+
+void Usrp::performUpload(const MimoSignal& txSignal) {
+    if (txSignal.size() != CHANNELS)
+        throw std::runtime_error("Invalid channel count!");
+
+    const size_t numSamples = txSignal[0].size();
+    configureReplayForUpload(numSamples);
+
+    size_t totalSamplesSent = 0;
+    size_t maxPacketSize = 8192;
+
+    float timeout = 0.1;
+
+    uhd::tx_metadata_t mdTx;
+    mdTx.start_of_burst = false;
+    mdTx.end_of_burst = false;
+    mdTx.has_time_spec = true;
+    mdTx.time_spec = graph_->get_mb_controller()->get_timekeeper(0)->get_time_now() + 0.1;
+
+    while(totalSamplesSent < numSamples) {
+        std::vector<const sample*> buffers;
+        for(int txI = 0; txI < CHANNELS; txI++) {
+            buffers.push_back(txSignal[txI].data() + totalSamplesSent);
+        }
+        size_t samplesToSend = std::min(numSamples - totalSamplesSent, maxPacketSize);
+        size_t samplesSent = currentTxStreamer_->send(buffers, samplesToSend, mdTx, timeout);
+
+        mdTx.has_time_spec = false;
+        totalSamplesSent += samplesSent;
+
+        std::cout << "upload: " << totalSamplesSent << " " << samplesSent << std::endl;
+    }
+    mdTx.end_of_burst = true;
+    currentTxStreamer_->send("", 0, mdTx);
+
+    uhd::async_metadata_t asyncMd;
+    // loop through all messages for the ACK packet (may have underflow messages
+    // in queue)
+    uhd::async_metadata_t::event_code_t lastEventCode =
+        uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
+    while (currentTxStreamer_->recv_async_msg(asyncMd, timeout)) {
+        if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
+            lastEventCode = asyncMd.event_code;
+        timeout = 0.1f;
+    }
+
+    if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK) {
+        throw std::runtime_error("Error occoured at Tx Streamer with event code: " +
+                            std::to_string(lastEventCode));
+    }
+
+    std::this_thread::sleep_for(100ms);
+    for(int c = 0; c < CHANNELS; c++) {
+        std::cout << "Upload Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
+    }
+}
+
 void Usrp::connectForStreaming() {
-    std::cout << "----> Connecting for Streaming..." << std::endl;
+    std::cout << "----> Connecting for STREAMING..." << std::endl;
     disconnectAll();
 
     graph_->release();
@@ -108,6 +175,72 @@ void Usrp::connectForStreaming() {
     _showRfNoCConnections(graph_);
 }
 
+void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples) {
+    size_t memSize = replayCtrl_->get_mem_size();
+    size_t halfMem = memSize / 2;
+
+    size_t numTxBytes = numTxSamples * 4;
+    size_t txMemStride = numTxBytes;
+    size_t numRxBytes = numRxSamples * 4;
+    size_t rxMemStride = numRxBytes;
+
+    for (int channel = 0; channel < CHANNELS; channel++) {
+        if (numRxBytes > 0)
+            replayCtrl_->record(halfMem + channel*rxMemStride, numRxBytes, channel);
+        if (numTxBytes > 0)
+            replayCtrl_->config_play(channel*txMemStride, numTxBytes, channel);
+    }
+
+    std::this_thread::sleep_for(10ms);
+
+    // Clear Replay block
+    for(int t = 0; t < 3; t++) {
+        bool needClear = false;
+        for(int c = 0; c < CHANNELS; c++)
+            needClear |= (replayCtrl_->get_record_fullness(c) > 0);
+
+        if (!needClear)
+            break;
+
+        std::cout << "Trying to clear the buffer" << std::endl;
+        for(int c = 0; c < CHANNELS; c++)
+            replayCtrl_->record_restart(c);
+    }
+    if (needClear)
+        throw UsrpException("Cannot clear the record buffer!");
+}
+
+void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRxSamples) {
+    configureReplayForStreaming(numTxSamples, numRxSamples);
+
+    uhd::stream_cmd_t txStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
+    txStreamCmd.num_samps = numTxSamples;
+    txStreamCmd.stream_now = false;
+    txStreamCmd.time_spec = uhd::time_spec_t(streamTime);
+
+    uhd::stream_cmd_t rxStreamCmd = txStreamCmd;
+    rxStreamCmd.num_samps = numRxSamples;
+    rxStreamCmd.stream_now = false;
+    std::cout << "current fpga time: " << getCurrentFpgaTime() << " stream time: " << streamTime << std::endl;
+    rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
+
+    for (int channel = 0; channel < CHANNELS; channel++) {
+        auto rcp = getRadioChannelPair(channel);
+        std::get<0>(rcp)->issue_stream_cmd(rxStreamCmd, std::get<1>(rcp));
+        replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
+    }
+
+    for(int c = 0; c < CHANNELS; c++) {
+        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
+        std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
+    }
+    std::this_thread::sleep_for(2000ms);
+    for(int c = 0; c < CHANNELS; c++) {
+        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
+        std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
+    }
+}
+
 void Usrp::connectForDownload() {
     std::cout << "----> Connecting for DOWNLOAD ..." << std::endl;
     disconnectAll();
@@ -124,40 +257,81 @@ void Usrp::connectForDownload() {
     _showRfNoCConnections(graph_);
 }
 
+void Usrp::configureReplayForDownload(size_t numRxSamples) {
+    size_t memSize = replayCtrl_->get_mem_size();
+    size_t halfMem = memSize / 2;
+    size_t numBytes = numRxSamples * 4;
+    size_t memStride = numBytes;
+
+    for (int channel = 0; channel < CHANNELS; channel++) {
+        replayCtrl_->config_play(halfMem + channel*memStride, numBytes, channel);
+    }
+}
+
+MimoSignal Usrp::performDownload(size_t numRxSamples) {
+    configureReplayForDownload(numRxSamples);
+
+    MimoSignal result;
+    result.resize(CHANNELS);
+    for(int c = 0; c < CHANNELS; c++) {
+        result[c].resize(numRxSamples);
+    }
+
+    uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
+    streamCmd.num_samps = numRxSamples;
+    streamCmd.stream_now = false;
+    streamCmd.time_spec = graph_->get_mb_controller()->get_timekeeper(0)->get_time_now() + 0.1;
+
+    currentRxStreamer_->issue_stream_cmd(streamCmd);
+    uhd::rx_metadata_t mdRx;
+    size_t totalSamplesReceived = 0;
+    size_t maxPacketSize = 8192;
+
+    while (totalSamplesReceived < numRxSamples) {
+        std::vector<sample*> buffers;
+        for(int c = 0; c < CHANNELS; c++)
+            buffers.push_back(result[c].data() + totalSamplesReceived);
+        size_t remainingSamples = numRxSamples - totalSamplesReceived;
+        size_t reqSamples = std::min(remainingSamples, maxPacketSize);
+        size_t numSamplesReceived = currentRxStreamer_->recv(buffers, reqSamples, mdRx, 0.1, false);
+
+        totalSamplesReceived += numSamplesReceived;
+        if (mdRx.error_code != uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
+            throw std::runtime_error("error at Rx streamer " + mdRx.strerror());
+    }
+
+    std::cout << "Returning... " << std::endl;
+    return result;
+}
+
 void Usrp::disconnectAll() {
     graph_->release();
     for (auto& edge : graph_->enumerate_active_connections()) {
-        std::cout << "Disconnecting edge " << edge << std::endl;
         if (edge.dst_blockid.find("RxStreamer") != std::string::npos) {
-            std::cout << "  Disconnecting RX STreamer" << std::endl;
             graph_->disconnect(edge.src_blockid, edge.src_port);
         }
         else if (edge.src_blockid.find("TxStreamer") != std::string::npos) {
             graph_->disconnect(edge.dst_blockid, edge.dst_port);
-            std::cout << "  Disconnecting TX Streamer" << std::endl;
         }
         else {
             graph_->disconnect(edge.src_blockid, edge.src_port, edge.dst_blockid, edge.dst_port);
-            std::cout << "  Disconnecting Normal edge" << std::endl;
         }
     }
 
     if (currentTxStreamer_) {
-        std::cout << "Explicitely disconnecting TX Streamer" << std::endl;
         for(int i = 0; i < CHANNELS; i++)
             graph_->disconnect("TxStreamer#0", i);
         graph_->disconnect("TxStreamer#0");
         currentTxStreamer_.reset();
     }
     if (currentRxStreamer_) {
-        std::cout << "Explicitely disconnecting RX Streamer" << std::endl;
         for(int i = 0; i < CHANNELS; i++)
             graph_->disconnect("RxStreamer#0", i);
         currentRxStreamer_.reset();
     }
 
     graph_->commit();
-    _showRfNoCConnections(graph_);
+    //_showRfNoCConnections(graph_);
 }
 
 RfConfig Usrp::getRfConfig() const {
@@ -457,9 +631,27 @@ double Usrp::getCurrentFpgaTime() {
 
 void Usrp::execute(const double baseTime) {
     std::cout << "execute STUB!" << std::endl;
+
+    if (txStreamingConfigs_.size() > 1)
+        throw UsrpException("Only 1 TX Config currently allowed!");
+    if (rxStreamingConfigs_.size() > 1)
+        throw UsrpException("Only 1 RX Config currently allowed!");
+
     connectForUpload();
+    performUpload(txStreamingConfigs_[0].samples);
+
     connectForStreaming();
+    performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime + 1,
+                     txStreamingConfigs_[0].samples[0].size(),
+                     rxStreamingConfigs_[0].noSamples);
+
+
+
     connectForDownload();
+
+    receivedSamples_.clear();
+    receivedSamples_.push_back(performDownload(rxStreamingConfigs_[0].noSamples));
+
     return;
 
     waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
@@ -479,7 +671,8 @@ void Usrp::execute(const double baseTime) {
 std::vector<MimoSignal> Usrp::collect() {
     std::cout << "collect STUB!" << std::endl;
 
-    return {};
+    return receivedSamples_;
+
     waitOnThreadToJoin(transmitThread_);
     waitOnThreadToJoin(receiveThread_);
     if (transmitThreadException_)

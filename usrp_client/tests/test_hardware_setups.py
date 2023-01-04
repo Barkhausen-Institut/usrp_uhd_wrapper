@@ -52,12 +52,12 @@ class HardwareSetup:
     def __init__(
         self,
         *,
-        txGain: float = 26,
-        rxGain: float = 25,
+        txGain: float = 30,
+        rxGain: float = 20,
         rxSampleRate: float = 12.288e6,
         txSampleRate: float = 12.288e6,
-        txFc: float = 2e9,
-        rxFc: float = 2e9,
+        txFc: float = 3.75e9,
+        rxFc: float = 3.75e9,
         noRxAntennas: int,
         noTxAntennas: int,
     ) -> None:
@@ -209,7 +209,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=50,
+            second=268,
             delta=10,
         )
 

@@ -14,7 +14,6 @@
 #include <uhd/rfnoc_graph.hpp>
 
 #include "config.hpp"
-#include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
 
 #include "full_duplex_rfnoc_graph.hpp"
@@ -53,7 +52,7 @@ class Usrp : public UsrpInterface {
     uhd::rfnoc::ddc_block_control::sptr ddcControl1_, ddcControl2_;
 
     uhd::rx_streamer::sptr currentRxStreamer_;
-    uhd::tx_streamer::sptr currentTxStreamer_;
+    //uhd::tx_streamer::sptr currentTxStreamer_;
 
     void createRfNocBlocks();
     typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
@@ -65,7 +64,6 @@ class Usrp : public UsrpInterface {
     typedef std::tuple<uhd::rfnoc::duc_block_control::sptr, int> DUCChannelPair;
     DUCChannelPair getDUCChannelPair(int antenna);
 
-    void disconnectAll();
     void connectForUpload();
     void configureReplayForUpload(int numSamples);
     void performUpload(const MimoSignal& txSignal);

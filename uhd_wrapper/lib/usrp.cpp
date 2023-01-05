@@ -3,9 +3,9 @@
 #include <numeric>
 #include <uhd/types/ref_vector.hpp>
 #include <uhd/rfnoc/mb_controller.hpp>
-#include <uhd/utils/graph_utils.hpp>
 
 #include "usrp.hpp"
+#include "usrp_exception.hpp"
 
 using namespace std::literals::chrono_literals;
 
@@ -18,17 +18,6 @@ using uhd::rfnoc::block_id_t;
 using uhd::rfnoc::rfnoc_graph;
 using uhd::rfnoc::noc_block_base;
 
-void _showRfNoCConnections(uhd::rfnoc::rfnoc_graph::sptr graph) {
-    auto edges = graph->enumerate_active_connections();
-    std::cout << "Connections in graph: " << std::endl;
-    for (auto& edge : edges)
-        std::cout << edge.src_blockid << ":" << edge.src_port << " --> " << edge.dst_blockid << ":" << edge.dst_port << std::endl;
-}
-
-std::ostream& operator<<(std::ostream& os, const uhd::rfnoc::graph_edge_t& edge) {
-    os << edge.src_blockid << ":" << edge.src_port << " --> " << edge.dst_blockid << ":" << edge.dst_port;
-    return os;
-}
 
 Usrp::Usrp(const std::string& ip) :
     radioId1_("0/Radio#0"), radioId2_("0/Radio#1"), replayId_("0/Replay#0") {
@@ -46,7 +35,13 @@ Usrp::Usrp(const std::string& ip) :
     //masterClockRate_ = usrpDevice_->get_master_clock_rate();
 
     createRfNocBlocks();
+
+    // Need to perform one cycle of connections such that the radios are preinitialized
+    // in order to be able to set a reasonable RF config and sample rate for the DDC/DUC
+    connectForUpload();
     connectForStreaming();
+    connectForDownload();
+
 }
 
 Usrp::~Usrp() {
@@ -79,7 +74,7 @@ void Usrp::createRfNocBlocks() {
 }
 
 void Usrp::connectForUpload(){
-    currentTxStreamer_ = fdGraph_->connectForUpload(CHANNELS);
+    fdGraph_->connectForUpload(CHANNELS);
 }
 
 void Usrp::configureReplayForUpload(int numSamples) {
@@ -94,77 +89,14 @@ void Usrp::configureReplayForUpload(int numSamples) {
 }
 
 void Usrp::performUpload(const MimoSignal& txSignal) {
-    if (txSignal.size() != CHANNELS)
-        throw std::runtime_error("Invalid channel count!");
-
     const size_t numSamples = txSignal[0].size();
     configureReplayForUpload(numSamples);
 
-
-    float timeout = 0.1;
-
-    uhd::tx_metadata_t mdTx;
-    mdTx.start_of_burst = false;
-    mdTx.end_of_burst = false;
-    mdTx.has_time_spec = true;
-    mdTx.time_spec = getCurrentFpgaTime() + 0.1;
-
-    size_t totalSamplesSent = 0;
-    while(totalSamplesSent < numSamples) {
-        std::vector<const sample*> buffers;
-        for(int txI = 0; txI < CHANNELS; txI++) {
-            buffers.push_back(txSignal[txI].data() + totalSamplesSent);
-        }
-        size_t samplesToSend = std::min(numSamples - totalSamplesSent, PACKET_SIZE);
-        size_t samplesSent = currentTxStreamer_->send(buffers, samplesToSend, mdTx, timeout);
-
-        mdTx.has_time_spec = false;
-        totalSamplesSent += samplesSent;
-    }
-    mdTx.end_of_burst = true;
-    currentTxStreamer_->send("", 0, mdTx);
-
-    uhd::async_metadata_t asyncMd;
-    // loop through all messages for the ACK packet (may have underflow messages
-    // in queue)
-    uhd::async_metadata_t::event_code_t lastEventCode =
-        uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
-    while (currentTxStreamer_->recv_async_msg(asyncMd, timeout)) {
-        if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
-            lastEventCode = asyncMd.event_code;
-        timeout = 0.1f;
-    }
-
-    if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK) {
-        throw std::runtime_error("Error occoured at Tx Streamer with event code: " +
-                            std::to_string(lastEventCode));
-    }
-
-    std::this_thread::sleep_for(100ms);
-    for(int c = 0; c < CHANNELS; c++) {
-        std::cout << "Upload Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
-    }
+    fdGraph_->upload(txSignal);
 }
 
 void Usrp::connectForStreaming() {
-    disconnectAll();
-
-    graph_->release();
-    for (int i = 0; i < CHANNELS; i++) {
-        auto radioId = radioId1_;
-        int radioChan = i;
-        if (i >= 2) {
-            radioId = radioId2_;
-            radioChan = i - 2;
-        }
-
-        uhd::rfnoc::connect_through_blocks(graph_, replayId_, i, radioId, radioChan, false);
-        uhd::rfnoc::connect_through_blocks(graph_, radioId, radioChan, replayId_, i, true);
-    }
-
-
-    graph_->commit();
-    // _showRfNoCConnections(graph_);
+    fdGraph_->connectForStreaming(CHANNELS, CHANNELS);
 }
 
 void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples) {
@@ -216,8 +148,20 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     setTxSampleRate(rfConfig_.txSamplingRate);
 
     int rxDecimFactor = ddcControl1_->get_property<int>("decim", 0);
-
     std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
+
+    // We need to multiply with the rx decim factor because we
+    // instruct the radio to create a given amount of samples, which
+    // are subsequentcy decimated by the DDC (hence the radio needs to
+    // produce more decim times more samples to eventually yield the
+    // correct amount of samples.  On the TX side, we instruct the
+    // replay block to create a given amount of samples, which is
+    // equal to the amount of baseband samples. Hence, no scaling is
+    // needed.
+    fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
+    return;
+
+
 
     uhd::stream_cmd_t txStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     txStreamCmd.num_samps = numTxSamples;
@@ -263,18 +207,8 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
 }
 
 void Usrp::connectForDownload() {
-    disconnectAll();
-
-    graph_->release();
-    currentRxStreamer_.reset();
-    uhd::stream_args_t streamArgs("fc32", "sc16");
-    currentRxStreamer_ = graph_->create_rx_streamer(CHANNELS, streamArgs);
-
-    for(int i = 0; i < CHANNELS; i++)
-        graph_->connect(replayId_, i, currentRxStreamer_, i);
-    graph_->commit();
-
-    //_showRfNoCConnections(graph_);
+    currentRxStreamer_ = fdGraph_->connectForDownload(CHANNELS);
+    return;
 }
 
 void Usrp::configureReplayForDownload(size_t numRxSamples) {
@@ -322,36 +256,6 @@ MimoSignal Usrp::performDownload(size_t numRxSamples) {
         throw UsrpException("I did not receive an end_of_burst.");
 
     return result;
-}
-
-void Usrp::disconnectAll() {
-    graph_->release();
-    for (auto& edge : graph_->enumerate_active_connections()) {
-        if (edge.dst_blockid.find("RxStreamer") != std::string::npos) {
-            graph_->disconnect(edge.src_blockid, edge.src_port);
-        }
-        else if (edge.src_blockid.find("TxStreamer") != std::string::npos) {
-            graph_->disconnect(edge.dst_blockid, edge.dst_port);
-        }
-        else {
-            graph_->disconnect(edge.src_blockid, edge.src_port, edge.dst_blockid, edge.dst_port);
-        }
-    }
-
-    if (currentTxStreamer_) {
-        for(int i = 0; i < CHANNELS; i++)
-            graph_->disconnect("TxStreamer#0", i);
-        graph_->disconnect("TxStreamer#0");
-        currentTxStreamer_.reset();
-    }
-    if (currentRxStreamer_) {
-        for(int i = 0; i < CHANNELS; i++)
-            graph_->disconnect("RxStreamer#0", i);
-        currentRxStreamer_.reset();
-    }
-
-    graph_->commit();
-    //_showRfNoCConnections(graph_);
 }
 
 RfConfig Usrp::getRfConfig() const {

@@ -29,6 +29,7 @@ public:
     double getTxSamplingRate() const;
     double getRxSamplingRate() const;
     int getRxDecimationRatio() const;
+    double getMasterClockRate() const;
 
 private:
     void setRfConfigForRxAntenna(const RfConfig& conf,

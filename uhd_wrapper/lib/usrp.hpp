@@ -35,7 +35,7 @@ class Usrp : public UsrpInterface {
     void execute(const double baseTime);
     std::vector<MimoSignal> collect();
 
-    double getMasterClockRate() const { return masterClockRate_; }
+    double getMasterClockRate() const;
     RfConfig getRfConfig() const;
     void resetStreamingConfigs();
     std::string getDeviceType() const;
@@ -51,15 +51,12 @@ class Usrp : public UsrpInterface {
 
     void createRfNocBlocks();
 
-    void connectForUpload();
     void configureReplayForUpload(int numSamples);
     void performUpload(const MimoSignal& txSignal);
 
-    void connectForStreaming();
     void configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples);
     void performStreaming(double baseTime, size_t numTxSamples, size_t numRxSamples);
 
-    void connectForDownload();
     void configureReplayForDownload(size_t numRxSamples);
     MimoSignal performDownload(size_t numRxSamples);
 
@@ -81,7 +78,6 @@ class Usrp : public UsrpInterface {
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
-    double masterClockRate_;
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
 

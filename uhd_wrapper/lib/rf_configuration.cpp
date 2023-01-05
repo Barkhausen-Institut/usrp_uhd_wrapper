@@ -104,6 +104,10 @@ int RFConfiguration::getRxDecimationRatio() const {
     return ddcControl1_->get_property<int>("decim", 0);
 }
 
+double RFConfiguration::getMasterClockRate() const {
+    return masterClockRate_;
+}
+
 RfConfig RFConfiguration::readFromGraph() {
     RfConfig conf;
     conf.txCarrierFrequency = radioCtrl1_->get_tx_frequency(0);

@@ -32,9 +32,9 @@ Usrp::Usrp(const std::string& ip) :
 
     // Need to perform one cycle of connections such that the radios are preinitialized
     // in order to be able to set a reasonable RF config and sample rate for the DDC/DUC
-    connectForUpload();
-    connectForStreaming();
-    connectForDownload();
+    fdGraph_->connectForUpload(MAX_ANTENNAS);
+    fdGraph_->connectForStreaming(MAX_ANTENNAS, MAX_ANTENNAS);
+    fdGraph_->connectForDownload(MAX_ANTENNAS);
 }
 
 Usrp::~Usrp() {
@@ -54,10 +54,6 @@ void Usrp::createRfNocBlocks() {
     graph_->commit();
 }
 
-void Usrp::connectForUpload(){
-    fdGraph_->connectForUpload(CHANNELS);
-}
-
 void Usrp::configureReplayForUpload(int numSamples) {
     size_t numBytes = numSamples * 4;
     size_t memStride = numBytes;
@@ -74,10 +70,6 @@ void Usrp::performUpload(const MimoSignal& txSignal) {
     configureReplayForUpload(numSamples);
 
     fdGraph_->upload(txSignal);
-}
-
-void Usrp::connectForStreaming() {
-    fdGraph_->connectForStreaming(CHANNELS, CHANNELS);
 }
 
 void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples) {
@@ -141,11 +133,6 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
 }
 
-void Usrp::connectForDownload() {
-    fdGraph_->connectForDownload(CHANNELS);
-    return;
-}
-
 void Usrp::configureReplayForDownload(size_t numRxSamples) {
     size_t memSize = replayCtrl_->get_mem_size();
     size_t halfMem = memSize / 2;
@@ -164,6 +151,10 @@ MimoSignal Usrp::performDownload(size_t numRxSamples) {
 
 RfConfig Usrp::getRfConfig() const {
     return rfConfig_->readFromGraph();
+}
+
+double Usrp::getMasterClockRate() const {
+    return rfConfig_->getMasterClockRate();
 }
 
 void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
@@ -271,15 +262,15 @@ void Usrp::execute(const double baseTime) {
     if (rxStreamingConfigs_.size() > 1)
         throw UsrpException("Only 1 RX Config currently allowed!");
 
-    connectForUpload();
+    fdGraph_->connectForUpload(CHANNELS);
     performUpload(txStreamingConfigs_[0].samples);
 
-    connectForStreaming();
+    fdGraph_->connectForStreaming(CHANNELS, CHANNELS);
     performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime + 1,
                      txStreamingConfigs_[0].samples[0].size(),
                      rxStreamingConfigs_[0].noSamples);
 
-    connectForDownload();
+    fdGraph_->connectForDownload(CHANNELS);
 
     receivedSamples_.clear();
     receivedSamples_.push_back(performDownload(rxStreamingConfigs_[0].noSamples));

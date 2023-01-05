@@ -34,6 +34,11 @@ Usrp::Usrp(const std::string& ip) :
     radioId1_("0/Radio#0"), radioId2_("0/Radio#1"), replayId_("0/Replay#0") {
     ip_ = ip;
     graph_ = rfnoc_graph::make("addr="+ip);
+    bi::RfNocBlockConfig blockNames;
+    blockNames.radioIds = {"0/Radio#0", "0/Radio#1"};
+    blockNames.replayId = "0/Replay#0";
+
+    fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(graph_, blockNames);
 
     graph_->get_mb_controller()->set_sync_source("external", "external");
 
@@ -74,18 +79,7 @@ void Usrp::createRfNocBlocks() {
 }
 
 void Usrp::connectForUpload(){
-    disconnectAll();
-
-    graph_->release();
-    currentTxStreamer_.reset();
-    uhd::stream_args_t streamArgs("fc32", "sc16");
-    currentTxStreamer_ = graph_->create_tx_streamer(CHANNELS, streamArgs);
-
-    for (int i = 0; i < CHANNELS; i++)
-        graph_->connect(currentTxStreamer_, i, replayId_, i);
-
-    graph_->commit();
-    // _showRfNoCConnections(graph_);
+    currentTxStreamer_ = fdGraph_->connectForUpload(CHANNELS);
 }
 
 void Usrp::configureReplayForUpload(int numSamples) {
@@ -231,10 +225,14 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     txStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
     uhd::stream_cmd_t rxStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
-    // We need to multiply with the rx decim factor because we instruct the radio to create
-    // a given amount of samples, which are subsequentcy decimated by the DDC.
-    // On the TX side, we instruct the replay block to create a given amount of samples, which is
-    // equal to the amount of baseband samples
+    // We need to multiply with the rx decim factor because we
+    // instruct the radio to create a given amount of samples, which
+    // are subsequentcy decimated by the DDC (hence the radio needs to
+    // produce more decim times more samples to eventually yield the
+    // correct amount of samples.  On the TX side, we instruct the
+    // replay block to create a given amount of samples, which is
+    // equal to the amount of baseband samples. Hence, no scaling is
+    // needed.
     rxStreamCmd.num_samps = numRxSamples * rxDecimFactor;
     rxStreamCmd.stream_now = false;
     rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);

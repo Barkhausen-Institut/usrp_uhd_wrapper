@@ -14,9 +14,10 @@
 #include <uhd/rfnoc_graph.hpp>
 
 #include "config.hpp"
-#include "uhd/usrp/multi_usrp.hpp"
 #include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
+
+#include "full_duplex_rfnoc_graph.hpp"
 
 namespace bi {
 
@@ -40,6 +41,7 @@ class Usrp : public UsrpInterface {
     std::string getDeviceType() const;
 
    private:
+    std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
     // RfNoC components
     uhd::rfnoc::rfnoc_graph::sptr graph_;
     uhd::rfnoc::block_id_t radioId1_, radioId2_;

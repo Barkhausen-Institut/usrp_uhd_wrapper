@@ -453,7 +453,7 @@ void Usrp::setRfConfigForRxAntenna(const RfConfig &conf,
 void Usrp::setRxSampleRate(double rate) {
     assertSamplingRate(rate, masterClockRate_);
 
-    for(int ant = 0; ant < MAX_ANTENNAS; ant++) {
+    for(int ant = 0; ant < CHANNELS; ant++) {
       auto [ddc, channel] = getDDCChannelPair(ant);
       ddc->set_output_rate(rate, channel);
     }
@@ -471,7 +471,7 @@ void Usrp::setRfConfigForTxAntenna(const RfConfig &conf,
 void Usrp::setTxSampleRate(double rate) {
     assertSamplingRate(rate, masterClockRate_);
 
-    for(int ant = 0; ant < MAX_ANTENNAS; ant++) {
+    for(int ant = 0; ant < CHANNELS; ant++) {
       auto [duc, channel] = getDUCChannelPair(ant);
       duc->set_input_rate(rate, channel);
     }

@@ -77,7 +77,7 @@ void Usrp::performUpload(const MimoSignal& txSignal) {
 }
 
 void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples) {
-    size_t memSize = replayCtrl_->get_mem_size();
+    /*size_t memSize = replayCtrl_->get_mem_size();
     size_t halfMem = memSize / 2;
 
     size_t numTxBytes = numTxSamples * 4;
@@ -90,7 +90,10 @@ void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples)
             replayCtrl_->record(halfMem + channel*rxMemStride, numRxBytes, channel);
         if (numTxBytes > 0)
             replayCtrl_->config_play(channel*txMemStride, numTxBytes, channel);
-    }
+    }*/
+
+    replayConfig_->configTransmit(numTxSamples);
+    replayConfig_->configReceive(numRxSamples);
 
     clearReplayBlockRecorder();
 }
@@ -138,6 +141,9 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
 }
 
 void Usrp::configureReplayForDownload(size_t numRxSamples) {
+    replayConfig_->configDownload(numRxSamples);
+    return;
+
     size_t memSize = replayCtrl_->get_mem_size();
     size_t halfMem = memSize / 2;
     size_t numBytes = numRxSamples * 4;
@@ -202,6 +208,7 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 
 void Usrp::setRfConfig(const RfConfig &conf) {
     rfConfig_->setRfConfig(conf);
+    replayConfig_->setAntennaCount(conf.noTxAntennas, conf.noRxAntennas);
 }
 
 

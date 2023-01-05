@@ -7,10 +7,7 @@
 #include <thread>
 
 #include <uhd/rfnoc/block_id.hpp>
-#include <uhd/rfnoc/radio_control.hpp>
 #include <uhd/rfnoc/replay_block_control.hpp>
-#include <uhd/rfnoc/duc_block_control.hpp>
-#include <uhd/rfnoc/ddc_block_control.hpp>
 #include <uhd/rfnoc_graph.hpp>
 
 #include "config.hpp"

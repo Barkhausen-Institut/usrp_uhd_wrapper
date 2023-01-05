@@ -45,7 +45,7 @@ TEST_CASE("Replay Block Config") {
             block.configUpload(5);
             FAIL("No exception thrown!");
         }
-        catch(bi::UsrpException) {
+        catch(bi::UsrpException& ) {
         }
     }
 

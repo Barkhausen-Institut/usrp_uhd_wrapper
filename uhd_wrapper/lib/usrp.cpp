@@ -20,7 +20,7 @@ using uhd::rfnoc::noc_block_base;
 
 
 Usrp::Usrp(const std::string& ip) :
-    radioId1_("0/Radio#0"), radioId2_("0/Radio#1"), replayId_("0/Replay#0") {
+    replayId_("0/Replay#0") {
     ip_ = ip;
     graph_ = rfnoc_graph::make("addr="+ip);
     bi::RfNocBlockConfig blockNames;
@@ -38,7 +38,6 @@ Usrp::Usrp(const std::string& ip) :
     connectForUpload();
     connectForStreaming();
     connectForDownload();
-
 }
 
 Usrp::~Usrp() {
@@ -51,21 +50,9 @@ Usrp::~Usrp() {
 }
 
 void Usrp::createRfNocBlocks() {
-    radioCtrl1_ = graph_->get_block<uhd::rfnoc::radio_control>(radioId1_);
-    radioCtrl2_ = graph_->get_block<uhd::rfnoc::radio_control>(radioId2_);
-
     using uhd::rfnoc::block_id_t;
-    ddcControl1_ = graph_->get_block<uhd::rfnoc::ddc_block_control>(block_id_t("0/DDC#0"));
-    ducControl1_ = graph_->get_block<uhd::rfnoc::duc_block_control>(block_id_t("0/DUC#0"));
-    ddcControl2_ = graph_->get_block<uhd::rfnoc::ddc_block_control>(block_id_t("0/DDC#1"));
-    ducControl2_ = graph_->get_block<uhd::rfnoc::duc_block_control>(block_id_t("0/DUC#1"));
-
 
     replayCtrl_ = graph_->get_block<uhd::rfnoc::replay_block_control>(replayId_);
-    for(int c = 0; c < MAX_ANTENNAS; c++) {
-        replayCtrl_->set_play_type("sc16", c);
-        replayCtrl_->set_record_type("sc16", c);
-    }
 
     graph_->commit();
 }
@@ -143,7 +130,7 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     // side, we apply the sample rate again.
     rfConfig_->renewSampleRateSettings();
 
-    int rxDecimFactor = ddcControl1_->get_property<int>("decim", 0);
+    int rxDecimFactor = rfConfig_->getRxDecimationRatio();
     std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
 
     // We need to multiply with the rx decim factor because we
@@ -333,7 +320,6 @@ std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
     return std::make_unique<Usrp>(ip);
 }
 
-
 void Usrp::resetStreamingConfigs() {
     txStreamingConfigs_.clear();
     rxStreamingConfigs_.clear();
@@ -347,24 +333,4 @@ std::string Usrp::getDeviceType() const {
     return graph_->get_mb_controller()->get_mboard_name();
 }
 
-Usrp::RadioChannelPair Usrp::getRadioChannelPair(int antenna) {
-    if (antenna < 2)
-        return {radioCtrl1_, antenna};
-    else
-        return {radioCtrl2_, antenna - 2};
-}
-
-Usrp::DDCChannelPair Usrp::getDDCChannelPair(int antenna) {
-    if (antenna < 2)
-        return {ddcControl1_, antenna};
-    else
-        return {ddcControl2_, antenna - 2};
-}
-
-Usrp::DUCChannelPair Usrp::getDUCChannelPair(int antenna) {
-    if (antenna < 2)
-        return {ducControl1_, antenna};
-    else
-        return {ducControl2_, antenna - 2};
-}
 }  // namespace bi

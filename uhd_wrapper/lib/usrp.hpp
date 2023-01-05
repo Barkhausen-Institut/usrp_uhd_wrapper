@@ -45,23 +45,11 @@ class Usrp : public UsrpInterface {
     std::shared_ptr<RFConfiguration> rfConfig_;
     // RfNoC components
     uhd::rfnoc::rfnoc_graph::sptr graph_;
-    uhd::rfnoc::block_id_t radioId1_, radioId2_;
     uhd::rfnoc::block_id_t replayId_;
 
-    uhd::rfnoc::radio_control::sptr radioCtrl1_, radioCtrl2_;
     uhd::rfnoc::replay_block_control::sptr replayCtrl_;
-    uhd::rfnoc::duc_block_control::sptr ducControl1_, ducControl2_;
-    uhd::rfnoc::ddc_block_control::sptr ddcControl1_, ddcControl2_;
 
     void createRfNocBlocks();
-    typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
-    RadioChannelPair getRadioChannelPair(int antenna);
-
-    typedef std::tuple<uhd::rfnoc::ddc_block_control::sptr, int> DDCChannelPair;
-    DDCChannelPair getDDCChannelPair(int antenna);
-
-    typedef std::tuple<uhd::rfnoc::duc_block_control::sptr, int> DUCChannelPair;
-    DUCChannelPair getDUCChannelPair(int antenna);
 
     void connectForUpload();
     void configureReplayForUpload(int numSamples);

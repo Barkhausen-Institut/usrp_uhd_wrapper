@@ -100,6 +100,10 @@ double RFConfiguration::getRxSamplingRate() const {
     return rfConfig_.rxSamplingRate;
 }
 
+int RFConfiguration::getRxDecimationRatio() const {
+    return ddcControl1_->get_property<int>("decim", 0);
+}
+
 RfConfig RFConfiguration::readFromGraph() {
     RfConfig conf;
     conf.txCarrierFrequency = radioCtrl1_->get_tx_frequency(0);

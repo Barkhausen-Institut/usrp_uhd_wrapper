@@ -28,6 +28,7 @@ public:
     int getNumRxAntennas() const;
     double getTxSamplingRate() const;
     double getRxSamplingRate() const;
+    int getRxDecimationRatio() const;
 
 private:
     void setRfConfigForRxAntenna(const RfConfig& conf,

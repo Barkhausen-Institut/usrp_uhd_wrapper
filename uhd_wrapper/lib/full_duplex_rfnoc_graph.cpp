@@ -6,7 +6,7 @@
 
 namespace bi {
 
-const int CHANNELS=1;
+const int MAX_ANTENNAS = 4;
 
 void _showRfNoCConnections(uhd::rfnoc::rfnoc_graph::sptr graph) {
     auto edges = graph->enumerate_active_connections();
@@ -24,6 +24,10 @@ RfNocFullDuplexGraph::RfNocFullDuplexGraph(const RfNocBlockConfig& config,
                                            uhd::rfnoc::rfnoc_graph::sptr graph)
     : RfNocBlocks(config, graph) {
 
+    for(int c = 0; c < MAX_ANTENNAS; c++) {
+        replayCtrl_->set_play_type("sc16", c);
+        replayCtrl_->set_record_type("sc16", c);
+    }
     graph_->get_mb_controller()->set_sync_source("external", "external");
 }
 
@@ -68,7 +72,7 @@ void RfNocFullDuplexGraph::upload(const MimoSignal& txSignal) {
     size_t totalSamplesSent = 0;
     while(totalSamplesSent < numSamples) {
         std::vector<const sample*> buffers;
-        for(int txI = 0; txI < CHANNELS; txI++) {
+        for(size_t txI = 0; txI < numTxAntennas_; txI++) {
             buffers.push_back(txSignal[txI].data() + totalSamplesSent);
         }
         size_t samplesToSend = std::min(numSamples - totalSamplesSent, PACKET_SIZE);
@@ -97,7 +101,7 @@ void RfNocFullDuplexGraph::upload(const MimoSignal& txSignal) {
     }
 
     std::this_thread::sleep_for(100ms);
-    for(int c = 0; c < CHANNELS; c++) {
+    for(size_t c = 0; c < numTxAntennas_; c++) {
         std::cout << "Upload Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
     }
 }
@@ -147,7 +151,7 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
     rxStreamCmd.stream_now = false;
     rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
-    for (int channel = 0; channel < CHANNELS; channel++) {
+    for (size_t channel = 0; channel < numTxAntennas_; channel++) {
         auto [radio, radioChan] = getRadioChannelPair(channel);
         radio->issue_stream_cmd(rxStreamCmd, radioChan);
         replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
@@ -166,7 +170,7 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
                         + std::to_string(lastEventCode));
 
     // TOOD! Factor out into separate function or class
-    for(int c = 0; c < CHANNELS; c++) {
+    for(size_t c = 0; c < numTxAntennas_; c++) {
         std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
         std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
     }
@@ -182,7 +186,7 @@ uhd::rx_streamer::sptr RfNocFullDuplexGraph::connectForDownload(size_t numRxAnte
     graph_->release();
     currentRxStreamer_.reset();
     uhd::stream_args_t streamArgs("fc32", "sc16");
-    currentRxStreamer_ = graph_->create_rx_streamer(CHANNELS, streamArgs);
+    currentRxStreamer_ = graph_->create_rx_streamer(numRxAntennas_, streamArgs);
 
     for(size_t i = 0; i < numRxAntennas; i++)
         graph_->connect(block_id_t(blockNames_.replayId), i, currentRxStreamer_, i);
@@ -213,7 +217,7 @@ MimoSignal RfNocFullDuplexGraph::download(size_t numRxSamples) {
 
     while (totalSamplesReceived < numRxSamples) {
         std::vector<sample*> buffers;
-        for(int c = 0; c < CHANNELS; c++)
+        for(size_t c = 0; c < numRxAntennas_; c++)
             buffers.push_back(result[c].data() + totalSamplesReceived);
         size_t remainingSamples = numRxSamples - totalSamplesReceived;
         size_t reqSamples = std::min(remainingSamples, PACKET_SIZE);
@@ -244,13 +248,13 @@ void RfNocFullDuplexGraph::disconnectAll() {
     }
 
     if (currentTxStreamer_) {
-        for(int i = 0; i < CHANNELS; i++)
+        for(size_t i = 0; i < numTxAntennas_; i++)
             graph_->disconnect("TxStreamer#0", i);
         graph_->disconnect("TxStreamer#0");
         currentTxStreamer_.reset();
     }
     if (currentRxStreamer_) {
-        for(int i = 0; i < CHANNELS; i++)
+        for(size_t i = 0; i < numRxAntennas_; i++)
             graph_->disconnect("RxStreamer#0", i);
         currentRxStreamer_.reset();
     }

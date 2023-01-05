@@ -15,6 +15,7 @@
 
 #include "full_duplex_rfnoc_graph.hpp"
 #include "rf_configuration.hpp"
+#include "replay_config.hpp"
 
 namespace bi {
 
@@ -40,6 +41,8 @@ class Usrp : public UsrpInterface {
    private:
     std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
     std::shared_ptr<RFConfiguration> rfConfig_;
+    std::shared_ptr<ReplayBlockConfig> replayConfig_;
+
     // RfNoC components
     uhd::rfnoc::rfnoc_graph::sptr graph_;
     uhd::rfnoc::block_id_t replayId_;

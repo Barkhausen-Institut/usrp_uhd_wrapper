@@ -1,6 +1,8 @@
 #include <catch/catch.hpp>
 #include <trompeloeil/catch/trompeloeil.hpp>
 
+#include "usrp_exception.hpp"
+
 #include "replay_config.hpp"
 
 class ReplayMock : public trompeloeil::mock_interface<bi::ReplayBlockInterface> {
@@ -43,6 +45,16 @@ TEST_CASE("Replay Block Config") {
 
     std::shared_ptr<bi::ReplayBlockInterface> ptrReplay(&replay, [](auto) {});
     bi::ReplayBlockConfig block(ptrReplay);
+
+    SECTION("Throws if antenna count is not set or too small") {
+        // cannot use require_throws_as due to https://github.com/catchorg/Catch2/issues/1292
+        try {
+            block.configUpload(5);
+            FAIL("No exception thrown!");
+        }
+        catch(bi::UsrpException) {
+        }
+    }
 
     SECTION("Single Antenna") {
         block.setAntennaCount(1, 1);

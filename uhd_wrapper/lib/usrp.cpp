@@ -50,17 +50,21 @@ void Usrp::createRfNocBlocks() {
     using uhd::rfnoc::block_id_t;
 
     replayCtrl_ = graph_->get_block<uhd::rfnoc::replay_block_control>(replayId_);
+    replayConfig_ = std::make_shared<ReplayBlockConfig>(
+                                                        std::make_shared<ReplayBlockWrapper>(replayCtrl_));
 
     graph_->commit();
 }
 
 void Usrp::configureReplayForUpload(int numSamples) {
-    size_t numBytes = numSamples * 4;
+    /*size_t numBytes = numSamples * 4;
     size_t memStride = numBytes;
 
     for (int channel = 0; channel < CHANNELS; channel++) {
         replayCtrl_->record(channel*memStride, numBytes, channel);
-    }
+        }*/
+
+    replayConfig_->configUpload(numSamples);
 
     clearReplayBlockRecorder();
 }

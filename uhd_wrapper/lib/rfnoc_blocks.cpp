@@ -20,4 +20,15 @@ void RfNocBlocks::obtainBlocks() {
     ducControl2_ = graph_->get_block<uhd::rfnoc::duc_block_control>(block_id_t("0/DUC#1"));
 }
 
+double RfNocBlocks::getCurrentFpgaTime() {
+    return graph_->get_mb_controller()->get_timekeeper(0)->get_time_now().get_real_secs();
+}
+
+RfNocBlocks::RadioChannelPair RfNocBlocks::getRadioChannelPair(int antenna) {
+    if (antenna < 2)
+        return {radioCtrl1_, antenna};
+    else
+        return {radioCtrl2_, antenna - 2};
+}
+
 }

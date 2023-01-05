@@ -20,15 +20,13 @@ std::ostream& operator<<(std::ostream& os, const uhd::rfnoc::graph_edge_t& edge)
     return os;
 }
 
-RfNocFullDuplexGraph::RfNocFullDuplexGraph(uhd::rfnoc::rfnoc_graph::sptr graph, const RfNocBlockConfig& config)
+RfNocFullDuplexGraph::RfNocFullDuplexGraph(const RfNocBlockConfig& config,
+                                           uhd::rfnoc::rfnoc_graph::sptr graph)
     : RfNocBlocks(config, graph) {
 
     graph_->get_mb_controller()->set_sync_source("external", "external");
 }
 
-double RfNocFullDuplexGraph::getCurrentFpgaTime() {
-    return graph_->get_mb_controller()->get_timekeeper(0)->get_time_now().get_real_secs();
-}
 
 uhd::tx_streamer::sptr RfNocFullDuplexGraph::connectForUpload(size_t numTxAntennas) {
     disconnectAll();
@@ -260,10 +258,4 @@ void RfNocFullDuplexGraph::disconnectAll() {
     graph_->commit();
 }
 
-RfNocFullDuplexGraph::RadioChannelPair RfNocFullDuplexGraph::getRadioChannelPair(int antenna) {
-    if (antenna < 2)
-        return {radioCtrl1_, antenna};
-    else
-        return {radioCtrl2_, antenna - 2};
-}
 }

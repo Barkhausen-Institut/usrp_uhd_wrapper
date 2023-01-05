@@ -17,6 +17,7 @@
 #include "usrp_interface.hpp"
 
 #include "full_duplex_rfnoc_graph.hpp"
+#include "rf_configuration.hpp"
 
 namespace bi {
 
@@ -41,6 +42,7 @@ class Usrp : public UsrpInterface {
 
    private:
     std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
+    std::shared_ptr<RFConfiguration> rfConfig_;
     // RfNoC components
     uhd::rfnoc::rfnoc_graph::sptr graph_;
     uhd::rfnoc::block_id_t radioId1_, radioId2_;
@@ -92,18 +94,8 @@ class Usrp : public UsrpInterface {
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
     double masterClockRate_;
-    RfConfig rfConfig_;
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
-
-    // configuration functions
-    void setRfConfigForRxAntenna(const RfConfig& conf,
-                                 const size_t rxAntennaIdx);
-    void setRfConfigForTxAntenna(const RfConfig& conf,
-                                 const size_t txAntennaIdx);
-    void setRxSampleRate(double rate);
-    void setTxSampleRate(double rate);
-
 
     // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);

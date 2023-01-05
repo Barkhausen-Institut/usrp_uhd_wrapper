@@ -27,10 +27,9 @@ Usrp::Usrp(const std::string& ip) :
     blockNames.radioIds = {"0/Radio#0", "0/Radio#1"};
     blockNames.replayId = "0/Replay#0";
 
-    fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(graph_, blockNames);
+    fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_);
+    rfConfig_ = std::make_shared<RFConfiguration>(blockNames, graph_);
 
-    masterClockRate_ = 245.76e6; // TODO!
-    //masterClockRate_ = usrpDevice_->get_master_clock_rate();
 
     createRfNocBlocks();
 
@@ -142,8 +141,7 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     // We need to make sure that the sample rate is set again, because when disconnecting
     // the DDC/DUC blocks it might happen that the rate is reset. Therefore, to be on the safe
     // side, we apply the sample rate again.
-    setRxSampleRate(rfConfig_.rxSamplingRate);
-    setTxSampleRate(rfConfig_.txSamplingRate);
+    rfConfig_->renewSampleRateSettings();
 
     int rxDecimFactor = ddcControl1_->get_property<int>("decim", 0);
     std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
@@ -181,24 +179,7 @@ MimoSignal Usrp::performDownload(size_t numRxSamples) {
 }
 
 RfConfig Usrp::getRfConfig() const {
-    RfConfig conf;
-    std::scoped_lock lock(fpgaAccessMutex_);
-    conf.txCarrierFrequency = radioCtrl1_->get_tx_frequency(0);
-    conf.txGain = radioCtrl1_->get_tx_gain(0);
-    conf.txAnalogFilterBw = radioCtrl1_->get_tx_bandwidth(0);
-    conf.txSamplingRate = ducControl1_->get_input_rate(0);
-
-    conf.rxCarrierFrequency = radioCtrl1_->get_rx_frequency(0);
-    conf.rxGain = radioCtrl1_->get_rx_gain(0);
-    conf.rxAnalogFilterBw = radioCtrl1_->get_rx_bandwidth(0);
-    conf.rxSamplingRate = ddcControl1_->get_output_rate(0);
-
-    // TODO!
-    conf.noRxAntennas = 1;
-    conf.noTxAntennas = 1;
-    //conf.noRxAntennas = usrpDevice_->get_rx_subdev_spec().size();
-    //conf.noTxAntennas = usrpDevice_->get_tx_subdev_spec().size();
-    return conf;
+    return rfConfig_->readFromGraph();
 }
 
 void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
@@ -241,79 +222,22 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 }
 
 void Usrp::setRfConfig(const RfConfig &conf) {
-    assertValidRfConfig(conf);
-    std::scoped_lock lock(fpgaAccessMutex_);
-
-    for (int idxRxAntenna = 0; idxRxAntenna < conf.noRxAntennas; idxRxAntenna++)
-        setRfConfigForRxAntenna(conf, idxRxAntenna);
-    setRxSampleRate(conf.rxSamplingRate);
-
-    for (int idxTxAntenna = 0; idxTxAntenna < conf.noTxAntennas; idxTxAntenna++)
-        setRfConfigForTxAntenna(conf, idxTxAntenna);
-    setTxSampleRate(conf.txSamplingRate);
-
-    auto tmp = getRfConfig();
-    rfConfig_ = tmp;
-    if (rfConfig_ != conf) {
-        std::ostringstream confStream;
-        confStream << "Actual Rf Config:" << std::endl
-                   << rfConfig_ << std::endl
-                   << std::endl
-                   << "Requested Rf Config: " << conf << std::endl;
-        throw UsrpException("Request and actual Rf Config mismatch:\n " +
-                            confStream.str());
-    }
+    rfConfig_->setRfConfig(conf);
 }
 
-
-void Usrp::setRfConfigForRxAntenna(const RfConfig &conf,
-                                   const size_t rxAntennaIdx) {
-    auto [radio, channel] = getRadioChannelPair(rxAntennaIdx);
-    radio->set_rx_frequency(conf.rxCarrierFrequency, channel);
-    radio->set_rx_gain(conf.rxGain, channel);
-    radio->set_rx_bandwidth(conf.rxAnalogFilterBw, channel);
-}
-
-void Usrp::setRxSampleRate(double rate) {
-    assertSamplingRate(rate, masterClockRate_);
-
-    for(int ant = 0; ant < CHANNELS; ant++) {
-      auto [ddc, channel] = getDDCChannelPair(ant);
-      ddc->set_output_rate(rate, channel);
-    }
-}
-
-
-void Usrp::setRfConfigForTxAntenna(const RfConfig &conf,
-                                   const size_t txAntennaIdx) {
-    auto [radio, channel] = getRadioChannelPair(txAntennaIdx);
-    radio->set_tx_frequency(conf.txCarrierFrequency, channel);
-    radio->set_tx_gain(conf.txGain, channel);
-    radio->set_tx_bandwidth(conf.txAnalogFilterBw, channel);
-}
-
-void Usrp::setTxSampleRate(double rate) {
-    assertSamplingRate(rate, masterClockRate_);
-
-    for(int ant = 0; ant < CHANNELS; ant++) {
-      auto [duc, channel] = getDUCChannelPair(ant);
-      duc->set_input_rate(rate, channel);
-    }
-}
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
-    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL,
-                        rfConfig_.noTxAntennas);
+    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxAntennas());
     if (txStreamingConfigs_.size() > 0)
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_.txSamplingRate);
+                                     GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
     txStreamingConfigs_.push_back(conf);
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {
     if (rxStreamingConfigs_.size() > 0)
         assertValidRxStreamingConfig(rxStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_.rxSamplingRate);
+                                     GUARD_OFFSET_S_, rfConfig_->getRxSamplingRate());
     rxStreamingConfigs_.push_back(conf);
 }
 

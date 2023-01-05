@@ -20,7 +20,7 @@ namespace bi {
 
 class RfNocFullDuplexGraph : private RfNocBlocks {
 public:
-    RfNocFullDuplexGraph(uhd::rfnoc::rfnoc_graph::sptr graph, const RfNocBlockConfig& config);
+    RfNocFullDuplexGraph(const RfNocBlockConfig& config, uhd::rfnoc::rfnoc_graph::sptr graph);
 
     uhd::tx_streamer::sptr connectForUpload(size_t numTxAntennas);
     void upload(const MimoSignal& txSignal);
@@ -32,13 +32,9 @@ public:
     MimoSignal download(size_t numRxSamples);
 
 private:
-    double getCurrentFpgaTime();
     void disconnectAll();
 
     const size_t PACKET_SIZE = 8192;
-
-    typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
-    RadioChannelPair getRadioChannelPair(int antenna);
 
     size_t numTxAntennas_, numRxAntennas_;
     uhd::tx_streamer::sptr currentTxStreamer_;

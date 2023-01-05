@@ -7,10 +7,7 @@
 #include <thread>
 
 #include <uhd/rfnoc/block_id.hpp>
-#include <uhd/rfnoc/radio_control.hpp>
 #include <uhd/rfnoc/replay_block_control.hpp>
-#include <uhd/rfnoc/duc_block_control.hpp>
-#include <uhd/rfnoc/ddc_block_control.hpp>
 #include <uhd/rfnoc_graph.hpp>
 
 #include "config.hpp"
@@ -18,6 +15,7 @@
 
 #include "full_duplex_rfnoc_graph.hpp"
 #include "rf_configuration.hpp"
+#include "replay_config.hpp"
 
 namespace bi {
 
@@ -41,13 +39,12 @@ class Usrp : public UsrpInterface {
     std::string getDeviceType() const;
 
    private:
-    std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
-    std::shared_ptr<RFConfiguration> rfConfig_;
     // RfNoC components
     uhd::rfnoc::rfnoc_graph::sptr graph_;
-    uhd::rfnoc::block_id_t replayId_;
+    std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
+    std::shared_ptr<RFConfiguration> rfConfig_;
+    std::shared_ptr<ReplayBlockConfig> replayConfig_;
 
-    uhd::rfnoc::replay_block_control::sptr replayCtrl_;
 
     void createRfNocBlocks();
 
@@ -59,8 +56,6 @@ class Usrp : public UsrpInterface {
 
     void configureReplayForDownload(size_t numRxSamples);
     MimoSignal performDownload(size_t numRxSamples);
-
-    void clearReplayBlockRecorder();
 
     // constants
     const double GUARD_OFFSET_S_ = 0.05;

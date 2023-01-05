@@ -31,6 +31,9 @@ RfNocFullDuplexGraph::RfNocFullDuplexGraph(const RfNocBlockConfig& config,
     graph_->get_mb_controller()->set_sync_source("external", "external");
 }
 
+uhd::rfnoc::replay_block_control::sptr RfNocFullDuplexGraph::getReplayControl() {
+    return replayCtrl_;
+}
 
 uhd::tx_streamer::sptr RfNocFullDuplexGraph::connectForUpload(size_t numTxAntennas) {
     disconnectAll();

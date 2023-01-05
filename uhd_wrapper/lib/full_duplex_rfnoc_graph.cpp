@@ -67,10 +67,13 @@ void RfNocFullDuplexGraph::upload(const MimoSignal& txSignal) {
     float timeout = 0.1;
 
     uhd::tx_metadata_t mdTx;
-    mdTx.start_of_burst = false;
+    mdTx.start_of_burst = true;
     mdTx.end_of_burst = false;
-    mdTx.has_time_spec = true;
-    mdTx.time_spec = getCurrentFpgaTime() + 0.1;
+    mdTx.has_time_spec = false;
+    // After some tests, it seems that the timing is not considered in
+    // UHD. We don't care because anyway we are just streaming into a
+    // memory of the replay block.
+    // mdTx.time_spec = getCurrentFpgaTime() + 0.1;
 
     size_t totalSamplesSent = 0;
     while(totalSamplesSent < numSamples) {
@@ -82,6 +85,7 @@ void RfNocFullDuplexGraph::upload(const MimoSignal& txSignal) {
         size_t samplesSent = currentTxStreamer_->send(buffers, samplesToSend, mdTx, timeout);
 
         mdTx.has_time_spec = false;
+        mdTx.start_of_burst = false;
         totalSamplesSent += samplesSent;
     }
     mdTx.end_of_burst = true;
@@ -90,12 +94,14 @@ void RfNocFullDuplexGraph::upload(const MimoSignal& txSignal) {
     uhd::async_metadata_t asyncMd;
     // loop through all messages for the ACK packet (may have underflow messages
     // in queue)
+    // However, recent tests show that no messages are received at all by the streamer.
     uhd::async_metadata_t::event_code_t lastEventCode =
         uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
+    timeout = 0.02f;
     while (currentTxStreamer_->recv_async_msg(asyncMd, timeout)) {
         if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
             lastEventCode = asyncMd.event_code;
-        timeout = 0.1f;
+        timeout = 0.01f;
     }
 
     if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK) {
@@ -103,7 +109,6 @@ void RfNocFullDuplexGraph::upload(const MimoSignal& txSignal) {
                             std::to_string(lastEventCode));
     }
 
-    std::this_thread::sleep_for(100ms);
     for(size_t c = 0; c < numTxAntennas_; c++) {
         std::cout << "Upload Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
     }
@@ -166,7 +171,7 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
     while (replayCtrl_->get_play_async_metadata(asyncMd, timeout)) {
         if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
             lastEventCode = asyncMd.event_code;
-        timeout = 0.1;
+        timeout = 0.02;
     }
     if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
         throw UsrpException("Error occured at data replaying with event code: "

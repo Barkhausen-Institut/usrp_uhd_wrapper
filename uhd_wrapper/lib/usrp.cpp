@@ -1,3 +1,4 @@
+#include <chrono>
 #include <cmath>
 #include <cstring>
 #include <numeric>
@@ -252,7 +253,7 @@ void Usrp::execute(const double baseTime) {
     performUpload(txStreamingConfigs_[0].samples);
 
     fdGraph_->connectForStreaming(CHANNELS, CHANNELS);
-    performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime + 1,
+    performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime,
                      txStreamingConfigs_[0].samples[0].size(),
                      rxStreamingConfigs_[0].noSamples);
 

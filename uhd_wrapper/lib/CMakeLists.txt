@@ -8,6 +8,7 @@ add_library(usrp STATIC
   config.cpp
   rf_configuration.cpp
   rfnoc_blocks.cpp
+  replay_config.cpp
   full_duplex_rfnoc_graph.cpp)
 target_link_libraries(usrp PRIVATE ${UHD_LIBRARIES} ${Boost_LIBRARIES} pthread)
 target_include_directories(usrp PRIVATE ../include/)

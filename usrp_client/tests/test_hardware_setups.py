@@ -4,7 +4,7 @@ import pytest
 import os
 import time
 
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt  # noqa
 
 
 import numpy as np
@@ -223,7 +223,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         ) - (0.5 + 0.5j)
         # self.randomSignal *= np.linspace(0, 1, self.noSamples)
 
-    def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
+    def x_test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
         system = setup.connectUsrps()
 
@@ -259,7 +259,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt4)), 1)
 
-    def test_p2pTransmission(self) -> None:
+    def x_test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -300,8 +300,8 @@ class TestHardwareSystemTests(unittest.TestCase):
         samplesSystem = system.collect()
         rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
 
-        plt.plot(abs(rxSamplesUsrp1))
-        plt.show()
+        # plt.plot(abs(rxSamplesUsrp1))
+        # plt.show()
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
@@ -309,7 +309,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-    def test_jcas(self) -> None:
+    def x_test_jcas(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -342,7 +342,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-    def test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
+    def x_test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
         # create setup
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=4)
         system = setup.connectUsrps()

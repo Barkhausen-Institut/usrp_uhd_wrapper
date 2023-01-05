@@ -13,17 +13,12 @@
 using namespace std::literals::chrono_literals;
 
 #include "config.hpp"
+#include "rfnoc_blocks.hpp"
 
 namespace bi {
 
-struct RfNocBlockConfig {
-    std::vector<std::string> radioIds;
-    std::vector<std::string> ducIds;
-    std::vector<std::string> ddcIds;
-    std::string replayId;
-};
 
-class RfNocFullDuplexGraph {
+class RfNocFullDuplexGraph : private RfNocBlocks {
 public:
     RfNocFullDuplexGraph(uhd::rfnoc::rfnoc_graph::sptr graph, const RfNocBlockConfig& config);
 
@@ -37,7 +32,6 @@ public:
     MimoSignal download(size_t numRxSamples);
 
 private:
-    void createRfNocBlocks(const RfNocBlockConfig& config);
     double getCurrentFpgaTime();
     void disconnectAll();
 
@@ -49,12 +43,6 @@ private:
     size_t numTxAntennas_, numRxAntennas_;
     uhd::tx_streamer::sptr currentTxStreamer_;
     uhd::rx_streamer::sptr currentRxStreamer_;
-
-    uhd::rfnoc::rfnoc_graph::sptr graph_;
-    uhd::rfnoc::radio_control::sptr radioCtrl1_, radioCtrl2_;
-    uhd::rfnoc::replay_block_control::sptr replayCtrl_;
-
-    RfNocBlockConfig blockNames_;
 };
 
 

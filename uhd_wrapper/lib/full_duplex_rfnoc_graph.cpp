@@ -21,19 +21,9 @@ std::ostream& operator<<(std::ostream& os, const uhd::rfnoc::graph_edge_t& edge)
 }
 
 RfNocFullDuplexGraph::RfNocFullDuplexGraph(uhd::rfnoc::rfnoc_graph::sptr graph, const RfNocBlockConfig& config)
-    : graph_(graph) {
+    : RfNocBlocks(config, graph) {
 
-    createRfNocBlocks(config);
-}
-
-void RfNocFullDuplexGraph::createRfNocBlocks(const RfNocBlockConfig& config) {
-    using uhd::rfnoc::block_id_t, uhd::rfnoc::radio_control, uhd::rfnoc::replay_block_control;
-    blockNames_ = config;
-
-    radioCtrl1_ = graph_->get_block<radio_control>(block_id_t(config.radioIds[0]));
-    radioCtrl2_ = graph_->get_block<radio_control>(block_id_t(config.radioIds[1]));
-
-    replayCtrl_ = graph_->get_block<replay_block_control>(block_id_t(config.replayId));
+    graph_->get_mb_controller()->set_sync_source("external", "external");
 }
 
 double RfNocFullDuplexGraph::getCurrentFpgaTime() {

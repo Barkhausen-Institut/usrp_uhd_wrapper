@@ -29,8 +29,6 @@ Usrp::Usrp(const std::string& ip) :
 
     fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(graph_, blockNames);
 
-    graph_->get_mb_controller()->set_sync_source("external", "external");
-
     masterClockRate_ = 245.76e6; // TODO!
     //masterClockRate_ = usrpDevice_->get_master_clock_rate();
 

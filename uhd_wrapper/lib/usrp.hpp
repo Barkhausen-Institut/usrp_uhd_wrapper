@@ -14,9 +14,10 @@
 #include <uhd/rfnoc_graph.hpp>
 
 #include "config.hpp"
-#include "uhd/usrp/multi_usrp.hpp"
-#include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
+
+#include "full_duplex_rfnoc_graph.hpp"
+#include "rf_configuration.hpp"
 
 namespace bi {
 
@@ -34,45 +35,28 @@ class Usrp : public UsrpInterface {
     void execute(const double baseTime);
     std::vector<MimoSignal> collect();
 
-    double getMasterClockRate() const { return masterClockRate_; }
+    double getMasterClockRate() const;
     RfConfig getRfConfig() const;
     void resetStreamingConfigs();
     std::string getDeviceType() const;
 
    private:
+    std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
+    std::shared_ptr<RFConfiguration> rfConfig_;
     // RfNoC components
     uhd::rfnoc::rfnoc_graph::sptr graph_;
-    uhd::rfnoc::block_id_t radioId1_, radioId2_;
     uhd::rfnoc::block_id_t replayId_;
 
-    uhd::rfnoc::radio_control::sptr radioCtrl1_, radioCtrl2_;
     uhd::rfnoc::replay_block_control::sptr replayCtrl_;
-    uhd::rfnoc::duc_block_control::sptr ducControl1_, ducControl2_;
-    uhd::rfnoc::ddc_block_control::sptr ddcControl1_, ddcControl2_;
-
-    uhd::rx_streamer::sptr currentRxStreamer_;
-    uhd::tx_streamer::sptr currentTxStreamer_;
 
     void createRfNocBlocks();
-    typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
-    RadioChannelPair getRadioChannelPair(int antenna);
 
-    typedef std::tuple<uhd::rfnoc::ddc_block_control::sptr, int> DDCChannelPair;
-    DDCChannelPair getDDCChannelPair(int antenna);
-
-    typedef std::tuple<uhd::rfnoc::duc_block_control::sptr, int> DUCChannelPair;
-    DUCChannelPair getDUCChannelPair(int antenna);
-
-    void disconnectAll();
-    void connectForUpload();
     void configureReplayForUpload(int numSamples);
     void performUpload(const MimoSignal& txSignal);
 
-    void connectForStreaming();
     void configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples);
     void performStreaming(double baseTime, size_t numTxSamples, size_t numRxSamples);
 
-    void connectForDownload();
     void configureReplayForDownload(size_t numRxSamples);
     MimoSignal performDownload(size_t numRxSamples);
 
@@ -94,19 +78,8 @@ class Usrp : public UsrpInterface {
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
-    double masterClockRate_;
-    RfConfig rfConfig_;
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
-
-    // configuration functions
-    void setRfConfigForRxAntenna(const RfConfig& conf,
-                                 const size_t rxAntennaIdx);
-    void setRfConfigForTxAntenna(const RfConfig& conf,
-                                 const size_t txAntennaIdx);
-    void setRxSampleRate(double rate);
-    void setTxSampleRate(double rate);
-
 
     // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);

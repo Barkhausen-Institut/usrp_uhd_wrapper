@@ -51,9 +51,6 @@ class Usrp : public UsrpInterface {
     uhd::rfnoc::duc_block_control::sptr ducControl1_, ducControl2_;
     uhd::rfnoc::ddc_block_control::sptr ddcControl1_, ddcControl2_;
 
-    uhd::rx_streamer::sptr currentRxStreamer_;
-    //uhd::tx_streamer::sptr currentTxStreamer_;
-
     void createRfNocBlocks();
     typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
     RadioChannelPair getRadioChannelPair(int antenna);

@@ -34,6 +34,7 @@ public:
     void stream(double streamTime, size_t numTxSamples, size_t numRxSamples);
 
     uhd::rx_streamer::sptr connectForDownload(size_t numRxAntennas);
+    MimoSignal download(size_t numRxSamples);
 
 private:
     void createRfNocBlocks(const RfNocBlockConfig& config);

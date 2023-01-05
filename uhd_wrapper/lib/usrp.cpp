@@ -159,55 +159,10 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     // equal to the amount of baseband samples. Hence, no scaling is
     // needed.
     fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
-    return;
-
-
-
-    uhd::stream_cmd_t txStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
-    txStreamCmd.num_samps = numTxSamples;
-    txStreamCmd.stream_now = false;
-    txStreamCmd.time_spec = uhd::time_spec_t(streamTime);
-
-    uhd::stream_cmd_t rxStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
-    // We need to multiply with the rx decim factor because we
-    // instruct the radio to create a given amount of samples, which
-    // are subsequentcy decimated by the DDC (hence the radio needs to
-    // produce more decim times more samples to eventually yield the
-    // correct amount of samples.  On the TX side, we instruct the
-    // replay block to create a given amount of samples, which is
-    // equal to the amount of baseband samples. Hence, no scaling is
-    // needed.
-    rxStreamCmd.num_samps = numRxSamples * rxDecimFactor;
-    rxStreamCmd.stream_now = false;
-    rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
-
-    for (int channel = 0; channel < CHANNELS; channel++) {
-        auto [radio, radioChan] = getRadioChannelPair(channel);
-        radio->issue_stream_cmd(rxStreamCmd, radioChan);
-        replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
-    }
-
-    uhd::async_metadata_t asyncMd;
-    double timeout = streamTime - getCurrentFpgaTime() + 0.1;
-    uhd::async_metadata_t::event_code_t lastEventCode = uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
-    while (replayCtrl_->get_play_async_metadata(asyncMd, timeout)) {
-        if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
-            lastEventCode = asyncMd.event_code;
-        timeout = 0.1;
-    }
-    if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
-        throw UsrpException("Error occured at data replaying with event code: "
-                        + std::to_string(lastEventCode));
-
-    // TOOD! Factor out into separate function or class
-    for(int c = 0; c < CHANNELS; c++) {
-        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
-        std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
-    }
 }
 
 void Usrp::connectForDownload() {
-    currentRxStreamer_ = fdGraph_->connectForDownload(CHANNELS);
+    fdGraph_->connectForDownload(CHANNELS);
     return;
 }
 
@@ -224,38 +179,7 @@ void Usrp::configureReplayForDownload(size_t numRxSamples) {
 
 MimoSignal Usrp::performDownload(size_t numRxSamples) {
     configureReplayForDownload(numRxSamples);
-
-    MimoSignal result;
-    result.resize(CHANNELS);
-    for(int c = 0; c < CHANNELS; c++)
-        result[c].resize(numRxSamples);
-
-    uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
-    streamCmd.num_samps = numRxSamples;
-    streamCmd.stream_now = false;
-    streamCmd.time_spec = getCurrentFpgaTime() + 0.1;
-
-    currentRxStreamer_->issue_stream_cmd(streamCmd);
-
-    uhd::rx_metadata_t mdRx;
-    size_t totalSamplesReceived = 0;
-
-    while (totalSamplesReceived < numRxSamples) {
-        std::vector<sample*> buffers;
-        for(int c = 0; c < CHANNELS; c++)
-            buffers.push_back(result[c].data() + totalSamplesReceived);
-        size_t remainingSamples = numRxSamples - totalSamplesReceived;
-        size_t reqSamples = std::min(remainingSamples, PACKET_SIZE);
-        size_t numSamplesReceived = currentRxStreamer_->recv(buffers, reqSamples, mdRx, 0.1, false);
-
-        totalSamplesReceived += numSamplesReceived;
-        if (mdRx.error_code != uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
-            throw std::runtime_error("error at Rx streamer " + mdRx.strerror());
-    }
-    if (!mdRx.end_of_burst)
-        throw UsrpException("I did not receive an end_of_burst.");
-
-    return result;
+    return fdGraph_->download(numRxSamples);
 }
 
 RfConfig Usrp::getRfConfig() const {

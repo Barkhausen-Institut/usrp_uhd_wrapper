@@ -206,6 +206,41 @@ uhd::rx_streamer::sptr RfNocFullDuplexGraph::connectForDownload(size_t numRxAnte
 
     //_showRfNoCConnections(graph_);
 }
+
+MimoSignal RfNocFullDuplexGraph::download(size_t numRxSamples) {
+    MimoSignal result;
+    result.resize(numRxAntennas_);
+    for(size_t c = 0; c < numRxAntennas_; c++)
+        result[c].resize(numRxSamples);
+
+    uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
+    streamCmd.num_samps = numRxSamples;
+    streamCmd.stream_now = false;
+    streamCmd.time_spec = getCurrentFpgaTime() + 0.1;
+
+    currentRxStreamer_->issue_stream_cmd(streamCmd);
+
+    uhd::rx_metadata_t mdRx;
+    size_t totalSamplesReceived = 0;
+
+    while (totalSamplesReceived < numRxSamples) {
+        std::vector<sample*> buffers;
+        for(int c = 0; c < CHANNELS; c++)
+            buffers.push_back(result[c].data() + totalSamplesReceived);
+        size_t remainingSamples = numRxSamples - totalSamplesReceived;
+        size_t reqSamples = std::min(remainingSamples, PACKET_SIZE);
+        size_t numSamplesReceived = currentRxStreamer_->recv(buffers, reqSamples, mdRx, 0.1, false);
+
+        totalSamplesReceived += numSamplesReceived;
+        if (mdRx.error_code != uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)
+            throw std::runtime_error("error at Rx streamer " + mdRx.strerror());
+    }
+    if (!mdRx.end_of_burst)
+        throw UsrpException("I did not receive an end_of_burst.");
+
+    return result;
+}
+
 void RfNocFullDuplexGraph::disconnectAll() {
     graph_->release();
     for (auto& edge : graph_->enumerate_active_connections()) {

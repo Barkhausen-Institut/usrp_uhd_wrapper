@@ -18,6 +18,8 @@ struct RfNocBlockConfig {
     std::vector<std::string> ducIds;
     std::vector<std::string> ddcIds;
     std::string replayId;
+
+    static RfNocBlockConfig defaultNames();
 };
 
 class RfNocBlocks {
@@ -37,6 +39,7 @@ public:
 
     typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
     RadioChannelPair getRadioChannelPair(int antenna);
+
 
 private:
     void obtainBlocks();

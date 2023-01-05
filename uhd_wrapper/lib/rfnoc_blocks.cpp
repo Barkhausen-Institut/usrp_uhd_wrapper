@@ -1,6 +1,17 @@
 #include "rfnoc_blocks.hpp"
 
 namespace bi {
+RfNocBlockConfig RfNocBlockConfig::defaultNames() {
+    RfNocBlockConfig result;
+    result.radioIds = {"0/Radio#0", "0/Radio#1"};
+    result.ducIds = {"0/DUC#0", "0/DUC#1"};
+    result.ddcIds = {"0/DDC#0", "0/DDC#1"};
+
+    result.replayId = "0/Replay#0";
+
+    return result;
+}
+
 RfNocBlocks::RfNocBlocks(const RfNocBlockConfig& blockNames, uhd::rfnoc::rfnoc_graph::sptr graph)
     : blockNames_(blockNames), graph_(graph) {
     obtainBlocks();
@@ -8,16 +19,17 @@ RfNocBlocks::RfNocBlocks(const RfNocBlockConfig& blockNames, uhd::rfnoc::rfnoc_g
 
 void RfNocBlocks::obtainBlocks() {
     using uhd::rfnoc::block_id_t, uhd::rfnoc::radio_control, uhd::rfnoc::replay_block_control;
+    using uhd::rfnoc::ddc_block_control, uhd::rfnoc::duc_block_control;
 
     radioCtrl1_ = graph_->get_block<radio_control>(block_id_t(blockNames_.radioIds[0]));
     radioCtrl2_ = graph_->get_block<radio_control>(block_id_t(blockNames_.radioIds[1]));
 
     replayCtrl_ = graph_->get_block<replay_block_control>(block_id_t(blockNames_.replayId));
 
-    ddcControl1_ = graph_->get_block<uhd::rfnoc::ddc_block_control>(block_id_t("0/DDC#0"));
-    ducControl1_ = graph_->get_block<uhd::rfnoc::duc_block_control>(block_id_t("0/DUC#0"));
-    ddcControl2_ = graph_->get_block<uhd::rfnoc::ddc_block_control>(block_id_t("0/DDC#1"));
-    ducControl2_ = graph_->get_block<uhd::rfnoc::duc_block_control>(block_id_t("0/DUC#1"));
+    ddcControl1_ = graph_->get_block<ddc_block_control>(block_id_t(blockNames_.ddcIds[0]));
+    ducControl1_ = graph_->get_block<duc_block_control>(block_id_t(blockNames_.ducIds[0]));
+    ddcControl2_ = graph_->get_block<ddc_block_control>(block_id_t(blockNames_.ddcIds[1]));
+    ducControl2_ = graph_->get_block<duc_block_control>(block_id_t(blockNames_.ducIds[1]));
 }
 
 double RfNocBlocks::getCurrentFpgaTime() {

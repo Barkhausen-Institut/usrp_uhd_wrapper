@@ -23,13 +23,10 @@ Usrp::Usrp(const std::string& ip) :
     replayId_("0/Replay#0") {
     ip_ = ip;
     graph_ = rfnoc_graph::make("addr="+ip);
-    bi::RfNocBlockConfig blockNames;
-    blockNames.radioIds = {"0/Radio#0", "0/Radio#1"};
-    blockNames.replayId = "0/Replay#0";
+    RfNocBlockConfig blockNames = RfNocBlockConfig::defaultNames();
 
     fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_);
     rfConfig_ = std::make_shared<RFConfiguration>(blockNames, graph_);
-
 
     createRfNocBlocks();
 

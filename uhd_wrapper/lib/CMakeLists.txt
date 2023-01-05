@@ -7,6 +7,7 @@ add_library(usrp STATIC
   usrp_exception.cpp
   config.cpp
   rf_configuration.cpp
+  rfnoc_blocks.cpp
   full_duplex_rfnoc_graph.cpp)
 target_link_libraries(usrp PRIVATE ${UHD_LIBRARIES} ${Boost_LIBRARIES} pthread)
 target_include_directories(usrp PRIVATE ../include/)

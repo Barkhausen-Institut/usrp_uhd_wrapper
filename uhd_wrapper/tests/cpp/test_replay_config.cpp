@@ -7,26 +7,16 @@
 
 class ReplayMock : public trompeloeil::mock_interface<bi::ReplayBlockInterface> {
 public:
-    /*MAKE_MOCK3(record, void(const uint64_t, const uint64_t, const size_t));
-    MAKE_MOCK0(record_restart, void());
-    MAKE_MOCK3(config_play, void(const uint64_t, const uint64_t, const size_t));
-
-    MAKE_MOCK0(get_mem_size, uint64_t() const);
-    MAKE_MOCK0(get_record_fullness, uint64_t() const);
-    MAKE_MOCK0(get_play_position, uint64_t() const);*/
-
     IMPLEMENT_MOCK3(record);
-    IMPLEMENT_MOCK0(record_restart);
+    IMPLEMENT_MOCK1(record_restart);
     IMPLEMENT_MOCK3(config_play);
 
     IMPLEMENT_CONST_MOCK0(get_mem_size);
-    IMPLEMENT_CONST_MOCK0(get_record_fullness);
-    IMPLEMENT_CONST_MOCK0(get_play_position);
+    IMPLEMENT_CONST_MOCK1(get_record_fullness);
+    IMPLEMENT_CONST_MOCK1(get_play_position);
 };
 
 TEST_CASE("Sanity") {
-    using trompeloeil::_;
-    using trompeloeil::gt;
     REQUIRE(1 == 1);
 
     ReplayMock m;
@@ -36,11 +26,14 @@ TEST_CASE("Sanity") {
 }
 
 TEST_CASE("Replay Block Config") {
+    using trompeloeil::_;
+
     ReplayMock replay;
     uint64_t MEM_SIZE = 8192;
     uint64_t HALF_MEM = MEM_SIZE / 2;
 
     ALLOW_CALL(replay, get_mem_size()).RETURN(MEM_SIZE);
+    ALLOW_CALL(replay, get_record_fullness(_)).RETURN(0);
 
 
     std::shared_ptr<bi::ReplayBlockInterface> ptrReplay(&replay, [](auto) {});

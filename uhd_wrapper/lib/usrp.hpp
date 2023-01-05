@@ -39,15 +39,12 @@ class Usrp : public UsrpInterface {
     std::string getDeviceType() const;
 
    private:
+    // RfNoC components
+    uhd::rfnoc::rfnoc_graph::sptr graph_;
     std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
     std::shared_ptr<RFConfiguration> rfConfig_;
     std::shared_ptr<ReplayBlockConfig> replayConfig_;
 
-    // RfNoC components
-    uhd::rfnoc::rfnoc_graph::sptr graph_;
-    uhd::rfnoc::block_id_t replayId_;
-
-    uhd::rfnoc::replay_block_control::sptr replayCtrl_;
 
     void createRfNocBlocks();
 
@@ -59,8 +56,6 @@ class Usrp : public UsrpInterface {
 
     void configureReplayForDownload(size_t numRxSamples);
     MimoSignal performDownload(size_t numRxSamples);
-
-    void clearReplayBlockRecorder();
 
     // constants
     const double GUARD_OFFSET_S_ = 0.05;

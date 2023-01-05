@@ -6,11 +6,11 @@ namespace bi {
 class ReplayBlockInterface {
 public:
     virtual void record(const uint64_t offset, const uint64_t size, const size_t port) = 0;
-    virtual void record_restart() = 0;
+    virtual void record_restart(const size_t port) = 0;
 
     virtual uint64_t get_mem_size() const = 0;
-    virtual uint64_t get_record_fullness() const = 0;
-    virtual uint64_t get_play_position() const = 0;
+    virtual uint64_t get_record_fullness(const size_t port) const = 0;
+    virtual uint64_t get_play_position(const size_t port) const = 0;
     virtual void config_play(const uint64_t offset, const uint64_t size, const size_t port) = 0;
 };
 
@@ -22,11 +22,20 @@ public:
     void record(const uint64_t offset, const uint64_t size, const size_t port) {
         replayCtrl_->record(offset, size, port);
     }
-    void record_restart() { replayCtrl_->record_restart(); }
+
+    void record_restart(const size_t port) {
+        replayCtrl_->record_restart(port);
+    }
 
     uint64_t get_mem_size() const { return replayCtrl_->get_mem_size(); };
-    uint64_t get_record_fullness() const { return replayCtrl_->get_record_fullness(); }
-    uint64_t get_play_position() const { return replayCtrl_->get_play_position(); }
+
+    uint64_t get_record_fullness(const size_t port) const {
+        return replayCtrl_->get_record_fullness(port);
+    }
+
+    uint64_t get_play_position(const size_t port) const {
+        return replayCtrl_->get_play_position(port);
+    }
 
     void config_play(const uint64_t offset, const uint64_t size, const size_t port) {
         replayCtrl_->config_play(offset, size, port);
@@ -49,6 +58,7 @@ public:
 
 private:
     void checkAntennaCount() const;
+    void clearRecordingBuffer();
 
     std::shared_ptr<ReplayBlockInterface> replayBlock_;
     const size_t SAMPLE_SIZE = 4;  // 16bit IQ data

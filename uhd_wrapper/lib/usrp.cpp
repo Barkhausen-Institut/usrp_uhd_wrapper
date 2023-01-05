@@ -19,8 +19,7 @@ using uhd::rfnoc::rfnoc_graph;
 using uhd::rfnoc::noc_block_base;
 
 
-Usrp::Usrp(const std::string& ip) :
-    replayId_("0/Replay#0") {
+Usrp::Usrp(const std::string& ip)  {
     ip_ = ip;
     graph_ = rfnoc_graph::make("addr="+ip);
     RfNocBlockConfig blockNames = RfNocBlockConfig::defaultNames();
@@ -47,11 +46,10 @@ Usrp::~Usrp() {
 }
 
 void Usrp::createRfNocBlocks() {
-    using uhd::rfnoc::block_id_t;
 
-    replayCtrl_ = graph_->get_block<uhd::rfnoc::replay_block_control>(replayId_);
+    auto replayCtrl = fdGraph_->getReplayControl();
     replayConfig_ = std::make_shared<ReplayBlockConfig>(
-                                                        std::make_shared<ReplayBlockWrapper>(replayCtrl_));
+            std::make_shared<ReplayBlockWrapper>(replayCtrl));
 
     graph_->commit();
 }
@@ -66,7 +64,7 @@ void Usrp::configureReplayForUpload(int numSamples) {
 
     replayConfig_->configUpload(numSamples);
 
-    clearReplayBlockRecorder();
+    //clearReplayBlockRecorder();
 }
 
 void Usrp::performUpload(const MimoSignal& txSignal) {
@@ -95,27 +93,6 @@ void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples)
     replayConfig_->configTransmit(numTxSamples);
     replayConfig_->configReceive(numRxSamples);
 
-    clearReplayBlockRecorder();
-}
-
-void Usrp::clearReplayBlockRecorder() {
-    std::this_thread::sleep_for(10ms);
-
-    bool needClear = false;
-    for(int t = 0; t < 3; t++) {
-        needClear = false;
-        for(int c = 0; c < CHANNELS; c++)
-            needClear |= (replayCtrl_->get_record_fullness(c) > 0);
-
-        if (!needClear)
-            break;
-
-        std::cout << "Trying to clear the buffer" << std::endl;
-        for(int c = 0; c < CHANNELS; c++)
-            replayCtrl_->record_restart(c);
-    }
-    if (needClear)
-        throw UsrpException("Cannot clear the record buffer!");
 }
 
 void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRxSamples) {
@@ -144,14 +121,14 @@ void Usrp::configureReplayForDownload(size_t numRxSamples) {
     replayConfig_->configDownload(numRxSamples);
     return;
 
-    size_t memSize = replayCtrl_->get_mem_size();
-    size_t halfMem = memSize / 2;
-    size_t numBytes = numRxSamples * 4;
-    size_t memStride = numBytes;
+    // size_t memSize = replayCtrl_->get_mem_size();
+    // size_t halfMem = memSize / 2;
+    // size_t numBytes = numRxSamples * 4;
+    // size_t memStride = numBytes;
 
-    for (int channel = 0; channel < CHANNELS; channel++) {
-        replayCtrl_->config_play(halfMem + channel*memStride, numBytes, channel);
-    }
+    // for (int channel = 0; channel < CHANNELS; channel++) {
+    //     replayCtrl_->config_play(halfMem + channel*memStride, numBytes, channel);
+    // }
 }
 
 MimoSignal Usrp::performDownload(size_t numRxSamples) {
@@ -211,7 +188,6 @@ void Usrp::setRfConfig(const RfConfig &conf) {
     replayConfig_->setAntennaCount(conf.noTxAntennas, conf.noRxAntennas);
 }
 
-
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
     assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxAntennas());
     if (txStreamingConfigs_.size() > 0)
@@ -264,7 +240,6 @@ double Usrp::getCurrentFpgaTime() {
     waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
 
     return graph_->get_mb_controller()->get_timekeeper(0)->get_time_now().get_real_secs();
-    //return usrpDevice_->get_time_now().get_real_secs();
 }
 
 void Usrp::execute(const double baseTime) {
@@ -281,9 +256,8 @@ void Usrp::execute(const double baseTime) {
                      txStreamingConfigs_[0].samples[0].size(),
                      rxStreamingConfigs_[0].noSamples);
 
-    fdGraph_->connectForDownload(CHANNELS);
-
     receivedSamples_.clear();
+    fdGraph_->connectForDownload(CHANNELS);
     receivedSamples_.push_back(performDownload(rxStreamingConfigs_[0].noSamples));
 
     return;

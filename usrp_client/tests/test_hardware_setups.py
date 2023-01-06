@@ -233,7 +233,7 @@ class TestHardwareSystemTests(unittest.TestCase):
     def test_2x2mimo_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(
             noRxAntennas=2, noTxAntennas=2,
-            txSampleRate=245.76e6 / 1, rxSampleRate=245.76e6 / 1)
+            txSampleRate=245.76e6 / 2, rxSampleRate=245.76e6 / 2)
         system = setup.connectUsrps()
 
         tx = np.zeros((2, 2*self.noSamples+2000), dtype=complex)

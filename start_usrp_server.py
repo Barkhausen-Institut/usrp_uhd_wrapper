@@ -2,7 +2,7 @@ import argparse
 
 from uhd_wrapper.rpc_server.rpc_server import UsrpServer
 import zerorpc
-from uhd_wrapper.rpc_server.reconfigurable_usrp import MimoReconfiguringUsrp
+from uhd_wrapper.rpc_server.reconfigurable_usrp import RestartingUsrp
 
 
 def parseArgs() -> argparse.Namespace:
@@ -16,7 +16,7 @@ def parseArgs() -> argparse.Namespace:
 # create environment
 PORT = 5555
 IP_USRP = parseArgs().uhd_ip
-usrp = MimoReconfiguringUsrp(IP_USRP)
+usrp = RestartingUsrp(IP_USRP)
 
 # start server
 rpcServer = zerorpc.Server(UsrpServer(usrp))

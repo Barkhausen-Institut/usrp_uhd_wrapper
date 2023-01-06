@@ -221,7 +221,56 @@ class TestHardwareSystemTests(unittest.TestCase):
             np.random.sample((self.noSamples,))
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
+
+        self.randomSignal2 = (
+            np.random.sample((self.noSamples,))
+            + 1j * np.random.sample((self.noSamples,))
+        ) - (0.5 + 0.5j)
+
         # self.randomSignal *= np.linspace(0, 1, self.noSamples)
+        # self.randomSignal2 *= np.linspace(1, 0, self.noSamples)
+
+    def test_2x2mimo_localhost(self) -> None:
+        setup = LocalTransmissionHardwareSetup(
+            noRxAntennas=2, noTxAntennas=2,
+            txSampleRate=245.76e6 / 1, rxSampleRate=245.76e6 / 1)
+        system = setup.connectUsrps()
+
+        tx = np.zeros((2, 2*self.noSamples+2000), dtype=complex)
+        tx[0, :self.noSamples] = self.randomSignal
+        tx[1, self.noSamples+2000:] = self.randomSignal2
+
+        txSignal = MimoSignal(signals=[tx[0, :], tx[1, :]])
+        system.configureTx(
+            usrpName="usrp1",
+            txStreamingConfig=TxStreamingConfig(
+                sendTimeOffset=0.0, samples=txSignal
+            )
+        )
+        system.configureRx(
+            usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+                receiveTimeOffset=0.0, noSamples=int(3*self.noSamples)
+            )
+        )
+        system.execute()
+        rxSamples = system.collect()["usrp1"][0]
+        rx1 = rxSamples.signals[0]
+        rx2 = rxSamples.signals[1]
+
+        self.assertAlmostEqual(
+            first=findSignalStartsInFrame(rx1, self.randomSignal),
+            second=findSignalStartsInFrame(rx2, self.randomSignal),
+            delta=1
+        )
+        self.assertAlmostEqual(
+            first=findSignalStartsInFrame(rx1, self.randomSignal2),
+            second=findSignalStartsInFrame(rx2, self.randomSignal2),
+            delta=1
+        )
+
+        txDist = (findSignalStartsInFrame(rx1, self.randomSignal2) -
+                  findSignalStartsInFrame(rx1, self.randomSignal))
+        self.assertAlmostEqual(txDist, self.noSamples + 2000, delta=1)
 
     def x_test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)

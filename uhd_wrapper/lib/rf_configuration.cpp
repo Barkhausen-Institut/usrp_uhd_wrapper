@@ -14,6 +14,9 @@ RFConfiguration::RFConfiguration(const RfNocBlockConfig& blockNames,
 void RFConfiguration::setRfConfig(const RfConfig &conf) {
     assertValidRfConfig(conf);
 
+    numTxAntennas_ = conf.noTxAntennas;
+    numRxAntennas_ = conf.noRxAntennas;
+
     for (int idxRxAntenna = 0; idxRxAntenna < conf.noRxAntennas; idxRxAntenna++)
         setRfConfigForRxAntenna(conf, idxRxAntenna);
 
@@ -121,8 +124,8 @@ RfConfig RFConfiguration::readFromGraph() {
     conf.rxSamplingRate = ddcControl1_->get_output_rate(0);
 
     // TODO!
-    conf.noRxAntennas = 1;
-    conf.noTxAntennas = 1;
+    conf.noTxAntennas = numTxAntennas_;
+    conf.noRxAntennas = numRxAntennas_;
     //conf.noRxAntennas = usrpDevice_->get_rx_subdev_spec().size();
     //conf.noTxAntennas = usrpDevice_->get_tx_subdev_spec().size();
     return conf;

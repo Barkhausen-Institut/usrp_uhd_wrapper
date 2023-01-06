@@ -26,24 +26,32 @@ void ReplayBlockConfig::checkAntennaCount() const {
 
 void ReplayBlockConfig::configUpload(size_t numSamples) {
     checkAntennaCount();
-    replayBlock_->record(0, numSamples * SAMPLE_SIZE, 0);
+    const size_t numBytes = numSamples * SAMPLE_SIZE;
+    for(size_t tx = 0; tx < numTxAntennas_; tx++)
+        replayBlock_->record(tx * numBytes, numBytes, tx);
     clearRecordingBuffer();
 }
 
 void ReplayBlockConfig::configTransmit(size_t numSamples) {
     checkAntennaCount();
-    replayBlock_->config_play(0, numSamples * SAMPLE_SIZE, 0);
+    const size_t numBytes = numSamples * SAMPLE_SIZE;
+    for(size_t tx = 0; tx < numTxAntennas_; tx++)
+        replayBlock_->config_play(tx * numBytes, numBytes, tx);
 }
 
 void ReplayBlockConfig::configReceive(size_t numSamples) {
     checkAntennaCount();
-    replayBlock_->record(MEM_SIZE / 2, numSamples * SAMPLE_SIZE, 0);
+    const size_t numBytes = numSamples * SAMPLE_SIZE;
+    for(size_t rx = 0; rx < numRxAntennas_; rx++)
+        replayBlock_->record(MEM_SIZE / 2 + rx*numBytes, numBytes, rx);
     clearRecordingBuffer();
 }
 
 void ReplayBlockConfig::configDownload(size_t numSamples) {
     checkAntennaCount();
-    replayBlock_->config_play(MEM_SIZE / 2, numSamples * SAMPLE_SIZE, 0);
+    const size_t numBytes = numSamples * SAMPLE_SIZE;
+    for(size_t rx = 0; rx < numRxAntennas_; rx++)
+        replayBlock_->config_play(MEM_SIZE / 2 + rx*numBytes, numBytes, rx);
 }
 
 void ReplayBlockConfig::clearRecordingBuffer() {

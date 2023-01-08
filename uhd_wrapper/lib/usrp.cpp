@@ -281,6 +281,8 @@ void Usrp::execute(const double baseTime) {
 std::vector<MimoSignal> Usrp::collect() {
     std::cout << "collect STUB!" << std::endl;
 
+    resetStreamingConfigs();
+
     return receivedSamples_;
 
     waitOnThreadToJoin(transmitThread_);

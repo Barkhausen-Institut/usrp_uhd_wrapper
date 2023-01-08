@@ -35,22 +35,32 @@ uhd::rfnoc::replay_block_control::sptr RfNocFullDuplexGraph::getReplayControl() 
     return replayCtrl_;
 }
 
+bool RfNocFullDuplexGraph::useTxChannel(size_t antennaId) const {
+    return antennaId < numTxAntennas_;
+}
+
+bool RfNocFullDuplexGraph::useRxChannel(size_t antennaId) const {
+    return antennaId < numRxAntennas_;
+}
+
 uhd::tx_streamer::sptr RfNocFullDuplexGraph::connectForUpload(size_t numTxAntennas) {
     disconnectAll();
+
+    numTxAntennas_ = numTxAntennas;
 
     graph_->release();
     currentTxStreamer_.reset();
     uhd::stream_args_t streamArgs("fc32", "sc16");
-    currentTxStreamer_ = graph_->create_tx_streamer(numTxAntennas, streamArgs);
+    currentTxStreamer_ = graph_->create_tx_streamer(numTxAntennas_, streamArgs);
 
-    for (size_t i = 0; i < numTxAntennas; i++)
-        graph_->connect(currentTxStreamer_, i,
-                        uhd::rfnoc::block_id_t(blockNames_.replayId), i);
-
+    for (size_t i = 0; i < MAX_ANTENNAS; i++) {
+        if (useTxChannel(i)) {
+            graph_->connect(currentTxStreamer_, i,
+                            replayCtrl_->get_block_id(), i);
+        }
+    }
 
     graph_->commit();
-
-    numTxAntennas_ = numTxAntennas;
 
     return currentTxStreamer_;
     // _showRfNoCConnections(graph_);
@@ -119,28 +129,25 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxAntennas, size_t numR
         std::to_string(numTxAntennas) + " " + std::to_string(numTxAntennas_));
     numRxAntennas_ = numRxAntennas;
 
-    if (numTxAntennas != numRxAntennas)
-        throw UsrpException("Currently, ony equal nTX and nRX supported!");
-
     disconnectAll();
 
     using uhd::rfnoc::block_id_t;
 
     graph_->release();
-    for (size_t i = 0; i < numTxAntennas; i++) {
-        std::string radioId = blockNames_.radioIds[0];
-        int radioChan = i;
-        if (i >= 2) {
-            radioId = blockNames_.radioIds[1];
-            radioChan = i - 2;
+    for (size_t i = 0; i < MAX_ANTENNAS; i++) {
+        auto [radio, radioChan] = getRadioChannelPair(i);
+
+        if (useTxChannel(i)) {
+            uhd::rfnoc::connect_through_blocks(graph_,
+                                               replayCtrl_->get_block_id(), i,
+                                               radio->get_block_id(), radioChan, false);
         }
 
-        uhd::rfnoc::connect_through_blocks(graph_,
-                                           block_id_t(blockNames_.replayId), i,
-                                           block_id_t(radioId), radioChan, false);
-        uhd::rfnoc::connect_through_blocks(graph_,
-                                           block_id_t(radioId), radioChan,
-                                           block_id_t(blockNames_.replayId), i, true);
+        if (useRxChannel(i)) {
+            uhd::rfnoc::connect_through_blocks(graph_,
+                                               radio->get_block_id(), radioChan,
+                                               replayCtrl_->get_block_id(), i, true);
+        }
     }
 
     graph_->commit();
@@ -159,10 +166,12 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
     rxStreamCmd.stream_now = false;
     rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
-    for (size_t channel = 0; channel < numTxAntennas_; channel++) {
+    for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
         auto [radio, radioChan] = getRadioChannelPair(channel);
-        radio->issue_stream_cmd(rxStreamCmd, radioChan);
-        replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
+        if (useTxChannel(channel))
+            replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
+        if (useRxChannel(channel))
+            radio->issue_stream_cmd(rxStreamCmd, radioChan);
     }
 
     uhd::async_metadata_t asyncMd;
@@ -179,8 +188,10 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
 
     // TOOD! Factor out into separate function or class
     for(size_t c = 0; c < numTxAntennas_; c++) {
-        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
         std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
+    }
+    for(size_t c = 0; c < numRxAntennas_; c++) {
+        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
     }
 }
 

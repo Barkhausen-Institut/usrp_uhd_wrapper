@@ -35,6 +35,9 @@ public:
 private:
     void disconnectAll();
 
+    bool useRxChannel(size_t antennaId) const;
+    bool useTxChannel(size_t antennaId) const;
+
     const size_t PACKET_SIZE = 8192;
 
     size_t numTxAntennas_, numRxAntennas_;

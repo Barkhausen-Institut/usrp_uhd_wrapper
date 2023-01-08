@@ -119,15 +119,12 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxAntennas, size_t numR
         std::to_string(numTxAntennas) + " " + std::to_string(numTxAntennas_));
     numRxAntennas_ = numRxAntennas;
 
-    if (numTxAntennas != numRxAntennas)
-        throw UsrpException("Currently, ony equal nTX and nRX supported!");
-
     disconnectAll();
 
     using uhd::rfnoc::block_id_t;
 
     graph_->release();
-    for (size_t i = 0; i < numTxAntennas; i++) {
+    for (size_t i = 0; i < MAX_ANTENNAS; i++) {
         std::string radioId = blockNames_.radioIds[0];
         int radioChan = i;
         if (i >= 2) {
@@ -135,12 +132,17 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxAntennas, size_t numR
             radioChan = i - 2;
         }
 
-        uhd::rfnoc::connect_through_blocks(graph_,
-                                           block_id_t(blockNames_.replayId), i,
-                                           block_id_t(radioId), radioChan, false);
-        uhd::rfnoc::connect_through_blocks(graph_,
-                                           block_id_t(radioId), radioChan,
-                                           block_id_t(blockNames_.replayId), i, true);
+        if (i < numTxAntennas_) {
+            uhd::rfnoc::connect_through_blocks(graph_,
+                                               block_id_t(blockNames_.replayId), i,
+                                               block_id_t(radioId), radioChan, false);
+        }
+
+        if (i < numRxAntennas_) {
+            uhd::rfnoc::connect_through_blocks(graph_,
+                                               block_id_t(radioId), radioChan,
+                                               block_id_t(blockNames_.replayId), i, true);
+        }
     }
 
     graph_->commit();
@@ -159,10 +161,12 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
     rxStreamCmd.stream_now = false;
     rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
-    for (size_t channel = 0; channel < numTxAntennas_; channel++) {
+    for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
         auto [radio, radioChan] = getRadioChannelPair(channel);
-        radio->issue_stream_cmd(rxStreamCmd, radioChan);
-        replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
+        if (channel < numTxAntennas_)
+            replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
+        if (channel < numRxAntennas_)
+            radio->issue_stream_cmd(rxStreamCmd, radioChan);
     }
 
     uhd::async_metadata_t asyncMd;
@@ -179,8 +183,10 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
 
     // TOOD! Factor out into separate function or class
     for(size_t c = 0; c < numTxAntennas_; c++) {
-        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
         std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
+    }
+    for(size_t c = 0; c < numRxAntennas_; c++) {
+        std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
     }
 }
 

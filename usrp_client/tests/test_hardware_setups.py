@@ -47,8 +47,9 @@ def padSignal(noZeroPads: int, signal: np.ndarray) -> np.ndarray:
 
 
 def findSignalStartsInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
-    correlation = np.abs(np.correlate(frame, txSignal))
-    return np.argsort(correlation)[-1]
+    import scipy.signal as S  # type: ignore
+    correlation = abs(S.correlate(frame, txSignal, mode='valid'))
+    return np.argmax(correlation).item()
 
 
 class HardwareSetup:
@@ -257,6 +258,10 @@ class TestHardwareSystemTests(unittest.TestCase):
         rx1 = rxSamples.signals[0]
         rx2 = rxSamples.signals[1]
 
+        # plt.subplot(221); plt.plot(abs(rx1))
+        # plt.subplot(222); plt.plot(abs(rx2))
+        # plt.show()
+
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rx1, self.randomSignal),
             second=findSignalStartsInFrame(rx2, self.randomSignal),
@@ -272,7 +277,7 @@ class TestHardwareSystemTests(unittest.TestCase):
                   findSignalStartsInFrame(rx1, self.randomSignal))
         self.assertAlmostEqual(txDist, self.noSamples + 2000, delta=1)
 
-    def x_test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
+    def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
         system = setup.connectUsrps()
 
@@ -291,6 +296,12 @@ class TestHardwareSystemTests(unittest.TestCase):
             rxSamplesUsrpAnt2 = samplesSystem["usrp1"][0].signals[1]
             rxSamplesUsrpAnt3 = samplesSystem["usrp1"][0].signals[2]
             rxSamplesUsrpAnt4 = samplesSystem["usrp1"][0].signals[3]
+
+            # plt.subplot(221); plt.plot(abs(rxSamplesUsrpAnt1))
+            # plt.subplot(222); plt.plot(abs(rxSamplesUsrpAnt2))
+            # plt.subplot(223); plt.plot(abs(rxSamplesUsrpAnt3))
+            # plt.subplot(224); plt.plot(abs(rxSamplesUsrpAnt4))
+            # plt.show()
 
             self.assertEqual(
                 first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),

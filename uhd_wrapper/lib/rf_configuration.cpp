@@ -7,8 +7,7 @@ namespace bi {
 RFConfiguration::RFConfiguration(const RfNocBlockConfig& blockNames,
                                  uhd::rfnoc::rfnoc_graph::sptr graph)
     : RfNocBlocks(blockNames, graph) {
-    masterClockRate_ = 245.76e6; // TODO!
-    //masterClockRate_ = usrpDevice_->get_master_clock_rate();
+    masterClockRate_ = radioCtrl1_->get_tick_rate();
 }
 
 void RFConfiguration::setRfConfig(const RfConfig &conf) {

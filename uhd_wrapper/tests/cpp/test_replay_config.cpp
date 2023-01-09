@@ -73,5 +73,33 @@ TEST_CASE("Replay Block Config") {
         }
     }
 
+    SECTION("Two antennas, single config") {
+        block.setAntennaCount(2, 2);
+
+        SECTION("Single upload") {
+            REQUIRE_CALL(replay, record(0u, 10*4u, 0u));
+            REQUIRE_CALL(replay, record(10*4u, 10*4u, 1u));
+            block.configUpload(10);
+        }
+
+        SECTION("Transmission with 15 samples") {
+            REQUIRE_CALL(replay, config_play(0u, 15*4u, 0u));
+            REQUIRE_CALL(replay, config_play(15*4u, 15*4u, 1u));
+            block.configTransmit(15);
+        }
+
+        SECTION("Reception with 20 samples") {
+            REQUIRE_CALL(replay, record(HALF_MEM, 20*4u, 0u));
+            REQUIRE_CALL(replay, record(HALF_MEM+20*4u, 20*4u, 1u));
+            block.configReceive(20);
+        }
+
+        SECTION("Download with 25 samples") {
+            REQUIRE_CALL(replay, config_play(HALF_MEM, 25*4u, 0u));
+            REQUIRE_CALL(replay, config_play(HALF_MEM+25*4u, 25*4u, 1u));
+            block.configDownload(25);
+        }
+    }
+
 
 }

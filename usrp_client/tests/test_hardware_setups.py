@@ -47,8 +47,9 @@ def padSignal(noZeroPads: int, signal: np.ndarray) -> np.ndarray:
 
 
 def findSignalStartsInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
-    correlation = np.abs(np.correlate(frame, txSignal))
-    return np.argsort(correlation)[-1]
+    import scipy.signal as S  # type: ignore
+    correlation = abs(S.correlate(frame, txSignal, mode='valid'))
+    return np.argmax(correlation).item()
 
 
 class HardwareSetup:
@@ -221,9 +222,62 @@ class TestHardwareSystemTests(unittest.TestCase):
             np.random.sample((self.noSamples,))
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
-        # self.randomSignal *= np.linspace(0, 1, self.noSamples)
 
-    def x_test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
+        self.randomSignal2 = (
+            np.random.sample((self.noSamples,))
+            + 1j * np.random.sample((self.noSamples,))
+        ) - (0.5 + 0.5j)
+
+        # self.randomSignal *= np.linspace(0, 1, self.noSamples)
+        # self.randomSignal2 *= np.linspace(1, 0, self.noSamples)
+
+    def test_2x2mimo_localhost(self) -> None:
+        setup = LocalTransmissionHardwareSetup(
+            noRxAntennas=2, noTxAntennas=2,
+            txSampleRate=245.76e6 / 2, rxSampleRate=245.76e6 / 2)
+        system = setup.connectUsrps()
+
+        tx = np.zeros((2, 2*self.noSamples+2000), dtype=complex)
+        tx[0, :self.noSamples] = self.randomSignal
+        tx[1, self.noSamples+2000:] = self.randomSignal2
+
+        txSignal = MimoSignal(signals=[tx[0, :], tx[1, :]])
+        system.configureTx(
+            usrpName="usrp1",
+            txStreamingConfig=TxStreamingConfig(
+                sendTimeOffset=0.0, samples=txSignal
+            )
+        )
+        system.configureRx(
+            usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+                receiveTimeOffset=0.0, noSamples=int(3*self.noSamples)
+            )
+        )
+        system.execute()
+        rxSamples = system.collect()["usrp1"][0]
+        rx1 = rxSamples.signals[0]
+        rx2 = rxSamples.signals[1]
+
+        # plt.subplot(221); plt.plot(abs(rx1))
+        # plt.subplot(222); plt.plot(abs(rx2))
+        # plt.show()
+
+        self.assertAlmostEqual(
+            first=findSignalStartsInFrame(rx1, self.randomSignal),
+            second=findSignalStartsInFrame(rx2, self.randomSignal),
+            delta=1
+        )
+        self.assertAlmostEqual(
+            first=findSignalStartsInFrame(rx1, self.randomSignal2),
+            second=findSignalStartsInFrame(rx2, self.randomSignal2),
+            delta=1
+        )
+
+        txDist = (findSignalStartsInFrame(rx1, self.randomSignal2) -
+                  findSignalStartsInFrame(rx1, self.randomSignal))
+        self.assertAlmostEqual(txDist, self.noSamples + 2000, delta=1)
+
+    def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
         system = setup.connectUsrps()
 
@@ -242,6 +296,12 @@ class TestHardwareSystemTests(unittest.TestCase):
             rxSamplesUsrpAnt2 = samplesSystem["usrp1"][0].signals[1]
             rxSamplesUsrpAnt3 = samplesSystem["usrp1"][0].signals[2]
             rxSamplesUsrpAnt4 = samplesSystem["usrp1"][0].signals[3]
+
+            # plt.subplot(221); plt.plot(abs(rxSamplesUsrpAnt1))
+            # plt.subplot(222); plt.plot(abs(rxSamplesUsrpAnt2))
+            # plt.subplot(223); plt.plot(abs(rxSamplesUsrpAnt3))
+            # plt.subplot(224); plt.plot(abs(rxSamplesUsrpAnt4))
+            # plt.show()
 
             self.assertEqual(
                 first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),

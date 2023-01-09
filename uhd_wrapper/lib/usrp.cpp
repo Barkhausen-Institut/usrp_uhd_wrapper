@@ -249,16 +249,17 @@ void Usrp::execute(const double baseTime) {
     if (rxStreamingConfigs_.size() > 1)
         throw UsrpException("Only 1 RX Config currently allowed!");
 
-    fdGraph_->connectForUpload(CHANNELS);
+    fdGraph_->connectForUpload(rfConfig_->getNumTxAntennas());
     performUpload(txStreamingConfigs_[0].samples);
 
-    fdGraph_->connectForStreaming(CHANNELS, CHANNELS);
+    fdGraph_->connectForStreaming(rfConfig_->getNumTxAntennas(),
+                                  rfConfig_->getNumRxAntennas());
     performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime,
                      txStreamingConfigs_[0].samples[0].size(),
                      rxStreamingConfigs_[0].noSamples);
 
     receivedSamples_.clear();
-    fdGraph_->connectForDownload(CHANNELS);
+    fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
     receivedSamples_.push_back(performDownload(rxStreamingConfigs_[0].noSamples));
 
     return;
@@ -279,6 +280,8 @@ void Usrp::execute(const double baseTime) {
 
 std::vector<MimoSignal> Usrp::collect() {
     std::cout << "collect STUB!" << std::endl;
+
+    resetStreamingConfigs();
 
     return receivedSamples_;
 

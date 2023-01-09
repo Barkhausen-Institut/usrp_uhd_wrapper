@@ -41,6 +41,8 @@ private:
 
     RfConfig rfConfig_;
     double masterClockRate_;
+    int numTxAntennas_ = 0;
+    int numRxAntennas_ = 0;
 
     typedef std::tuple<uhd::rfnoc::ddc_block_control::sptr, int> DDCChannelPair;
     DDCChannelPair getDDCChannelPair(int antenna);

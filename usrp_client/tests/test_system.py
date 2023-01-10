@@ -27,8 +27,8 @@ class TestSystemInitialization(unittest.TestCase):
 
     def test_usrpClientGetsCreated(self) -> None:
         IP = "localhost"
-        self.system.addUsrp(RfConfig(), IP, "dummyName")
-        self.system._createUsrpClient.assert_called_once_with(IP)  # type: ignore
+        self.system.addUsrp(RfConfig(), IP, "dummyName", port=8520)
+        self.system._createUsrpClient.assert_called_once_with(IP, 8520)  # type: ignore
 
     def test_throwExceptionIfIpDuplicate_ip(self) -> None:
         self.system.addUsrp(RfConfig(), "localhost", "testName")

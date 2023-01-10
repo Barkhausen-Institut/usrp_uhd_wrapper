@@ -3,6 +3,7 @@ import unittest
 import pytest
 import os
 import time
+from collections import namedtuple
 
 import matplotlib.pyplot as plt  # noqa
 
@@ -17,22 +18,26 @@ from uhd_wrapper.utils.config import (
 )
 from usrp_client.system import System
 
+IPandPort = namedtuple("IPandPort", "ip port")
 
-def getIpUsrp1() -> str:
+
+def getIpUsrp1() -> IPandPort:
     envVariables = os.environ.keys()
     if "USRP1_IP" not in envVariables:
         raise RuntimeError("Environment variable USRP1_IP must be defined.")
-    return os.environ["USRP1_IP"]
+    return IPandPort(ip=os.environ["USRP1_IP"],
+                     port=os.environ.get("USRP1_PORT", 5555))
 
 
-def getIpUsrp2() -> str:
+def getIpUsrp2() -> IPandPort:
     envVariables = os.environ.keys()
     if "USRP2_IP" not in envVariables:
         raise RuntimeError("Environment variable USRP2_IP must be defined.")
-    return os.environ["USRP2_IP"]
+    return IPandPort(ip=os.environ["USRP2_IP"],
+                     port=os.environ.get("USRP2_PORT", 5555))
 
 
-def getUsrpIps() -> Tuple[str, str]:
+def getUsrpIps() -> Tuple[IPandPort, IPandPort]:
     return (getIpUsrp1(), getIpUsrp2())
 
 
@@ -82,8 +87,10 @@ class P2pHardwareSetup(HardwareSetup):
     def connectUsrps(self) -> System:
         usrpIps = getUsrpIps()
         self.system = System()
-        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[0], usrpName="usrp1")
-        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[1], usrpName="usrp2")
+        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[0].ip,
+                            usrpName="usrp1", port=usrpIps[0].port)
+        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[1].ip,
+                            usrpName="usrp2", port=usrpIps[1].port)
         return self.system
 
 
@@ -92,7 +99,8 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         usrpIp = getIpUsrp1()
 
         self.system = System()
-        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
+        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp.ip,
+                            usrpName="usrp1", port=usrpIp.port)
         return self.system
 
     def propagateSignal(self, txSignals: List[np.ndarray],

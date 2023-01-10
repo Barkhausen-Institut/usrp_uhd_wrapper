@@ -52,7 +52,7 @@ class Usrp : public UsrpInterface {
     void performUpload();
 
     void configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples);
-    void performStreaming(double baseTime, size_t numTxSamples, size_t numRxSamples);
+    void performStreaming(double baseTime);
 
     void configureReplayForDownload(size_t numRxSamples);
     void performDownload();

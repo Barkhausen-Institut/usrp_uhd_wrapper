@@ -204,6 +204,8 @@ void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
             radio->issue_stream_cmd(rxStreamCmd, radioChan);
     }
 
+    std::this_thread::sleep_for(20ms); // TODO: Wait until actually finished
+
     for(size_t c = 0; c < numRxAntennas_; c++) {
         std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
     }

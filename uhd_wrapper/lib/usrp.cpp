@@ -84,7 +84,7 @@ void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples)
     replayConfig_->configReceive(numRxSamples);
 }
 
-void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRxSamples) {
+void Usrp::performStreaming(double baseTime) {
     fdGraph_->connectForStreaming(rfConfig_->getNumTxAntennas(),
                                   rfConfig_->getNumRxAntennas());
 
@@ -93,25 +93,39 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     // side, we apply the sample rate again.
     rfConfig_->renewSampleRateSettings();
 
-    configureReplayForStreaming(numTxSamples, numRxSamples);
+    std::thread tx([&]() {
+        for(const auto& config : txStreamingConfigs_) {
+            double streamTime = config.sendTimeOffset + baseTime;
+            size_t numTxSamples = config.samples[0].size();
+            replayConfig_->configTransmit(numTxSamples);
+            fdGraph_->transmit(streamTime, numTxSamples);
+        }
+    });
 
-    int rxDecimFactor = rfConfig_->getRxDecimationRatio();
-    std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
+    std::thread rx([&]() {
+        int rxDecimFactor = rfConfig_->getRxDecimationRatio();
+        std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
 
-    std::thread tx([&]() { fdGraph_->transmit(streamTime, numTxSamples); });
-    std::thread rx([&]() { fdGraph_->receive(streamTime, numRxSamples*rxDecimFactor); });
+        for(const auto& config: rxStreamingConfigs_) {
+            double streamTime = config.receiveTimeOffset + baseTime;
+            size_t numRxSamples = config.noSamples;
+            replayConfig_->configReceive(numRxSamples);
+
+            // We need to multiply with the rx decim factor because we
+            // instruct the radio to create a given amount of samples, which
+            // are subsequentcy decimated by the DDC (hence the radio needs to
+            // produce more decim times more samples to eventually yield the
+            // correct amount of samples.  On the TX side, we instruct the
+            // replay block to create a given amount of samples, which is
+            // equal to the amount of baseband samples. Hence, no scaling is
+            // needed.
+            fdGraph_->receive(streamTime, numRxSamples*rxDecimFactor);
+        }
+    });
 
     tx.join();
     rx.join();
 
-    // We need to multiply with the rx decim factor because we
-    // instruct the radio to create a given amount of samples, which
-    // are subsequentcy decimated by the DDC (hence the radio needs to
-    // produce more decim times more samples to eventually yield the
-    // correct amount of samples.  On the TX side, we instruct the
-    // replay block to create a given amount of samples, which is
-    // equal to the amount of baseband samples. Hence, no scaling is
-    // needed.
     //fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
 }
 
@@ -253,9 +267,7 @@ void Usrp::execute(const double baseTime) {
 
     performUpload();
 
-    performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime,
-                     txStreamingConfigs_[0].samples[0].size(),
-                     rxStreamingConfigs_[0].noSamples);
+    performStreaming(baseTime);
 
     performDownload();
 

@@ -155,7 +155,6 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxAntennas, size_t numR
 }
 
 void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t numRxSamples) {
-
     uhd::stream_cmd_t txStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     txStreamCmd.num_samps = numTxSamples;
     txStreamCmd.stream_now = false;
@@ -165,6 +164,10 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
     rxStreamCmd.num_samps = numRxSamples;
     rxStreamCmd.stream_now = false;
     rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
+
+    if (streamTime < getCurrentFpgaTime() + 0.02)
+        throw UsrpException("Target stream time is too close. Consider increasing system.baseTimeOffset (streamTime: )"
+                            + std::to_string(streamTime) + " currentTime: " + std::to_string(getCurrentFpgaTime()));
 
     for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
         auto [radio, radioChan] = getRadioChannelPair(channel);

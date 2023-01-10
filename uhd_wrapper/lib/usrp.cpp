@@ -93,7 +93,7 @@ void Usrp::performStreaming(double baseTime) {
     // side, we apply the sample rate again.
     rfConfig_->renewSampleRateSettings();
 
-    std::thread tx([&]() {
+    transmitThread_ = std::thread([this,baseTime]() {
         for(const auto& config : txStreamingConfigs_) {
             double streamTime = config.sendTimeOffset + baseTime;
             size_t numTxSamples = config.samples[0].size();
@@ -102,7 +102,7 @@ void Usrp::performStreaming(double baseTime) {
         }
     });
 
-    std::thread rx([&]() {
+    receiveThread_ = std::thread([this,baseTime]() {
         int rxDecimFactor = rfConfig_->getRxDecimationRatio();
         std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
 
@@ -123,24 +123,12 @@ void Usrp::performStreaming(double baseTime) {
         }
     });
 
-    tx.join();
-    rx.join();
 
     //fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
 }
 
 void Usrp::configureReplayForDownload(size_t numRxSamples) {
     replayConfig_->configDownload(numRxSamples);
-    return;
-
-    // size_t memSize = replayCtrl_->get_mem_size();
-    // size_t halfMem = memSize / 2;
-    // size_t numBytes = numRxSamples * 4;
-    // size_t memStride = numBytes;
-
-    // for (int channel = 0; channel < CHANNELS; channel++) {
-    //     replayCtrl_->config_play(halfMem + channel*memStride, numBytes, channel);
-    // }
 }
 
 void Usrp::performDownload() {
@@ -269,7 +257,7 @@ void Usrp::execute(const double baseTime) {
 
     performStreaming(baseTime);
 
-    performDownload();
+    // performDownload();
 
     return;
 
@@ -289,6 +277,10 @@ void Usrp::execute(const double baseTime) {
 
 std::vector<MimoSignal> Usrp::collect() {
     std::cout << "collect STUB!" << std::endl;
+
+    waitOnThreadToJoin(transmitThread_);
+    waitOnThreadToJoin(receiveThread_);
+    performDownload();
 
     resetStreamingConfigs();
 

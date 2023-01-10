@@ -49,13 +49,13 @@ class Usrp : public UsrpInterface {
     void createRfNocBlocks();
 
     void configureReplayForUpload(int numSamples);
-    void performUpload(const MimoSignal& txSignal);
+    void performUpload();
 
     void configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples);
     void performStreaming(double baseTime, size_t numTxSamples, size_t numRxSamples);
 
     void configureReplayForDownload(size_t numRxSamples);
-    MimoSignal performDownload(size_t numRxSamples);
+    void performDownload();
 
     // constants
     const double GUARD_OFFSET_S_ = 0.05;

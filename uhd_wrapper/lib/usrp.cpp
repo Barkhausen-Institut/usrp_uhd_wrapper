@@ -68,44 +68,41 @@ void Usrp::configureReplayForUpload(int numSamples) {
     //clearReplayBlockRecorder();
 }
 
-void Usrp::performUpload(const MimoSignal& txSignal) {
-    const size_t numSamples = txSignal[0].size();
-    configureReplayForUpload(numSamples);
+void Usrp::performUpload() {
+    fdGraph_->connectForUpload(rfConfig_->getNumTxAntennas());
+    for(const auto& config : txStreamingConfigs_) {
+        const auto& txSignal = config.samples;
+        const size_t numSamples = txSignal[0].size();
+        configureReplayForUpload(numSamples);
 
-    fdGraph_->upload(txSignal);
+        fdGraph_->upload(txSignal);
+    }
 }
 
 void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples) {
-    /*size_t memSize = replayCtrl_->get_mem_size();
-    size_t halfMem = memSize / 2;
-
-    size_t numTxBytes = numTxSamples * 4;
-    size_t txMemStride = numTxBytes;
-    size_t numRxBytes = numRxSamples * 4;
-    size_t rxMemStride = numRxBytes;
-
-    for (int channel = 0; channel < CHANNELS; channel++) {
-        if (numRxBytes > 0)
-            replayCtrl_->record(halfMem + channel*rxMemStride, numRxBytes, channel);
-        if (numTxBytes > 0)
-            replayCtrl_->config_play(channel*txMemStride, numTxBytes, channel);
-    }*/
-
     replayConfig_->configTransmit(numTxSamples);
     replayConfig_->configReceive(numRxSamples);
-
 }
 
 void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRxSamples) {
-    configureReplayForStreaming(numTxSamples, numRxSamples);
+    fdGraph_->connectForStreaming(rfConfig_->getNumTxAntennas(),
+                                  rfConfig_->getNumRxAntennas());
 
     // We need to make sure that the sample rate is set again, because when disconnecting
     // the DDC/DUC blocks it might happen that the rate is reset. Therefore, to be on the safe
     // side, we apply the sample rate again.
     rfConfig_->renewSampleRateSettings();
 
+    configureReplayForStreaming(numTxSamples, numRxSamples);
+
     int rxDecimFactor = rfConfig_->getRxDecimationRatio();
     std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
+
+    std::thread tx([&]() { fdGraph_->transmit(streamTime, numTxSamples); });
+    std::thread rx([&]() { fdGraph_->receive(streamTime, numRxSamples*rxDecimFactor); });
+
+    tx.join();
+    rx.join();
 
     // We need to multiply with the rx decim factor because we
     // instruct the radio to create a given amount of samples, which
@@ -115,7 +112,7 @@ void Usrp::performStreaming(double streamTime, size_t numTxSamples, size_t numRx
     // replay block to create a given amount of samples, which is
     // equal to the amount of baseband samples. Hence, no scaling is
     // needed.
-    fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
+    //fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
 }
 
 void Usrp::configureReplayForDownload(size_t numRxSamples) {
@@ -132,9 +129,14 @@ void Usrp::configureReplayForDownload(size_t numRxSamples) {
     // }
 }
 
-MimoSignal Usrp::performDownload(size_t numRxSamples) {
-    configureReplayForDownload(numRxSamples);
-    return fdGraph_->download(numRxSamples);
+void Usrp::performDownload() {
+    receivedSamples_.clear();
+    fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
+
+    for(const auto& config: rxStreamingConfigs_) {
+        configureReplayForDownload(config.noSamples);
+        receivedSamples_.push_back(fdGraph_->download(config.noSamples));
+    }
 }
 
 RfConfig Usrp::getRfConfig() const {
@@ -249,18 +251,13 @@ void Usrp::execute(const double baseTime) {
     if (rxStreamingConfigs_.size() > 1)
         throw UsrpException("Only 1 RX Config currently allowed!");
 
-    fdGraph_->connectForUpload(rfConfig_->getNumTxAntennas());
-    performUpload(txStreamingConfigs_[0].samples);
+    performUpload();
 
-    fdGraph_->connectForStreaming(rfConfig_->getNumTxAntennas(),
-                                  rfConfig_->getNumRxAntennas());
     performStreaming(txStreamingConfigs_[0].sendTimeOffset + baseTime,
                      txStreamingConfigs_[0].samples[0].size(),
                      rxStreamingConfigs_[0].noSamples);
 
-    receivedSamples_.clear();
-    fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
-    receivedSamples_.push_back(performDownload(rxStreamingConfigs_[0].noSamples));
+    performDownload();
 
     return;
 

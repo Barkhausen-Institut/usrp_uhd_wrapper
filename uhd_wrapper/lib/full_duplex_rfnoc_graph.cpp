@@ -154,27 +154,19 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxAntennas, size_t numR
     // _showRfNoCConnections(graph_);
 }
 
-void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t numRxSamples) {
+void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
     uhd::stream_cmd_t txStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     txStreamCmd.num_samps = numTxSamples;
     txStreamCmd.stream_now = false;
     txStreamCmd.time_spec = uhd::time_spec_t(streamTime);
-
-    uhd::stream_cmd_t rxStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
-    rxStreamCmd.num_samps = numRxSamples;
-    rxStreamCmd.stream_now = false;
-    rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
 
     if (streamTime < getCurrentFpgaTime() + 0.02)
         throw UsrpException("Target stream time is too close. Consider increasing system.baseTimeOffset (streamTime: )"
                             + std::to_string(streamTime) + " currentTime: " + std::to_string(getCurrentFpgaTime()));
 
     for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
-        auto [radio, radioChan] = getRadioChannelPair(channel);
         if (useTxChannel(channel))
             replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
-        if (useRxChannel(channel))
-            radio->issue_stream_cmd(rxStreamCmd, radioChan);
     }
 
     uhd::async_metadata_t asyncMd;
@@ -193,10 +185,30 @@ void RfNocFullDuplexGraph::stream(double streamTime, size_t numTxSamples, size_t
     for(size_t c = 0; c < numTxAntennas_; c++) {
         std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
     }
+}
+
+void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
+
+    uhd::stream_cmd_t rxStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
+    rxStreamCmd.num_samps = numRxSamples;
+    rxStreamCmd.stream_now = false;
+    rxStreamCmd.time_spec = uhd::time_spec_t(streamTime);
+
+    if (streamTime < getCurrentFpgaTime() + 0.02)
+        throw UsrpException("Target stream time is too close. Consider increasing system.baseTimeOffset (streamTime: )"
+                            + std::to_string(streamTime) + " currentTime: " + std::to_string(getCurrentFpgaTime()));
+
+    for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
+        auto [radio, radioChan] = getRadioChannelPair(channel);
+        if (useRxChannel(channel))
+            radio->issue_stream_cmd(rxStreamCmd, radioChan);
+    }
+
     for(size_t c = 0; c < numRxAntennas_; c++) {
         std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;
     }
 }
+
 
 uhd::rx_streamer::sptr RfNocFullDuplexGraph::connectForDownload(size_t numRxAntennas) {
     if (numRxAntennas != numRxAntennas_)

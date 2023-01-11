@@ -92,37 +92,23 @@ void Usrp::performStreaming(double baseTime) {
     // the DDC/DUC blocks it might happen that the rate is reset. Therefore, to be on the safe
     // side, we apply the sample rate again.
     rfConfig_->renewSampleRateSettings();
-
-
-
-    if(txStreamingConfigs_.size() > 0)
-      replayConfig_->configTransmit(txStreamingConfigs_[0].samples[0].size());
-
-
-    if(rxStreamingConfigs_.size() > 0)
-      replayConfig_->configReceive(rxStreamingConfigs_[0].noSamples);
-
-
+    int rxDecimFactor = rfConfig_->getRxDecimationRatio();
+    std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
 
     auto txFunc = [this,baseTime]() {
         for(const auto& config : txStreamingConfigs_) {
-	    std::cout << "Start streaming tx config " << std::endl;
             double streamTime = config.sendTimeOffset + baseTime;
             size_t numTxSamples = config.samples[0].size();
-	    //replayConfig_->configTransmit(numTxSamples);
+            replayConfig_->configTransmit(numTxSamples);
             fdGraph_->transmit(streamTime, numTxSamples);
         }
     };
 
-    auto rxFunc = [this,baseTime]() {
-        int rxDecimFactor = rfConfig_->getRxDecimationRatio();
-        std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
-
+    auto rxFunc = [this,baseTime,rxDecimFactor]() {
         for(const auto& config: rxStreamingConfigs_) {
-	    std::cout << "Start streaming rx config " << std::endl;
             double streamTime = config.receiveTimeOffset + baseTime;
             size_t numRxSamples = config.noSamples;
-	    //replayConfig_->configReceive(numRxSamples);
+	        replayConfig_->configReceive(numRxSamples);
 
             // We need to multiply with the rx decim factor because we
             // instruct the radio to create a given amount of samples, which

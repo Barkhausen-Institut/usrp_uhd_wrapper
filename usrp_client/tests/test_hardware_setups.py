@@ -287,7 +287,8 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_offsetTxAndRxConfigs_localhost(self) -> None:
         Fs = 245.76e6/20
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1, txSampleRate=Fs, rxSampleRate=Fs)
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+                                               txSampleRate=Fs, rxSampleRate=Fs)
         system = setup.connectUsrps()
 
         samplesOffset = 20000
@@ -350,7 +351,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt4)), 1)
 
-    def x_test_p2pTransmission(self) -> None:
+    def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -400,7 +401,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-    def x_test_jcas(self) -> None:
+    def test_jcas(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -433,7 +434,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-    def x_test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
+    def test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
         # create setup
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=4)
         system = setup.connectUsrps()
@@ -456,10 +457,10 @@ class TestHardwareSystemTests(unittest.TestCase):
 
             # create setup
             rxStreamingConfig1 = RxStreamingConfig(
-                receiveTimeOffset=0.0, noSamples=int(60e3)
+                receiveTimeOffset=0.1, noSamples=int(60e3)
             )
             txStreamingConfig1 = TxStreamingConfig(
-                sendTimeOffset=0.0,
+                sendTimeOffset=0.1,
                 samples=MimoSignal(signals=paddedAntTxSignals),
             )
             system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)

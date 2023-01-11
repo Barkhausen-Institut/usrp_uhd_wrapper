@@ -55,34 +55,17 @@ void Usrp::createRfNocBlocks() {
     graph_->commit();
 }
 
-void Usrp::configureReplayForUpload(int numSamples) {
-    /*size_t numBytes = numSamples * 4;
-    size_t memStride = numBytes;
-
-    for (int channel = 0; channel < CHANNELS; channel++) {
-        replayCtrl_->record(channel*memStride, numBytes, channel);
-        }*/
-
-    replayConfig_->configUpload(numSamples);
-
-    //clearReplayBlockRecorder();
-}
-
 void Usrp::performUpload() {
     fdGraph_->connectForUpload(rfConfig_->getNumTxAntennas());
     for(const auto& config : txStreamingConfigs_) {
         const auto& txSignal = config.samples;
         const size_t numSamples = txSignal[0].size();
-        configureReplayForUpload(numSamples);
+        replayConfig_->configUpload(numSamples);
 
         fdGraph_->upload(txSignal);
     }
 }
 
-void Usrp::configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples) {
-    replayConfig_->configTransmit(numTxSamples);
-    replayConfig_->configReceive(numRxSamples);
-}
 
 void Usrp::performStreaming(double baseTime) {
     fdGraph_->connectForStreaming(rfConfig_->getNumTxAntennas(),
@@ -124,12 +107,6 @@ void Usrp::performStreaming(double baseTime) {
 
     transmitThread_ = std::thread(txFunc);
     receiveThread_ = std::thread(rxFunc);
-
-    //fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
-}
-
-void Usrp::configureReplayForDownload(size_t numRxSamples) {
-    replayConfig_->configDownload(numRxSamples);
 }
 
 void Usrp::performDownload() {
@@ -137,7 +114,7 @@ void Usrp::performDownload() {
     fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
 
     for(const auto& config: rxStreamingConfigs_) {
-        configureReplayForDownload(config.noSamples);
+        replayConfig_->configDownload(config.noSamples);
         receivedSamples_.push_back(fdGraph_->download(config.noSamples));
     }
 }
@@ -249,16 +226,9 @@ double Usrp::getCurrentFpgaTime() {
 }
 
 void Usrp::execute(const double baseTime) {
-    if (txStreamingConfigs_.size() > 1)
-        throw UsrpException("Only 1 TX Config currently allowed!");
-    if (rxStreamingConfigs_.size() > 1)
-        throw UsrpException("Only 1 RX Config currently allowed!");
-
+    replayConfig_->reset();
     performUpload();
-
     performStreaming(baseTime);
-
-    // performDownload();
 
     return;
 
@@ -284,6 +254,7 @@ std::vector<MimoSignal> Usrp::collect() {
     performDownload();
 
     resetStreamingConfigs();
+
 
     return receivedSamples_;
 

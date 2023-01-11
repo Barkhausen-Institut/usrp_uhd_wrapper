@@ -85,6 +85,10 @@ void ReplayBlockConfig::setAntennaCount(size_t numTx, size_t numRx) {
     numRxAntennas_ = numRx;
 }
 
+void ReplayBlockConfig::reset() {
+    txBlocks_.reset();
+    rxBlocks_.reset();
+}
 
 size_t ReplayBlockConfig::txStreamOffset(size_t numSamples, size_t streamNumber) const {
     return 0;

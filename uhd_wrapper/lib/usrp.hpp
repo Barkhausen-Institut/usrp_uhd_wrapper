@@ -48,13 +48,8 @@ class Usrp : public UsrpInterface {
 
     void createRfNocBlocks();
 
-    void configureReplayForUpload(int numSamples);
     void performUpload();
-
-    void configureReplayForStreaming(size_t numTxSamples, size_t numRxSamples);
     void performStreaming(double baseTime);
-
-    void configureReplayForDownload(size_t numRxSamples);
     void performDownload();
 
     // constants

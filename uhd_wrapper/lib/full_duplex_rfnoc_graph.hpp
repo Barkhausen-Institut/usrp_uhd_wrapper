@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 
 #include <uhd/rfnoc/block_id.hpp>
 #include <uhd/rfnoc/radio_control.hpp>
@@ -27,7 +28,8 @@ public:
     void upload(const MimoSignal& txSignal);
 
     void connectForStreaming(size_t numTxAntennas, size_t numRxAntennas);
-    void stream(double streamTime, size_t numTxSamples, size_t numRxSamples);
+    void transmit(double streamTime, size_t numTxSamples);
+    void receive(double streamTime, size_t numRxSamples);
 
     uhd::rx_streamer::sptr connectForDownload(size_t numRxAntennas);
     MimoSignal download(size_t numRxSamples);
@@ -43,6 +45,7 @@ private:
     size_t numTxAntennas_, numRxAntennas_;
     uhd::tx_streamer::sptr currentTxStreamer_;
     uhd::rx_streamer::sptr currentRxStreamer_;
+    mutable std::recursive_mutex fpgaAccessMutex_;
 };
 
 

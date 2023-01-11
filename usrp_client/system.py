@@ -20,7 +20,7 @@ from usrp_client.rpc_client import UsrpClient
 from usrp_client.errors import MultipleRemoteUsrpErrors, RemoteUsrpError
 
 
-LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
+LabeledUsrp = namedtuple("LabeledUsrp", "name ip port client")
 
 
 class TimedFlag:
@@ -100,7 +100,7 @@ class System:
         logger.debug("Created system")
         return logger
 
-    def _createUsrpClient(self, ip: str) -> UsrpClient:
+    def _createUsrpClient(self, ip: str, port: int) -> UsrpClient:
         """Connect to the USRP server. Developers only.
 
         Args:
@@ -110,8 +110,8 @@ class System:
             UsrpClient: RPC client for later use.
         """
         zeroRpcClient = zerorpc.Client()
-        zeroRpcClient.connect(f"tcp://{ip}:5555")
-        self.__logger.debug(f"Created USRP RPC client at IP: {ip} and Port 5555.")
+        zeroRpcClient.connect(f"tcp://{ip}:{port}")
+        self.__logger.debug(f"Created USRP RPC client at IP: {ip} and Port {port}.")
         return UsrpClient(rpcClient=zeroRpcClient)
 
     def addUsrp(
@@ -119,6 +119,8 @@ class System:
         rfConfig: RfConfig,
         ip: str,
         usrpName: str,
+        *,
+        port: int = 5555
     ) -> None:
         """Add a new USRP to the system.
 
@@ -129,26 +131,27 @@ class System:
         """
         try:
             self._usrpsSynced.reset()
-            self.__assertUniqueUsrp(ip, usrpName)
+            self.__assertUniqueUsrp(ip, port, usrpName)
 
-            usrpClient = self._createUsrpClient(ip)
+            usrpClient = self._createUsrpClient(ip, port)
             usrpClient.configureRfConfig(rfConfig)
             usrpClient.resetStreamingConfigs()
-            self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
+            self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, usrpClient)
         except RemoteError as e:
             raise RemoteUsrpError(e.msg, usrpName)
 
-    def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
+    def __assertUniqueUsrp(self, ip: str, port: int, usrpName: str) -> None:
         self.__assertUniqueUsrpName(usrpName)
-        self.__assertUniqueIp(ip)
+        self.__assertUniqueIp(ip, port)
 
     def __assertUniqueUsrpName(self, usrpName: str) -> None:
         if usrpName in self.__usrpClients.keys():
             raise ValueError("Connection to USRP already exists!")
 
-    def __assertUniqueIp(self, ip: str) -> None:
+    def __assertUniqueIp(self, ip: str, port: int) -> None:
         for usrp in self.__usrpClients.keys():
-            if self.__usrpClients[usrp].ip == ip:
+            obj = self.__usrpClients[usrp]
+            if (obj.ip == ip and obj.port == port):
                 raise ValueError("Connection to USRP already exists!")
 
     def resetFpgaTimes(self) -> None:

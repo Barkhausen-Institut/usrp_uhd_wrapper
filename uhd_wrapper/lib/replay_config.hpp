@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 
 #include <uhd/rfnoc/replay_block_control.hpp>
 
@@ -70,5 +71,7 @@ private:
 
     size_t numTxAntennas_ = 0;;
     size_t numRxAntennas_ = 0;;
+
+    std::mutex replayMtx_;
 };
 }

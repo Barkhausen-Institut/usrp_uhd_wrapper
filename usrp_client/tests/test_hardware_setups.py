@@ -3,6 +3,7 @@ import unittest
 import pytest
 import os
 import time
+from collections import namedtuple
 
 import matplotlib.pyplot as plt  # noqa
 
@@ -17,22 +18,26 @@ from uhd_wrapper.utils.config import (
 )
 from usrp_client.system import System
 
+IPandPort = namedtuple("IPandPort", "ip port")
 
-def getIpUsrp1() -> str:
+
+def getIpUsrp1() -> IPandPort:
     envVariables = os.environ.keys()
     if "USRP1_IP" not in envVariables:
         raise RuntimeError("Environment variable USRP1_IP must be defined.")
-    return os.environ["USRP1_IP"]
+    return IPandPort(ip=os.environ["USRP1_IP"],
+                     port=os.environ.get("USRP1_PORT", 5555))
 
 
-def getIpUsrp2() -> str:
+def getIpUsrp2() -> IPandPort:
     envVariables = os.environ.keys()
     if "USRP2_IP" not in envVariables:
         raise RuntimeError("Environment variable USRP2_IP must be defined.")
-    return os.environ["USRP2_IP"]
+    return IPandPort(ip=os.environ["USRP2_IP"],
+                     port=os.environ.get("USRP2_PORT", 5555))
 
 
-def getUsrpIps() -> Tuple[str, str]:
+def getUsrpIps() -> Tuple[IPandPort, IPandPort]:
     return (getIpUsrp1(), getIpUsrp2())
 
 
@@ -82,8 +87,10 @@ class P2pHardwareSetup(HardwareSetup):
     def connectUsrps(self) -> System:
         usrpIps = getUsrpIps()
         self.system = System()
-        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[0], usrpName="usrp1")
-        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[1], usrpName="usrp2")
+        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[0].ip,
+                            usrpName="usrp1", port=usrpIps[0].port)
+        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIps[1].ip,
+                            usrpName="usrp2", port=usrpIps[1].port)
         return self.system
 
 
@@ -92,7 +99,8 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         usrpIp = getIpUsrp1()
 
         self.system = System()
-        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp, usrpName="usrp1")
+        self.system.addUsrp(rfConfig=self.rfConfig, ip=usrpIp.ip,
+                            usrpName="usrp1", port=usrpIp.port)
         return self.system
 
     def propagateSignal(self, txSignals: List[np.ndarray],
@@ -277,6 +285,30 @@ class TestHardwareSystemTests(unittest.TestCase):
                   findSignalStartsInFrame(rx1, self.randomSignal))
         self.assertAlmostEqual(txDist, self.noSamples + 2000, delta=1)
 
+    def test_offsetTxAndRxConfigs_localhost(self) -> None:
+        Fs = 245.76e6/20
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+                                               txSampleRate=Fs, rxSampleRate=Fs)
+        system = setup.connectUsrps()
+
+        samplesOffset = 20000
+        timeOffset = samplesOffset / Fs
+
+        txSignal = MimoSignal(signals=[self.randomSignal])
+        system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
+            samples=txSignal, sendTimeOffset=timeOffset))
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)))
+
+        system.execute()
+        rxSignal = system.collect()["usrp1"][0].signals[0]
+
+        # plt.plot(abs(rxSignal))
+        # plt.show()
+
+        peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
+        self.assertAlmostEqual(peak, samplesOffset + 50, delta=10)
+
     def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
         system = setup.connectUsrps()
@@ -319,7 +351,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt4)), 1)
 
-    def x_test_p2pTransmission(self) -> None:
+    def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -369,7 +401,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-    def x_test_jcas(self) -> None:
+    def test_jcas(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -402,7 +434,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-    def x_test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
+    def test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
         # create setup
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=4)
         system = setup.connectUsrps()
@@ -425,10 +457,10 @@ class TestHardwareSystemTests(unittest.TestCase):
 
             # create setup
             rxStreamingConfig1 = RxStreamingConfig(
-                receiveTimeOffset=0.0, noSamples=int(60e3)
+                receiveTimeOffset=0.1, noSamples=int(60e3)
             )
             txStreamingConfig1 = TxStreamingConfig(
-                sendTimeOffset=0.0,
+                sendTimeOffset=0.1,
                 samples=MimoSignal(signals=paddedAntTxSignals),
             )
             system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)

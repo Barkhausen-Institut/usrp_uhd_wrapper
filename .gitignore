@@ -11,3 +11,4 @@ __pycache__/
 .python-version
 env/
 *.egg-info/
+.#*

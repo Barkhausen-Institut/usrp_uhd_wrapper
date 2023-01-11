@@ -166,7 +166,6 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
 
     {
       std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
-      std::cout << "isue tx stream command" << std::endl;
       for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
 	if (useTxChannel(channel))
 	  replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
@@ -175,7 +174,6 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
 
     uhd::async_metadata_t asyncMd;
     double timeout = streamTime - getCurrentFpgaTime() + 0.1;
-    std::cout << "getting tx async md" << std::endl;
     uhd::async_metadata_t::event_code_t lastEventCode = uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
     while (replayCtrl_->get_play_async_metadata(asyncMd, timeout)) {
         if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
@@ -187,7 +185,6 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
                         + std::to_string(lastEventCode));
 
     std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
-    std::cout << "getting tx play os" << std::endl;
     // TOOD! Factor out into separate function or class
     for(size_t c = 0; c < numTxAntennas_; c++) {
         std::cout << "Streaming Replay play pos channel " << c << " " << replayCtrl_->get_play_position(c) << std::endl;
@@ -206,18 +203,22 @@ void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
                             + std::to_string(streamTime) + " currentTime: " + std::to_string(getCurrentFpgaTime()));
 
     {
-      std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
-    std::cout << "Issue RX stream command" << std::endl;
-      for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
-	auto [radio, radioChan] = getRadioChannelPair(channel);
-	if (useRxChannel(channel))
-	  radio->issue_stream_cmd(rxStreamCmd, radioChan);
-      }
+        std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
+        for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
+            auto [radio, radioChan] = getRadioChannelPair(channel);
+            if (useRxChannel(channel))
+                radio->issue_stream_cmd(rxStreamCmd, radioChan);
+        }
     }
 
-    std::this_thread::sleep_for(20ms); // TODO: Wait until actually finished
+    uhd::rx_metadata_t asyncMd;
+    double timeout = streamTime - getCurrentFpgaTime() + 0.1;
+    while (replayCtrl_->get_record_async_metadata(asyncMd, timeout)) {
+        if (asyncMd.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE)
+            throw UsrpException("Error at recording: " + asyncMd.strerror());
+        timeout = 0.02;
+    }
 
-    std::cout << "Asking fullness rx" << std::endl;
     std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
     for(size_t c = 0; c < numRxAntennas_; c++) {
         std::cout << "Streaming Replay Fullness channel " << c << " " << replayCtrl_->get_record_fullness(c) << std::endl;

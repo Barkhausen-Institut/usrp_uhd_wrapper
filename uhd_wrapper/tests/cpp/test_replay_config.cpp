@@ -25,6 +25,59 @@ TEST_CASE("Sanity") {
     m.config_play(2, 5, 8);
 }
 
+TEST_CASE("BlockOffsetTracker") {
+    bi::BlockOffsetTracker tracker(4);
+
+    SECTION("Single Antenna, single config") {
+        tracker.setStreamCount(1);
+        tracker.recordNewBlock(15);
+        REQUIRE(tracker.recordOffset(0) == 0);
+
+        tracker.replayNextBlock(15);
+        REQUIRE(tracker.replayOffset(0) == 0);
+    }
+
+    SECTION("Multiple antennas, single config") {
+        tracker.setStreamCount(2);
+        tracker.recordNewBlock(15);
+        REQUIRE(tracker.recordOffset(0) == 0);
+        REQUIRE(tracker.recordOffset(1) == 15*4);
+
+        tracker.replayNextBlock(15) ;
+        REQUIRE(tracker.replayOffset(0) == 0);
+        REQUIRE(tracker.replayOffset(1) == 15*4);
+    }
+
+    SECTION("Multiple antenna, multiple configs") {
+        tracker.setStreamCount(2);
+        tracker.recordNewBlock(15);
+        REQUIRE(tracker.recordOffset(0) == 0);
+        REQUIRE(tracker.recordOffset(1) == 15*4);
+        tracker.recordNewBlock(20);
+        REQUIRE(tracker.recordOffset(1) == 15*4*2+20*4);
+
+        tracker.replayNextBlock(15);
+        REQUIRE(tracker.replayOffset(0) == 0);
+        REQUIRE(tracker.replayOffset(1) == 15*4);
+        tracker.replayNextBlock(20);
+        REQUIRE(tracker.replayOffset(1) == 15*4*2+20*4);
+    }
+
+    SECTION("Can Reset block") {
+        tracker.setStreamCount(2);
+        tracker.recordNewBlock(15);
+        tracker.replayNextBlock(15);
+        tracker.reset();
+
+        tracker.recordNewBlock(25);
+        REQUIRE(tracker.recordOffset(1) == 25*4);
+        tracker.replayNextBlock(25);
+        REQUIRE(tracker.replayOffset(1) == 25*4);
+
+
+    }
+}
+
 TEST_CASE("Replay Block Config") {
     using trompeloeil::_;
 
@@ -100,6 +153,5 @@ TEST_CASE("Replay Block Config") {
             block.configDownload(25);
         }
     }
-
 
 }

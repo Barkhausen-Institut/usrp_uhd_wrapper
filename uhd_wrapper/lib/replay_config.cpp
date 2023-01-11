@@ -44,7 +44,6 @@ void ReplayBlockConfig::configUpload(size_t numSamples) {
 void ReplayBlockConfig::configTransmit(size_t numSamples) {
     checkAntennaCount();
     std::lock_guard<std::mutex> lock(replayMtx_);
-    std::cout << "Configuring transmit..." << std::endl;
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     for(size_t tx = 0; tx < numTxAntennas_; tx++)
         replayBlock_->config_play(txStreamOffset(numBytes, tx), numBytes, tx);
@@ -54,7 +53,6 @@ void ReplayBlockConfig::configReceive(size_t numSamples) {
     checkAntennaCount();
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
-    std::cout << "Configuring receive..." << std::endl;
     for(size_t rx = 0; rx < numRxAntennas_; rx++)
         replayBlock_->record(rxStreamOffset(numBytes, rx), numBytes, rx);
     clearRecordingBuffer();

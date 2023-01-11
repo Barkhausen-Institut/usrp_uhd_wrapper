@@ -93,23 +93,36 @@ void Usrp::performStreaming(double baseTime) {
     // side, we apply the sample rate again.
     rfConfig_->renewSampleRateSettings();
 
-    transmitThread_ = std::thread([this,baseTime]() {
+
+
+    if(txStreamingConfigs_.size() > 0)
+      replayConfig_->configTransmit(txStreamingConfigs_[0].samples[0].size());
+
+
+    if(rxStreamingConfigs_.size() > 0)
+      replayConfig_->configReceive(rxStreamingConfigs_[0].noSamples);
+
+
+
+    auto txFunc = [this,baseTime]() {
         for(const auto& config : txStreamingConfigs_) {
+	    std::cout << "Start streaming tx config " << std::endl;
             double streamTime = config.sendTimeOffset + baseTime;
             size_t numTxSamples = config.samples[0].size();
-            replayConfig_->configTransmit(numTxSamples);
+	    //replayConfig_->configTransmit(numTxSamples);
             fdGraph_->transmit(streamTime, numTxSamples);
         }
-    });
+    };
 
-    receiveThread_ = std::thread([this,baseTime]() {
+    auto rxFunc = [this,baseTime]() {
         int rxDecimFactor = rfConfig_->getRxDecimationRatio();
         std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
 
         for(const auto& config: rxStreamingConfigs_) {
+	    std::cout << "Start streaming rx config " << std::endl;
             double streamTime = config.receiveTimeOffset + baseTime;
             size_t numRxSamples = config.noSamples;
-            replayConfig_->configReceive(numRxSamples);
+	    //replayConfig_->configReceive(numRxSamples);
 
             // We need to multiply with the rx decim factor because we
             // instruct the radio to create a given amount of samples, which
@@ -121,8 +134,10 @@ void Usrp::performStreaming(double baseTime) {
             // needed.
             fdGraph_->receive(streamTime, numRxSamples*rxDecimFactor);
         }
-    });
+    };
 
+    transmitThread_ = std::thread(txFunc);
+    receiveThread_ = std::thread(rxFunc);
 
     //fdGraph_->stream(streamTime, numTxSamples, numRxSamples * rxDecimFactor);
 }

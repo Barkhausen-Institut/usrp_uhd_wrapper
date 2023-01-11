@@ -1,4 +1,5 @@
 #pragma once
+#include <mutex>
 
 #include <uhd/rfnoc/block_id.hpp>
 #include <uhd/rfnoc/radio_control.hpp>
@@ -44,6 +45,7 @@ private:
     size_t numTxAntennas_, numRxAntennas_;
     uhd::tx_streamer::sptr currentTxStreamer_;
     uhd::rx_streamer::sptr currentRxStreamer_;
+    mutable std::recursive_mutex fpgaAccessMutex_;
 };
 
 

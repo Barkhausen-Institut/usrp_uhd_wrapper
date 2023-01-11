@@ -17,18 +17,24 @@ BlockOffsetTracker::BlockOffsetTracker(size_t sampleSize)
 void BlockOffsetTracker::reset() {
     replayIdx_ = -1;
     samplesPerBlock_.clear();
-
 }
 
 void BlockOffsetTracker::setStreamCount(size_t streamCount) {
    numStreams_ = streamCount;
 }
 
+void BlockOffsetTracker::checkStreamCount() const {
+    if (numStreams_ == 0)
+        throw UsrpException("Stream count not set!");
+}
+
 void BlockOffsetTracker::recordNewBlock(size_t numSamples) {
+    checkStreamCount();
     samplesPerBlock_.push_back(numSamples);
 }
 
 void BlockOffsetTracker::replayNextBlock(size_t numSamples) {
+    checkStreamCount();
     replayIdx_++;
     if (samplesPerBlock_[replayIdx_] != numSamples)
         throw UsrpException("Incorrect size of replay block");
@@ -51,37 +57,37 @@ size_t BlockOffsetTracker::samplesInCurrentBlock() const {
 }
 
 size_t BlockOffsetTracker::recordOffset(size_t streamIdx) const {
+    if (samplesPerBlock_.size() == 0)
+        throw UsrpException("No recording started!");
     size_t samplesBefore = samplesBeforeCurrentBlock();
     size_t numSamples = samplesInCurrentBlock();
     return SAMPLE_SIZE * (samplesBefore * numStreams_ + numSamples * streamIdx);
 }
 
 size_t BlockOffsetTracker::replayOffset(size_t streamIdx) const {
+    if (replayIdx_ < 0)
+        throw UsrpException("No replaying started!");
     size_t samplesBefore = samplesUntilBlockNr(replayIdx_);
     size_t numSamples = samplesPerBlock_[replayIdx_];
     return SAMPLE_SIZE * (samplesBefore * numStreams_ + numSamples * streamIdx);
 }
 
 ReplayBlockConfig::ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl)
-    : replayBlock_(replayCtrl), MEM_SIZE(replayCtrl->get_mem_size()) {
+    : replayBlock_(replayCtrl), MEM_SIZE(replayCtrl->get_mem_size()),
+      txBlocks_(SAMPLE_SIZE), rxBlocks_(SAMPLE_SIZE) {
 }
 
 void ReplayBlockConfig::setAntennaCount(size_t numTx, size_t numRx) {
+    txBlocks_.setStreamCount(numTx);
+    rxBlocks_.setStreamCount(numRx);
+
     numTxAntennas_ = numTx;
     numRxAntennas_ = numRx;
 }
 
-void ReplayBlockConfig::checkAntennaCount() const {
-    if (numTxAntennas_ == 0)
-        throw UsrpException("TX Antenna count not set!");
-    if (numRxAntennas_ == 0)
-        throw UsrpException("RX Antenna count not set!");
-}
 
 size_t ReplayBlockConfig::txStreamOffset(size_t numSamples, size_t streamNumber) const {
-    size_t totalSamplesBefore = std::accumulate(txSampleCounts.begin(), txSampleCounts.end(), 0);
-    size_t baseOffset = totalSamplesBefore * SAMPLE_SIZE * numTxAntennas_;
-    return baseOffset + numSamples * SAMPLE_SIZE * streamNumber;
+    return 0;
 }
 
 size_t ReplayBlockConfig::rxStreamOffset(size_t numSamples, size_t streamNumber) const {
@@ -89,38 +95,37 @@ size_t ReplayBlockConfig::rxStreamOffset(size_t numSamples, size_t streamNumber)
 }
 
 void ReplayBlockConfig::configUpload(size_t numSamples) {
-    checkAntennaCount();
+    txBlocks_.recordNewBlock(numSamples);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t tx = 0; tx < numTxAntennas_; tx++)
-        replayBlock_->record(txStreamOffset(numSamples, tx), numBytes, tx);
-    txSampleCounts.push_back(numSamples);
+        replayBlock_->record(txBlocks_.recordOffset(tx), numBytes, tx);
     clearRecordingBuffer();
 }
 
 void ReplayBlockConfig::configTransmit(size_t numSamples) {
-    checkAntennaCount();
+    txBlocks_.replayNextBlock(numSamples);
     std::lock_guard<std::mutex> lock(replayMtx_);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     for(size_t tx = 0; tx < numTxAntennas_; tx++)
-        replayBlock_->config_play(txStreamOffset(numSamples, tx), numBytes, tx);
+        replayBlock_->config_play(txBlocks_.replayOffset(tx), numBytes, tx);
 }
 
 void ReplayBlockConfig::configReceive(size_t numSamples) {
-    checkAntennaCount();
+    rxBlocks_.recordNewBlock(numSamples);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t rx = 0; rx < numRxAntennas_; rx++)
-        replayBlock_->record(rxStreamOffset(numSamples, rx), numBytes, rx);
+        replayBlock_->record(MEM_SIZE/2+rxBlocks_.recordOffset(rx), numBytes, rx);
     clearRecordingBuffer();
 }
 
 void ReplayBlockConfig::configDownload(size_t numSamples) {
-    checkAntennaCount();
+    rxBlocks_.replayNextBlock(numSamples);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t rx = 0; rx < numRxAntennas_; rx++)
-        replayBlock_->config_play(rxStreamOffset(numSamples, rx), numBytes, rx);
+        replayBlock_->config_play(MEM_SIZE/2+rxBlocks_.replayOffset(rx), numBytes, rx);
 }
 
 void ReplayBlockConfig::clearRecordingBuffer() {

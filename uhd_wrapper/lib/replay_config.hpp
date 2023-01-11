@@ -59,6 +59,7 @@ public:
     size_t replayOffset(size_t streamIdx) const;
 
 private:
+    void checkStreamCount() const;
     size_t samplesUntilBlockNr(size_t blockIdx) const;
     size_t samplesInCurrentBlock() const;
     size_t samplesBeforeCurrentBlock() const;
@@ -82,7 +83,6 @@ public:
     void configDownload(size_t numSamples);
 
 private:
-    void checkAntennaCount() const;
     void clearRecordingBuffer();
 
     size_t txStreamOffset(size_t numSamples, size_t streamNumber) const;
@@ -98,7 +98,6 @@ private:
 
     std::mutex replayMtx_;
 
-    std::vector<size_t> txSampleCounts, rxSampleCounts;
-    size_t currentTransmitBlock = 0;
+    BlockOffsetTracker txBlocks_, rxBlocks_;
 };
 }

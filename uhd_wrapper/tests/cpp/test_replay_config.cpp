@@ -28,6 +28,28 @@ TEST_CASE("Sanity") {
 TEST_CASE("BlockOffsetTracker") {
     bi::BlockOffsetTracker tracker(4);
 
+    SECTION("Error checking") {
+        tracker.setStreamCount(1);
+        SECTION("Throws if recording not started") {
+            try {
+                tracker.recordOffset(0);
+                FAIL("No Exception thrown!");
+            }
+            catch(bi::UsrpException& e) {
+                // done
+            }
+        }
+        SECTION("Throws if replay not started") {
+            try {
+                tracker.replayOffset(0);
+                FAIL("No Exception thrown!");
+            }
+            catch(bi::UsrpException& e) {
+                // done
+            }
+        }
+    }
+
     SECTION("Single Antenna, single config") {
         tracker.setStreamCount(1);
         tracker.recordNewBlock(15);
@@ -73,8 +95,6 @@ TEST_CASE("BlockOffsetTracker") {
         REQUIRE(tracker.recordOffset(1) == 25*4);
         tracker.replayNextBlock(25);
         REQUIRE(tracker.replayOffset(1) == 25*4);
-
-
     }
 }
 
@@ -108,21 +128,17 @@ TEST_CASE("Replay Block Config") {
         SECTION("Single upload with 10 samples") {
             REQUIRE_CALL(replay, record(0u, 10*4u, 0u));
             block.configUpload(10);
-        }
 
-        SECTION("Transmission with 15 samples") {
-            REQUIRE_CALL(replay, config_play(0u, 15*4u, 0u));
-            block.configTransmit(15);
+            REQUIRE_CALL(replay, config_play(0u, 10*4u, 0u));
+            block.configTransmit(10);
         }
 
         SECTION("Reception with 20 samples") {
             REQUIRE_CALL(replay, record(HALF_MEM, 20*4u, 0u));
             block.configReceive(20);
-        }
 
-        SECTION("Download with 25 samples") {
-            REQUIRE_CALL(replay, config_play(HALF_MEM, 25*4u, 0u));
-            block.configDownload(25);
+            REQUIRE_CALL(replay, config_play(HALF_MEM, 20*4u, 0u));
+            block.configDownload(20);
         }
     }
 
@@ -133,25 +149,47 @@ TEST_CASE("Replay Block Config") {
             REQUIRE_CALL(replay, record(0u, 10*4u, 0u));
             REQUIRE_CALL(replay, record(10*4u, 10*4u, 1u));
             block.configUpload(10);
-        }
 
-        SECTION("Transmission with 15 samples") {
-            REQUIRE_CALL(replay, config_play(0u, 15*4u, 0u));
-            REQUIRE_CALL(replay, config_play(15*4u, 15*4u, 1u));
-            block.configTransmit(15);
+            REQUIRE_CALL(replay, config_play(0u, 10*4u, 0u));
+            REQUIRE_CALL(replay, config_play(10*4u, 10*4u, 1u));
+            block.configTransmit(10);
         }
 
         SECTION("Reception with 20 samples") {
             REQUIRE_CALL(replay, record(HALF_MEM, 20*4u, 0u));
             REQUIRE_CALL(replay, record(HALF_MEM+20*4u, 20*4u, 1u));
             block.configReceive(20);
-        }
 
-        SECTION("Download with 25 samples") {
-            REQUIRE_CALL(replay, config_play(HALF_MEM, 25*4u, 0u));
-            REQUIRE_CALL(replay, config_play(HALF_MEM+25*4u, 25*4u, 1u));
-            block.configDownload(25);
+            REQUIRE_CALL(replay, config_play(HALF_MEM, 20*4u, 0u));
+            REQUIRE_CALL(replay, config_play(HALF_MEM+20*4u, 20*4u, 1u));
+            block.configDownload(20);
         }
+    }
+
+    SECTION("Single Antenna, multiple configs") {
+        block.setAntennaCount(1, 1);
+        trompeloeil::sequence seq;
+
+        REQUIRE_CALL(replay, record(0u, 10*4u, 0u)).IN_SEQUENCE(seq);
+        REQUIRE_CALL(replay, record(40u, 15*4u, 0u)).IN_SEQUENCE(seq);
+        block.configUpload(10);
+        block.configUpload(15);
+
+        REQUIRE_CALL(replay, config_play(0u, 10*4u, 0u)).IN_SEQUENCE(seq);
+        REQUIRE_CALL(replay, record(HALF_MEM, 11*4u, 0u)).IN_SEQUENCE(seq);
+        block.configTransmit(10);
+        block.configReceive(11);
+
+        REQUIRE_CALL(replay, config_play(40u, 15*4u, 0u)).IN_SEQUENCE(seq);
+        REQUIRE_CALL(replay, record(HALF_MEM+11*4u, 16*4u, 0u)).IN_SEQUENCE(seq);
+        block.configTransmit(15);
+        block.configReceive(16);
+
+        REQUIRE_CALL(replay, config_play(HALF_MEM, 11*4u, 0u)).IN_SEQUENCE(seq);
+        REQUIRE_CALL(replay, config_play(HALF_MEM+11*4u, 16*4u, 0u)).IN_SEQUENCE(seq);
+        block.configDownload(11);
+        block.configDownload(16);
+
     }
 
 }

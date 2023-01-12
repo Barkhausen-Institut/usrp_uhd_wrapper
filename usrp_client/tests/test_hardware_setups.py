@@ -330,8 +330,9 @@ class TestHardwareSystemTests(unittest.TestCase):
             receiveTimeOffset=0.3, noSamples=int(60e3)))
 
         system.execute()
-        rxSignal1 = system.collect()["usrp1"][0].signals[0]
-        rxSignal2 = system.collect()["usrp1"][1].signals[0]
+        rx = system.collect()["usrp1"]
+        rxSignal1 = rx[0].signals[0]
+        rxSignal2 = rx[1].signals[0]
 
         self.assertAlmostEqual(findSignalStartsInFrame(rxSignal1, self.randomSignal),
                                samplesOffset + 50, delta=10)

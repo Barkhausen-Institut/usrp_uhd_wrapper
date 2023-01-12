@@ -67,7 +67,7 @@ class System:
        differ more than `syncThresholdSec`, an exception is thrown that the USRPs are not
        synchronized. Default value: 0.2s."""
 
-    baseTimeOffsetSec = 0.2
+    baseTimeOffsetSec = 0.3
     """This value is taken for setting the same base time for all
        USRPs. For development use mainly. Do not change. Default value: 0.2s."""
 

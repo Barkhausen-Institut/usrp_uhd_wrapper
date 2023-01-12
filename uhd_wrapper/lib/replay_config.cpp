@@ -96,14 +96,6 @@ void ReplayBlockConfig::reset() {
     rxBlocks_.reset();
 }
 
-size_t ReplayBlockConfig::txStreamOffset(size_t numSamples, size_t streamNumber) const {
-    return 0;
-}
-
-size_t ReplayBlockConfig::rxStreamOffset(size_t numSamples, size_t streamNumber) const {
-    return MEM_SIZE / 2 + numSamples * SAMPLE_SIZE * streamNumber;
-}
-
 void ReplayBlockConfig::configUpload(size_t numSamples) {
     txBlocks_.recordNewBlock(numSamples);
     const size_t numBytes = numSamples * SAMPLE_SIZE;

@@ -87,9 +87,6 @@ public:
 private:
     void clearRecordingBuffer();
 
-    size_t txStreamOffset(size_t numSamples, size_t streamNumber) const;
-    size_t rxStreamOffset(size_t numSamples, size_t streamNumber) const;
-
     std::shared_ptr<ReplayBlockInterface> replayBlock_;
     const size_t SAMPLE_SIZE = 4;  // 16bit IQ data
     const size_t MEM_SIZE;

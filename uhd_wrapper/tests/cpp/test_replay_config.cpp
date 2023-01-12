@@ -26,7 +26,8 @@ TEST_CASE("Sanity") {
 }
 
 TEST_CASE("BlockOffsetTracker") {
-    bi::BlockOffsetTracker tracker(4);
+    size_t MEM_SIZE = 1000;
+    bi::BlockOffsetTracker tracker(MEM_SIZE, 4);
 
     SECTION("Error checking") {
         tracker.setStreamCount(1);
@@ -46,6 +47,29 @@ TEST_CASE("BlockOffsetTracker") {
             }
             catch(bi::UsrpException& e) {
                 // done
+            }
+        }
+
+        SECTION("Throws if more replay than records") {
+           try {
+               tracker.recordNewBlock(5);
+               tracker.replayNextBlock(5);
+               tracker.replayNextBlock(5);
+               FAIL("No exception thrown!");
+           }
+           catch(bi::UsrpException& e) {
+               // done
+           }
+        }
+
+        SECTION("Throws if too much memory would be used") {
+            tracker.recordNewBlock(5);
+            try {
+                tracker.recordNewBlock(MEM_SIZE / 4);
+                FAIL("No exception thrown!");
+            }
+            catch(bi::UsrpException& e) {
+
             }
         }
     }

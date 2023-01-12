@@ -48,7 +48,7 @@ private:
 
 class BlockOffsetTracker {
 public:
-    BlockOffsetTracker(size_t sampleSize);
+    BlockOffsetTracker(size_t memSize, size_t sampleSize);
     void setStreamCount(size_t streamCount);
     void reset();
 
@@ -65,6 +65,7 @@ private:
     size_t samplesBeforeCurrentBlock() const;
 
     size_t numStreams_;
+    const size_t MEM_SIZE;
     const size_t SAMPLE_SIZE;
     std::vector<size_t> samplesPerBlock_;
     int replayIdx_ = -1;
@@ -91,7 +92,6 @@ private:
 
     std::shared_ptr<ReplayBlockInterface> replayBlock_;
     const size_t SAMPLE_SIZE = 4;  // 16bit IQ data
-
     const size_t MEM_SIZE;
 
     size_t numTxAntennas_ = 0;;

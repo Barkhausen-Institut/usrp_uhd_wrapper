@@ -9,8 +9,8 @@ using namespace std::literals::chrono_literals;
 namespace bi {
 const int MAX_ANTENNAS = 4;
 
-BlockOffsetTracker::BlockOffsetTracker(size_t sampleSize)
-: numStreams_(0), SAMPLE_SIZE(sampleSize) {
+BlockOffsetTracker::BlockOffsetTracker(size_t memSize, size_t sampleSize)
+: numStreams_(0), MEM_SIZE(memSize), SAMPLE_SIZE(sampleSize) {
     reset();
 }
 
@@ -30,12 +30,18 @@ void BlockOffsetTracker::checkStreamCount() const {
 
 void BlockOffsetTracker::recordNewBlock(size_t numSamples) {
     checkStreamCount();
+    size_t bytesBefore = samplesUntilBlockNr(samplesPerBlock_.size()) * SAMPLE_SIZE * numStreams_;
+    size_t bytesNow = numSamples * SAMPLE_SIZE * numStreams_;
+    if (bytesBefore + bytesNow >= MEM_SIZE)
+        throw UsrpException("Attempting to store too many samples in buffer!");
     samplesPerBlock_.push_back(numSamples);
 }
 
 void BlockOffsetTracker::replayNextBlock(size_t numSamples) {
     checkStreamCount();
     replayIdx_++;
+    if (replayIdx_ >= (int)samplesPerBlock_.size())
+        throw UsrpException("Too many replay requests");
     if (samplesPerBlock_[replayIdx_] != numSamples)
         throw UsrpException("Incorrect size of replay block");
 }
@@ -74,7 +80,7 @@ size_t BlockOffsetTracker::replayOffset(size_t streamIdx) const {
 
 ReplayBlockConfig::ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl)
     : replayBlock_(replayCtrl), MEM_SIZE(replayCtrl->get_mem_size()),
-      txBlocks_(SAMPLE_SIZE), rxBlocks_(SAMPLE_SIZE) {
+      txBlocks_(MEM_SIZE/2, SAMPLE_SIZE), rxBlocks_(MEM_SIZE/2, SAMPLE_SIZE) {
 }
 
 void ReplayBlockConfig::setAntennaCount(size_t numTx, size_t numRx) {

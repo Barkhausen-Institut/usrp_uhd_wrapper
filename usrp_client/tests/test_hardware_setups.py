@@ -309,6 +309,35 @@ class TestHardwareSystemTests(unittest.TestCase):
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
         self.assertAlmostEqual(peak, samplesOffset + 50, delta=10)
 
+    def test_multipleTxAndRxConfigs_localhost(self) -> None:
+        Fs = 245.76e6/20
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+                                               txSampleRate=Fs, rxSampleRate=Fs)
+        system = setup.connectUsrps()
+
+        samplesOffset = 20000
+        timeOffset = samplesOffset / Fs
+
+        txSignal = MimoSignal(signals=[self.randomSignal])
+        system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
+            samples=txSignal, sendTimeOffset=timeOffset))
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)))
+
+        system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
+            samples=txSignal, sendTimeOffset=0.3))
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+            receiveTimeOffset=0.3, noSamples=int(60e3)))
+
+        system.execute()
+        rxSignal1 = system.collect()["usrp1"][0].signals[0]
+        rxSignal2 = system.collect()["usrp1"][1].signals[0]
+
+        self.assertAlmostEqual(findSignalStartsInFrame(rxSignal1, self.randomSignal),
+                               samplesOffset + 50, delta=10)
+        self.assertAlmostEqual(findSignalStartsInFrame(rxSignal2, self.randomSignal),
+                               50, delta=10)
+
     def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
         system = setup.connectUsrps()

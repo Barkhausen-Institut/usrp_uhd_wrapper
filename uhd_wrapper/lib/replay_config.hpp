@@ -46,32 +46,56 @@ private:
     uhd::rfnoc::replay_block_control::sptr replayCtrl_;
 };
 
+class BlockOffsetTracker {
+public:
+    BlockOffsetTracker(size_t memSize, size_t sampleSize);
+    void setStreamCount(size_t streamCount);
+    void reset();
+
+    void recordNewBlock(size_t numSamples);
+    size_t recordOffset(size_t streamIdx) const;
+
+    void replayNextBlock(size_t numSamples);
+    size_t replayOffset(size_t streamIdx) const;
+
+private:
+    void checkStreamCount() const;
+    size_t samplesUntilBlockNr(size_t blockIdx) const;
+    size_t samplesInCurrentBlock() const;
+    size_t samplesBeforeCurrentBlock() const;
+
+    size_t numStreams_;
+    const size_t MEM_SIZE;
+    const size_t SAMPLE_SIZE;
+    std::vector<size_t> samplesPerBlock_;
+    int replayIdx_ = -1;
+
+};
+
 
 class ReplayBlockConfig {
 public:
     ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl);
 
     void setAntennaCount(size_t numTx, size_t numRx);
+    void reset();
     void configUpload(size_t numSamples);
     void configTransmit(size_t numSamples);
     void configReceive(size_t numSamples);
     void configDownload(size_t numSamples);
 
 private:
-    void checkAntennaCount() const;
     void clearRecordingBuffer();
-
-    size_t txStreamOffset(size_t numBytes, size_t streamNumber) const;
-    size_t rxStreamOffset(size_t numBytes, size_t streamNumber) const;
 
     std::shared_ptr<ReplayBlockInterface> replayBlock_;
     const size_t SAMPLE_SIZE = 4;  // 16bit IQ data
-
     const size_t MEM_SIZE;
 
     size_t numTxAntennas_ = 0;;
     size_t numRxAntennas_ = 0;;
 
     std::mutex replayMtx_;
+
+    BlockOffsetTracker txBlocks_, rxBlocks_;
 };
 }

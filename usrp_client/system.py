@@ -20,7 +20,7 @@ from usrp_client.rpc_client import UsrpClient
 from usrp_client.errors import MultipleRemoteUsrpErrors, RemoteUsrpError
 
 
-LabeledUsrp = namedtuple("LabeledUsrp", "name ip client")
+LabeledUsrp = namedtuple("LabeledUsrp", "name ip port client")
 
 
 class TimedFlag:
@@ -67,7 +67,7 @@ class System:
        differ more than `syncThresholdSec`, an exception is thrown that the USRPs are not
        synchronized. Default value: 0.2s."""
 
-    baseTimeOffsetSec = 0.2
+    baseTimeOffsetSec = 0.3
     """This value is taken for setting the same base time for all
        USRPs. For development use mainly. Do not change. Default value: 0.2s."""
 
@@ -100,7 +100,7 @@ class System:
         logger.debug("Created system")
         return logger
 
-    def _createUsrpClient(self, ip: str) -> UsrpClient:
+    def _createUsrpClient(self, ip: str, port: int) -> UsrpClient:
         """Connect to the USRP server. Developers only.
 
         Args:
@@ -110,8 +110,8 @@ class System:
             UsrpClient: RPC client for later use.
         """
         zeroRpcClient = zerorpc.Client()
-        zeroRpcClient.connect(f"tcp://{ip}:5555")
-        self.__logger.debug(f"Created USRP RPC client at IP: {ip} and Port 5555.")
+        zeroRpcClient.connect(f"tcp://{ip}:{port}")
+        self.__logger.debug(f"Created USRP RPC client at IP: {ip} and Port {port}.")
         return UsrpClient(rpcClient=zeroRpcClient)
 
     def addUsrp(
@@ -119,6 +119,8 @@ class System:
         rfConfig: RfConfig,
         ip: str,
         usrpName: str,
+        *,
+        port: int = 5555
     ) -> None:
         """Add a new USRP to the system.
 
@@ -129,27 +131,40 @@ class System:
         """
         try:
             self._usrpsSynced.reset()
-            self.__assertUniqueUsrp(ip, usrpName)
+            self.__assertUniqueUsrp(ip, port, usrpName)
 
-            usrpClient = self._createUsrpClient(ip)
+            usrpClient = self._createUsrpClient(ip, port)
             usrpClient.configureRfConfig(rfConfig)
             usrpClient.resetStreamingConfigs()
-            self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, usrpClient)
+            self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, usrpClient)
         except RemoteError as e:
             raise RemoteUsrpError(e.msg, usrpName)
 
-    def __assertUniqueUsrp(self, ip: str, usrpName: str) -> None:
+    def __assertUniqueUsrp(self, ip: str, port: int, usrpName: str) -> None:
         self.__assertUniqueUsrpName(usrpName)
-        self.__assertUniqueIp(ip)
+        self.__assertUniqueIp(ip, port)
 
     def __assertUniqueUsrpName(self, usrpName: str) -> None:
         if usrpName in self.__usrpClients.keys():
             raise ValueError("Connection to USRP already exists!")
 
-    def __assertUniqueIp(self, ip: str) -> None:
+    def __assertUniqueIp(self, ip: str, port: int) -> None:
         for usrp in self.__usrpClients.keys():
-            if self.__usrpClients[usrp].ip == ip:
+            obj = self.__usrpClients[usrp]
+            if (obj.ip == ip and obj.port == port):
                 raise ValueError("Connection to USRP already exists!")
+
+    def resetFpgaTimes(self) -> None:
+        """
+        Reset the time to 0 at all connected USRPs upon the next received PPS
+        """
+        self.__setTimeToZeroNextPps()
+
+    def getCurrentFpgaTimes(self) -> List[float]:
+        """
+        Returns the timestamps the connected USRPs consider in their FPGAs.
+        """
+        return self.__getCurrentFpgaTimes()
 
     def configureTx(self, usrpName: str, txStreamingConfig: TxStreamingConfig) -> None:
         """Configure transmitter streaming.
@@ -234,7 +249,7 @@ class System:
         maxTime = np.max(currentFpgaTimesSec)
         return maxTime + System.baseTimeOffsetSec
 
-    def __getCurrentFpgaTimes(self) -> List[int]:
+    def __getCurrentFpgaTimes(self) -> List[float]:
         return [
             item.client.getCurrentFpgaTime() for _, item in self.__usrpClients.items()
         ]

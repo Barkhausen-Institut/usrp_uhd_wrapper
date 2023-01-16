@@ -1,6 +1,8 @@
 *build/
 *.swp
 *~
+*.so
+.cache
 __pycache__/
 *.pyc
 .vscode/
@@ -9,3 +11,4 @@ __pycache__/
 .python-version
 env/
 *.egg-info/
+.#*

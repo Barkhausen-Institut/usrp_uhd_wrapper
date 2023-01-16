@@ -6,29 +6,24 @@
 #include <mutex>
 #include <thread>
 
+#include <uhd/rfnoc/block_id.hpp>
+#include <uhd/rfnoc/replay_block_control.hpp>
+#include <uhd/rfnoc_graph.hpp>
+
 #include "config.hpp"
-#include "uhd/usrp/multi_usrp.hpp"
-#include "usrp_exception.hpp"
 #include "usrp_interface.hpp"
+
+#include "full_duplex_rfnoc_graph.hpp"
+#include "rf_configuration.hpp"
+#include "replay_config.hpp"
 
 namespace bi {
 
 class Usrp : public UsrpInterface {
    public:
-    Usrp(const std::string& ip) {
-        ip_ = ip;
-        usrpDevice_ =
-            uhd::usrp::multi_usrp::make(uhd::device_addr_t("addr=" + ip));
-        usrpDevice_->set_sync_source("external", "external");
-        masterClockRate_ = usrpDevice_->get_master_clock_rate();
-    }
-    ~Usrp() {
-        usrpDevice_->set_sync_source("internal", "internal");
-        if (transmitThread_.joinable()) transmitThread_.join();
-        if (receiveThread_.joinable()) receiveThread_.join();
-        if (setTimeToZeroNextPpsThread_.joinable())
-            setTimeToZeroNextPpsThread_.join();
-    }
+    Usrp(const std::string& ip);
+    ~Usrp();
+
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
@@ -38,22 +33,32 @@ class Usrp : public UsrpInterface {
     void execute(const double baseTime);
     std::vector<MimoSignal> collect();
 
-    double getMasterClockRate() const { return masterClockRate_; }
+    double getMasterClockRate() const;
     RfConfig getRfConfig() const;
     void resetStreamingConfigs();
     std::string getDeviceType() const;
 
    private:
+    // RfNoC components
+    uhd::rfnoc::rfnoc_graph::sptr graph_;
+    std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
+    std::shared_ptr<RFConfiguration> rfConfig_;
+    std::shared_ptr<ReplayBlockConfig> replayConfig_;
+
+
+    void createRfNocBlocks();
+
+    void performUpload();
+    void performStreaming(double baseTime);
+    void performDownload();
+
     // constants
     const double GUARD_OFFSET_S_ = 0.05;
-    const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)55e3;
-    const std::vector<std::string> SUBDEV_SPECS = {
-        "A:0", "A:0 A:1", "A:0 A:1 B:0", "A:0 A:1 B:0 B:1"};
+    const size_t MAX_SAMPLES_TX_SIGNAL = (size_t)200e3;
+    const size_t PACKET_SIZE = 8192;
+
     // variables
-    uhd::usrp::multi_usrp::sptr usrpDevice_;
     std::string ip_;
-    uhd::tx_streamer::sptr txStreamer_;
-    uhd::rx_streamer::sptr rxStreamer_;
     std::vector<TxStreamingConfig> txStreamingConfigs_;
     std::vector<RxStreamingConfig> rxStreamingConfigs_;
     bool ppsSetToZero_ = false;
@@ -63,25 +68,8 @@ class Usrp : public UsrpInterface {
     std::thread setTimeToZeroNextPpsThread_;
     std::exception_ptr transmitThreadException_ = nullptr;
     std::exception_ptr receiveThreadException_ = nullptr;
-    double masterClockRate_;
-    RfConfig rfConfig_;
 
     std::vector<MimoSignal> receivedSamples_ = {{{}}};
-    bool subdevSpecSet_ = false;
-
-    // configuration functions
-    void setTxSamplingRate(const double samplingRate,
-                           const size_t txAntennaIdx);
-    void setRxSamplingRate(const double samplingRate,
-                           const size_t rxAntennaIdx);
-
-    void setRfConfigForRxAntenna(const RfConfig& conf,
-                                 const size_t rxAntennaIdx);
-    void setRfConfigForTxAntenna(const RfConfig& conf,
-                                 const size_t txAntennaIdx);
-
-    void configureRxStreamer(const RfConfig& conf);
-    void configureTxStreamer(const RfConfig& conf);
 
     // transmission related functions
     void transmit(const double baseTime, std::exception_ptr& exceptionPtr);

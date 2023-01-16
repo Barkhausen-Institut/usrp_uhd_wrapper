@@ -1,8 +1,8 @@
 #include <csignal>
 #include <random>
+#include <uhd/usrp/multi_usrp.hpp>
 
 #include "config.hpp"
-#include "usrp.hpp"
 
 static bool stopSignal = false;
 void sig_int_handler(int) { stopSignal = true; }

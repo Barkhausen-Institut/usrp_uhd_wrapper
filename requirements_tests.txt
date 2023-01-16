@@ -3,3 +3,4 @@ pytest-mypy==0.9.1
 pytest-flake8==1.1.1
 flake8==4.0.1
 matplotlib~=3.5.1
+scipy==1.10.0

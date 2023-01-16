@@ -165,11 +165,11 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
                             + std::to_string(streamTime) + " currentTime: " + std::to_string(getCurrentFpgaTime()));
 
     {
-      std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
-      for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
-	if (useTxChannel(channel))
-	  replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
-      }
+        std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
+        for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
+            if (useTxChannel(channel))
+                replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
+        }
     }
 
     uhd::async_metadata_t asyncMd;

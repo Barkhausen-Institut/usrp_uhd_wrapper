@@ -7,7 +7,6 @@ from collections import namedtuple
 
 import matplotlib.pyplot as plt  # noqa
 
-
 import numpy as np
 
 from uhd_wrapper.utils.config import (
@@ -430,6 +429,40 @@ class TestHardwareSystemTests(unittest.TestCase):
             second=268,
             delta=10,
         )
+
+    def test_longTxSignal_localhost(self) -> None:
+        Fs = 245.76e6
+        numFreqs = 50
+        frequencies = (np.arange(numFreqs) + 1) / (4*numFreqs)
+        numSamples = 200000
+        sampsPerFreq = numSamples / numFreqs
+
+        txSig = np.hstack([
+            0.9*np.exp(1j*2*np.pi*f)**np.arange(sampsPerFreq)
+            for f in frequencies
+        ])
+
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+                                               txSampleRate=Fs, rxSampleRate=Fs)
+        system = setup.connectUsrps()
+        txStreamingConfig = TxStreamingConfig(sendTimeOffset=0.0,
+                                              samples=MimoSignal(signals=[txSig]))
+        rxStreamingConfig = RxStreamingConfig(receiveTimeOffset=0.0,
+                                              noSamples=numSamples+20000)
+
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig)
+
+        system.execute()
+        samplesRx = system.collect()["usrp1"][0].signals[0]
+
+        S = np.fft.fft(samplesRx)
+        fIdx = (frequencies * len(S)).astype(int)
+        SatF = abs(S[fIdx])
+        self.assertTrue(np.all(SatF > 20*np.mean(abs(S))))
+
+        # plt.semilogy(abs(S), '-x')
+        # plt.show()
 
     def test_jcas(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)

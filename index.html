@@ -136,10 +136,10 @@ The USRP server needs a minute to start.</p>
 <h1>Before Use<a class="headerlink" href="#before-use" title="Permalink to this headline">¶</a></h1>
 <p>We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., joint communication and sensing (JCAS), local transmission, peer-to-peer-transmission…). If you want to execute them, the environment variables <code class="docutils literal notranslate"><span class="pre">USRP1_IP</span></code> and <code class="docutils literal notranslate"><span class="pre">USRP2_IP</span></code> with the corresponding IP need to be set. Execute the command <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">.</span></code> or, if you just want to execute the hardware-related tests: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">.</span> <span class="pre">-m</span> <span class="pre">&quot;hardware&quot;</span></code>. <strong>It is highly recommended to execute these tests before conducting your measurements</strong>:</p>
 <p>On client side:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> &lt;repo&gt;
-$ . env/bin/activate
-$ <span class="nv">USRP1_IP</span><span class="o">=</span>&lt;usrp1-ip&gt; <span class="nv">USRP2_IP</span><span class="o">=</span>&lt;usrp2-ip&gt; pytest . -m <span class="s2">&quot;hardware&quot;</span>
-$ pytest .
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;repo&gt;
+$<span class="w"> </span>.<span class="w"> </span>env/bin/activate
+$<span class="w"> </span><span class="nv">USRP1_IP</span><span class="o">=</span>&lt;usrp1-ip&gt;<span class="w"> </span><span class="nv">USRP2_IP</span><span class="o">=</span>&lt;usrp2-ip&gt;<span class="w"> </span>pytest<span class="w"> </span>.<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;hardware&quot;</span>
+$<span class="w"> </span>pytest<span class="w"> </span>.
 </pre></div>
 </div>
 </section>
@@ -147,8 +147,8 @@ $ pytest .
 <h1>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h1>
 <p>After install, there are two python packages installed: <code class="docutils literal notranslate"><span class="pre">usrp_client</span></code> serving as the client that sends commands (e.g. radio frontend (RF) config, samples, etc.) to the USRP server. The <code class="docutils literal notranslate"><span class="pre">uhd_wrapper.utils</span></code> package contains dataclasses for the configurations (module <code class="docutils literal notranslate"><span class="pre">config</span></code>) and some serialization functions in the <code class="docutils literal notranslate"><span class="pre">serialization</span></code> module.</p>
 <p>Assuming you installed the client, always activate the virtual environment via:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ <span class="nb">cd</span> &lt;repo&gt;
-$ . env/bin/activate
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;repo&gt;
+$<span class="w"> </span>.<span class="w"> </span>env/bin/activate
 </pre></div>
 </div>
 <p><strong>Note</strong>: If you restart the USRP, the server needs a minute to start.</p>
@@ -157,23 +157,23 @@ $ . env/bin/activate
 <p>The <strong>examples</strong> directory contains some examples. In each example file, we will print if the sent signal can be found in the received frame. The printed delay should be more or less (i.e. +- 5 sampels) deterministic, depending on sample rate. All examples are to be run from the client side. <strong>Port 5555 is used.</strong> We add the option to plot signals. Examples should be self-explanatory.</p>
 <p><strong>localhost_transmission</strong>: Sends random signal from a dedicated USRP to itself, check file.</p>
 <p>Usage:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/localhost_transmission.py --usrp1-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>examples/localhost_transmission.py<span class="w"> </span>--usrp1-ip<span class="w"> </span>&lt;ip&gt;<span class="w"> </span>--carrier-frequency<span class="w"> </span>&lt;carrier-frequency&gt;<span class="w"> </span>--plot
 </pre></div>
 </div>
 <p><strong>usrp_p2p_transmission</strong>: Sends random signal from Usrp1 to Usrp2, check file.</p>
 <p>Usage:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/usrp_p2p_transmission.py --usrp1-ip &lt;ip&gt; --usrp2-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>examples/usrp_p2p_transmission.py<span class="w"> </span>--usrp1-ip<span class="w"> </span>&lt;ip&gt;<span class="w"> </span>--usrp2-ip<span class="w"> </span>&lt;ip&gt;<span class="w"> </span>--carrier-frequency<span class="w"> </span>&lt;carrier-frequency&gt;<span class="w"> </span>--plot
 </pre></div>
 </div>
 <p><strong>JCAS</strong>: Implements the JCAS scenario, but using a random signal instead.
 Usage:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/jcas.py --usrp1-ip &lt;ip&gt; --usrp2-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>examples/jcas.py<span class="w"> </span>--usrp1-ip<span class="w"> </span>&lt;ip&gt;<span class="w"> </span>--usrp2-ip<span class="w"> </span>&lt;ip&gt;<span class="w"> </span>--carrier-frequency<span class="w"> </span>&lt;carrier-frequency&gt;<span class="w"> </span>--plot
 </pre></div>
 </div>
 <p>Sends a random signal from USRP1 to USRP2, while receiving at USRP1 as well. If <code class="docutils literal notranslate"><span class="pre">--plot</span></code> argument is omitted, the signal will be sent/received 10 times a row.</p>
 <p><strong>mimo_p2p_transmission</strong>: Implements a 4x4 MIMO scenario.
 Usage:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$ python examples/mimo_p2p_transmission.py --usrp1-ip &lt;ip&gt; --usrp2-ip &lt;ip&gt; --carrier-frequency &lt;carrier-frequency&gt; --plot
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>python<span class="w"> </span>examples/mimo_p2p_transmission.py<span class="w"> </span>--usrp1-ip<span class="w"> </span>&lt;ip&gt;<span class="w"> </span>--usrp2-ip<span class="w"> </span>&lt;ip&gt;<span class="w"> </span>--carrier-frequency<span class="w"> </span>&lt;carrier-frequency&gt;<span class="w"> </span>--plot
 </pre></div>
 </div>
 <p>Creates four random signals, that are distributed to the antennas. They are shifted by 10k samples. Usrp2 receives the signals at four antennas.</p>
@@ -198,6 +198,7 @@ Usage:</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">0.0-siso-jcas</span></code>: One antenna for transmitting and receiving is supported. Further, we support receiving and transmitting at one USRP with a second USRP receiving only. This covers the usecase of JCAS.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">0.1-mimo</span></code>: Full-fledged MIMO support.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">1.0.0</span></code>: Polishing and plenty of minor bugfixes. Collected feedback from users.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">1.1.0</span></code>: Using RfNoC Replay block to use FPGA Memory to buffer messages.</p></li>
 </ul>
 </section>
 <section id="authors">

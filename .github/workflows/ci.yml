@@ -13,7 +13,7 @@ jobs:
         sudo apt-get install -y --no-install-recommends software-properties-common
         sudo add-apt-repository ppa:ettusresearch/uhd
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends cmake build-essential libboost-dev libuhd-dev uhd-host python3.9-venv python3.9-dev python3-wheel
+        sudo apt-get install -y --no-install-recommends cmake build-essential libboost-dev libboost-system-dev libuhd-dev uhd-host python3.9-venv python3.9-dev python3-wheel
 
     - name: Checkout Repo
       uses: actions/checkout@v2

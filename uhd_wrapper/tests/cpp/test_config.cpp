@@ -177,6 +177,13 @@ TEST_CASE("[ValidTxSignal]") {
             assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
             UsrpException);
     }
+
+    SECTION("Forbid NAN values") {
+        conf.samples = {{{NAN,0}, {0,1}, {0, 0}, {0, 1}}};
+        REQUIRE_THROWS_AS(
+                          assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, 1u),
+                          UsrpException);
+    }
 }
 
 TEST_CASE("[ValidRfConfig]") {

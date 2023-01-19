@@ -237,6 +237,15 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         # self.randomSignal *= np.linspace(0, 1, self.noSamples)
         # self.randomSignal2 *= np.linspace(1, 0, self.noSamples)
+        #
+    def test_allow2timesExecuteWithoutCrashing(self) -> None:
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        system = setup.connectUsrps()
+
+        # Make sure, that if calling code crashes between calls to execute and collect, that
+        # the usrp can cope with that.
+        system.execute()
+        system.execute()
 
     def test_2x2mimo_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(
@@ -265,9 +274,9 @@ class TestHardwareSystemTests(unittest.TestCase):
         rx1 = rxSamples.signals[0]
         rx2 = rxSamples.signals[1]
 
-        # plt.subplot(221); plt.plot(abs(rx1))
-        # plt.subplot(222); plt.plot(abs(rx2))
-        # plt.show()
+        plt.subplot(221); plt.plot(abs(rx1))
+        plt.subplot(222); plt.plot(abs(rx2))
+        plt.show()
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rx1, self.randomSignal),

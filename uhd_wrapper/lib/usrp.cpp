@@ -238,15 +238,16 @@ double Usrp::getCurrentFpgaTime() {
 }
 
 void Usrp::execute(const double baseTime) {
+    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
+    waitOnThreadToJoin(transmitThread_);
+    waitOnThreadToJoin(receiveThread_);
+
     replayConfig_->reset();
     performUpload();
     performStreaming(baseTime);
 
     return;
 
-    waitOnThreadToJoin(setTimeToZeroNextPpsThread_);
-    waitOnThreadToJoin(transmitThread_);
-    waitOnThreadToJoin(receiveThread_);
     receivedSamples_ = {{{}}};
 
     if (txStreamingConfigs_.size() > 0)

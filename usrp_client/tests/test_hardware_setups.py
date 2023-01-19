@@ -237,6 +237,15 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         # self.randomSignal *= np.linspace(0, 1, self.noSamples)
         # self.randomSignal2 *= np.linspace(1, 0, self.noSamples)
+        #
+    def test_allow2timesExecuteWithoutCrashing(self) -> None:
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        system = setup.connectUsrps()
+
+        # Make sure, that if calling code crashes between calls to execute and collect, that
+        # the usrp can cope with that.
+        system.execute()
+        system.execute()
 
     def test_2x2mimo_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(

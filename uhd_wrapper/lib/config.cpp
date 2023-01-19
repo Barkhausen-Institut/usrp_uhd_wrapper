@@ -46,10 +46,16 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb) {
 void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate) {
     // avoid floating inprecision issues
-    if (std::fmod(masterClockRate / actualSamplingRate, 2.0) > 0.01 &&
-        masterClockRate != actualSamplingRate)
-        throw UsrpException("Sampling rate must be an even fraction of " +
-                            std::to_string(masterClockRate));
+    double mod = std::fmod(masterClockRate / actualSamplingRate, 2.0);
+    if (masterClockRate == actualSamplingRate)
+        return;
+    if (mod < 0.01)
+        return;
+    if (mod > 1.99)
+        return;
+
+    throw UsrpException("Sampling rate must be an even fraction of " +
+                        std::to_string(masterClockRate));
 }
 
 void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,

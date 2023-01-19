@@ -1,4 +1,5 @@
 #include <iostream>
+#include <algorithm>
 
 #include "config.hpp"
 #include "usrp_exception.hpp"
@@ -99,6 +100,11 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
         if (antSignal.size() != lengthSignal)
             throw UsrpException(
                 "The antenna signals need to have the same length.");
+        if (std::find_if(antSignal.begin(), antSignal.end(),
+                         [](const auto& c) {
+                             return std::isnan(c.real()) || std::isnan(c.imag());
+                         }) != antSignal.end())
+            throw UsrpException("The antenna signal contains nan values!");
     }
 
     if (lengthSignal % SAMPLES_PER_CYCLE != 0)

@@ -274,9 +274,9 @@ class TestHardwareSystemTests(unittest.TestCase):
         rx1 = rxSamples.signals[0]
         rx2 = rxSamples.signals[1]
 
-        plt.subplot(221); plt.plot(abs(rx1))
-        plt.subplot(222); plt.plot(abs(rx2))
-        plt.show()
+        # plt.subplot(221); plt.plot(abs(rx1))
+        # plt.subplot(222); plt.plot(abs(rx2))
+        # plt.show()
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rx1, self.randomSignal),

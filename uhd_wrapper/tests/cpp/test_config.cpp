@@ -36,6 +36,10 @@ TEST_CASE("[SamplingRateSupported]") {
     SECTION("Full sample rate throws no exception") {
         REQUIRE_NOTHROW(assertSamplingRate(250e6 / 1, 250e6));
     }
+
+    SECTION("Close-to-correct-samplerate throws no error") {
+        REQUIRE_NOTHROW(assertSamplingRate(4.38857143e+06, 245.76e6));
+    }
 }
 
 TEST_CASE("[ValidTxStreamingConfig]") {

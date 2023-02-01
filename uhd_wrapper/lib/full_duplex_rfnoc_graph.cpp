@@ -192,6 +192,9 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
 }
 
 void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
+    if (numRxSamples == 0)
+        return;
+
 
     uhd::stream_cmd_t rxStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     rxStreamCmd.num_samps = numRxSamples;
@@ -254,6 +257,8 @@ MimoSignal RfNocFullDuplexGraph::download(size_t numRxSamples) {
     result.resize(numRxAntennas_);
     for(size_t c = 0; c < numRxAntennas_; c++)
         result[c].resize(numRxSamples);
+    if (numRxSamples == 0)
+        return result;
 
     uhd::stream_cmd_t streamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     streamCmd.num_samps = numRxSamples;

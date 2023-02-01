@@ -288,9 +288,9 @@ class TestSynchronisationValid(unittest.TestCase):
 
 class TestSyncRecheck(unittest.TestCase):
     def setUp(self) -> None:
-        self.syncTimeOut = 0.4
-        self.sleepBeforeSyncTimeOut = 0.2
-        self.sleepAfterSyncTimeOut = 0.2
+        self.syncTimeOut = 0.1
+        self.sleepBeforeSyncTimeOut = 0.05
+        self.sleepAfterSyncTimeOut = 0.05
         System.syncTimeOut = self.syncTimeOut
         self.system = FakeSystem(2, TimedFlag(resetTimeSec=self.syncTimeOut))
 

@@ -64,6 +64,8 @@ def createTxSignal() -> np.ndarray:
     signal = np.convolve(g, ups)
     signal = signal / signal.max()
 
+    if len(signal) % 2 == 1:
+        signal = signal[:-1]
     return signal
 
 

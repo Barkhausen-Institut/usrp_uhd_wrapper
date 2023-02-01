@@ -36,7 +36,8 @@ def createSystem(
 
     # ceate system
     system = System()
-    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
+    dev = system.addUsrp(ip=ipUsrp1, usrpName="usrp1")
+    dev.configureRfConfig(rfConfig)
     return system
 
 

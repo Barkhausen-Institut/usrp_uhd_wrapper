@@ -113,12 +113,11 @@ class System:
 
     def addUsrp(
         self,
-        rfConfig: RfConfig,
         ip: str,
         usrpName: str,
         *,
         port: int = 5555
-    ) -> None:
+    ) -> UsrpClient:
         """Add a new USRP to the system.
 
         Args:
@@ -132,9 +131,9 @@ class System:
             self.__assertUniqueUsrp(ip, port, usrpName)
 
             usrpClient = self._createUsrpClient(ip, port)
-            usrpClient.configureRfConfig(rfConfig)
             usrpClient.resetStreamingConfigs()
             self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, usrpClient)
+            return usrpClient
         except RemoteError as e:
             raise RemoteUsrpError(e.msg, usrpName)
 

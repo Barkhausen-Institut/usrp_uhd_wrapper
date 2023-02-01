@@ -247,6 +247,17 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.execute()
         system.execute()
 
+    def test_doesNotCrashOnZeroLengthRxSignal(self) -> None:
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        system = setup.connectUsrps()
+
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+            0.0, noSamples=0))
+
+        system.execute()
+        result = system.collect()
+        self.assertEqual(len(result["usrp1"][0].signals[0]), 0)
+
     def test_2x2mimo_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(
             noRxAntennas=2, noTxAntennas=2,

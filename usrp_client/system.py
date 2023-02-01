@@ -4,7 +4,6 @@ import time
 from collections import namedtuple
 from threading import Timer
 
-import zerorpc
 from zerorpc.exceptions import RemoteError
 import numpy as np
 
@@ -109,10 +108,8 @@ class System:
         Returns:
             UsrpClient: RPC client for later use.
         """
-        zeroRpcClient = zerorpc.Client()
-        zeroRpcClient.connect(f"tcp://{ip}:{port}")
         self.__logger.debug(f"Created USRP RPC client at IP: {ip} and Port {port}.")
-        return UsrpClient(rpcClient=zeroRpcClient)
+        return UsrpClient.create(ip, port)
 
     def addUsrp(
         self,
@@ -127,6 +124,7 @@ class System:
         Args:
             rfConfig (RfConfig): Configuration of the Radio Frontend.
             ip (str): IP of the USRP.
+            port (int): Port where the Usrp Server is listening
             usrpName (str): Identifier of the USRP to be added.
         """
         try:

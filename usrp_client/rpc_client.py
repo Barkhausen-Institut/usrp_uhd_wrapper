@@ -11,22 +11,30 @@ from uhd_wrapper.utils.config import (
 )
 
 
-class UsrpClient:
-    """This class is the RPC client to the RPC server running on the USRP
-
-    Under the hood, we communicate with the UsrpServer class which wraps zerorpc. ZeroRPC
-    implements remote procedure call client-server architecture using zeromq as a communication
-    protocol. `UsrpClient` forwards user calls to the RPC server and serializes them if
-    required.
-    """
-
-    def __init__(self, rpcClient: zerorpc.Client) -> None:
+class _RpcClient:
+    def __init__(self, ip: str, port: int = 5555) -> None:
         """Initializes the UsrpClient.
 
         Args:
-            rpcClient (zerorpc.Client): zerorpc.Client that is already connected to RPC server.
+            ip (str): The IP where the RPC Server is running
+            port (int): The port where the RPC Server is running
         """
-        self.__rpcClient = rpcClient
+        self.__ip = ip
+        self.__port = port
+        self.__rpcClient = self._createClient(ip, port)
+
+    @property
+    def ip(self) -> str:
+        return self.__ip
+
+    @property
+    def port(self) -> int:
+        return self.__port
+
+    def _createClient(self, ip: str, port: int) -> zerorpc.Client:
+        result = zerorpc.Client()
+        result.connect(f"tcp://{ip}:{port}")
+        return result
 
     def configureRx(self, rxConfig: RxStreamingConfig) -> None:
         """Call `configureRx` on server and serialize `rxConfig`.
@@ -86,6 +94,44 @@ class UsrpClient:
         """Queries the master clock rate of the USRP."""
         return self.__rpcClient.getMasterClockRate()
 
+    def resetStreamingConfigs(self) -> None:
+        """Tells USRP to reset streaming configs."""
+        self.__rpcClient.resetStreamingConfigs()
+
+
+class UsrpClient(_RpcClient):
+    """This class is the interface to the UsrpServer running on the USRP device
+
+    Under the hood, we communicate with the UsrpServer class which wraps zerorpc. ZeroRPC
+    implements remote procedure call client-server architecture using zeromq as a communication
+    protocol. `UsrpClient` forwards user calls to the RPC server and serializes them if
+    required.
+    """
+
+    @staticmethod
+    def create(ip: str, port: int) -> 'UsrpClient':
+        """Create a USRP client which is connected to the
+        UsrpServer running at given ip and port"""
+
+        return UsrpClient(ip, port)
+
+    def __init__(self, ip: str, port: int) -> None:
+        """Private constructor. Should not be called. Use UsrpClient.create
+        """
+
+        super().__init__(ip, port)
+        self._rfConfiguredOnce = False
+
+    def configureRfConfig(self, rfConfig: RfConfig) -> None:
+        self._rfConfiguredOnce = True
+        return super().configureRfConfig(rfConfig)
+
+    def execute(self, baseTime: float) -> None:
+        if not self._rfConfiguredOnce:
+            raise RuntimeError("RF has not been configured "
+                               "for the USRP device before execution!")
+        super().execute(baseTime)
+
     def getSupportedDecimationRatios(self) -> np.ndarray:
         """Returns the supported decimation ratios."""
         decimationRatios = np.append(np.array([1]), np.arange(start=2, stop=57, step=2))
@@ -94,7 +140,3 @@ class UsrpClient:
     def getSupportedSamplingRates(self) -> np.ndarray:
         """Queries USRP for the supported sampling rates."""
         return self.getMasterClockRate() / self.getSupportedDecimationRatios()
-
-    def resetStreamingConfigs(self) -> None:
-        """Tells USRP to reset streaming configs."""
-        self.__rpcClient.resetStreamingConfigs()

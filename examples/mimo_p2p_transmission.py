@@ -45,8 +45,8 @@ def createSystem(
 
     # ceate system
     system = System()
-    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
-    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp2, usrpName="usrp2")
+    system.addUsrp(ip=ipUsrp1, usrpName="usrp1").configureRfConfig(rfConfig)
+    system.addUsrp(ip=ipUsrp2, usrpName="usrp2").configureRfConfig(rfConfig)
     return system
 
 

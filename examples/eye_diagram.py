@@ -36,7 +36,8 @@ def createSystem(
 
     # ceate system
     system = System()
-    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
+    dev = system.addUsrp(ip=ipUsrp1, usrpName="usrp1")
+    dev.configureRfConfig(rfConfig)
     return system
 
 
@@ -63,6 +64,8 @@ def createTxSignal() -> np.ndarray:
     signal = np.convolve(g, ups)
     signal = signal / signal.max()
 
+    if len(signal) % 2 == 1:
+        signal = signal[:-1]
     return signal
 
 

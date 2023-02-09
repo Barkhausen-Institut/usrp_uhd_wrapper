@@ -27,31 +27,26 @@ class TestSystemInitialization(unittest.TestCase):
 
     def test_usrpClientGetsCreated(self) -> None:
         IP = "localhost"
-        self.system.addUsrp(RfConfig(), IP, "dummyName", port=8520)
+        usrpClient = self.system.addUsrp(IP, "dummyName", port=8520)
         self.system._createUsrpClient.assert_called_once_with(IP, 8520)  # type: ignore
+        self.assertIs(usrpClient, self.mockUsrpClient)
 
     def test_throwExceptionIfIpDuplicate_ip(self) -> None:
-        self.system.addUsrp(RfConfig(), "localhost", "testName")
+        self.system.addUsrp("localhost", "testName")
         self.assertRaises(
             ValueError,
-            lambda: self.system.addUsrp(RfConfig(), "localhost", "testName2"),
+            lambda: self.system.addUsrp("localhost", "testName2"),
         )
 
     def test_throwExceptionIfDuplicate_usrpName(self) -> None:
-        self.system.addUsrp(RfConfig(), "localhost", "testName")
+        self.system.addUsrp("localhost", "testName")
         self.assertRaises(
             ValueError,
-            lambda: self.system.addUsrp(RfConfig(), "192.168.189.131", "testName"),
+            lambda: self.system.addUsrp("192.168.189.131", "testName"),
         )
 
-    def test_rfConfigPassedToRpcClient(self) -> None:
-        c = RfConfig()
-        self.system.addUsrp(c, "localhost", "testusrp")
-        self.mockUsrpClient.configureRfConfig.assert_called_once_with(c)
-
     def test_streamingConfigsAreReset(self) -> None:
-        c = RfConfig()
-        self.system.addUsrp(c, "localhost", "testusrp")
+        self.system.addUsrp("localhost", "testusrp")
         self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
 
 
@@ -89,7 +84,7 @@ class FakeSystem(System):
         self._createUsrpClient.side_effect = list(  # type: ignore
             self._createUsrpClient.side_effect  # type: ignore
         ) + [mockedUsrp]
-        super().addUsrp(RfConfig(), f"localhost{self.__noUsrps}", mockedUsrp.name)
+        super().addUsrp(f"localhost{self.__noUsrps}", mockedUsrp.name)
         return mockedUsrp
 
     def __mockUsrpFunctions(self, usrpClientMock: Mock) -> Mock:
@@ -288,9 +283,9 @@ class TestSynchronisationValid(unittest.TestCase):
 
 class TestSyncRecheck(unittest.TestCase):
     def setUp(self) -> None:
-        self.syncTimeOut = 0.4
-        self.sleepBeforeSyncTimeOut = 0.2
-        self.sleepAfterSyncTimeOut = 0.2
+        self.syncTimeOut = 0.1
+        self.sleepBeforeSyncTimeOut = 0.05
+        self.sleepAfterSyncTimeOut = 0.05
         System.syncTimeOut = self.syncTimeOut
         self.system = FakeSystem(2, TimedFlag(resetTimeSec=self.syncTimeOut))
 

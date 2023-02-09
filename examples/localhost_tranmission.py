@@ -55,7 +55,8 @@ def createSystem(
     rfConfig.noTxAntennas = 1
 
     system = System()
-    system.addUsrp(rfConfig=rfConfig, ip=ipUsrp1, usrpName="usrp1")
+    dev = system.addUsrp(ip=ipUsrp1, usrpName="usrp1")
+    dev.configureRfConfig(rfConfig)
     return system
 
 

@@ -12,14 +12,29 @@ from uhd_wrapper.utils.config import (
 
 
 class _RpcClient:
-
-    def __init__(self, rpcClient: zerorpc.Client) -> None:
+    def __init__(self, ip: str, port: int = 5555) -> None:
         """Initializes the UsrpClient.
 
         Args:
-            rpcClient (zerorpc.Client): zerorpc.Client that is already connected to RPC server.
+            ip (str): The IP where the RPC Server is running
+            port (int): The port where the RPC Server is running
         """
-        self.__rpcClient = rpcClient
+        self.__ip = ip
+        self.__port = port
+        self.__rpcClient = self._createClient(ip, port)
+
+    @property
+    def ip(self) -> str:
+        return self.__ip
+
+    @property
+    def port(self) -> int:
+        return self.__port
+
+    def _createClient(self, ip: str, port: int) -> zerorpc.Client:
+        result = zerorpc.Client()
+        result.connect(f"tcp://{ip}:{port}")
+        return result
 
     def configureRx(self, rxConfig: RxStreamingConfig) -> None:
         """Call `configureRx` on server and serialize `rxConfig`.
@@ -98,15 +113,13 @@ class UsrpClient(_RpcClient):
         """Create a USRP client which is connected to the
         UsrpServer running at given ip and port"""
 
-        rpc = zerorpc.Client()
-        rpc.connect(f"tcp://{ip}:{port}")
-        return UsrpClient(rpc)
+        return UsrpClient(ip, port)
 
-    def __init__(self, rpcClient: zerorpc.Client) -> None:
+    def __init__(self, ip: str, port: int) -> None:
         """Private constructor. Should not be called. Use UsrpClient.create
         """
 
-        super().__init__(rpcClient)
+        super().__init__(ip, port)
         self._rfConfiguredOnce = False
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:

@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import numpy as np
 import numpy.testing as npt
@@ -17,7 +17,13 @@ from uhd_wrapper.tests.python.utils import fillDummyRfConfig
 class TestRpcClient(unittest.TestCase):
     def setUp(self) -> None:
         self.mockRpcClient = Mock()
-        self.usrpClient = _RpcClient(self.mockRpcClient)
+        with patch(target="usrp_client.rpc_client._RpcClient._createClient",
+                   new=Mock(return_value=self.mockRpcClient)):
+            self.usrpClient = _RpcClient("the_ip", 1234)
+
+    def test_storesIPandPortCorrectly(self) -> None:
+        self.assertEqual(self.usrpClient.ip, "the_ip")
+        self.assertEqual(self.usrpClient.port, 1234)
 
     def test_configureRxSerializesCorrectly(self) -> None:
         rxConfig = RxStreamingConfig(receiveTimeOffset=1.0, noSamples=int(1e3))
@@ -94,7 +100,9 @@ class TestUsrpClient(unittest.TestCase):
         self.mockRpcClient = Mock()
         self.mockRpcClient.getMasterClockRate.return_value = self.masterClockRate
 
-        self.usrpClient = UsrpClient(self.mockRpcClient)
+        with patch(target="usrp_client.rpc_client._RpcClient._createClient",
+                   new=Mock(return_value=self.mockRpcClient)):
+            self.usrpClient = UsrpClient("", 0)
 
     def test_cannotExecuteWhenNoRfConfigIsSet(self) -> None:
         with self.assertRaises(RuntimeError):

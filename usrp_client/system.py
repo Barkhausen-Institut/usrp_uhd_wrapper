@@ -132,6 +132,7 @@ class System:
 
             usrpClient = self._createUsrpClient(ip, port)
             usrpClient.resetStreamingConfigs()
+            usrpClient.setSyncSource("external")
             self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, usrpClient)
             return usrpClient
         except RemoteError as e:

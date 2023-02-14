@@ -45,9 +45,10 @@ class TestSystemInitialization(unittest.TestCase):
             lambda: self.system.addUsrp("192.168.189.131", "testName"),
         )
 
-    def test_streamingConfigsAreReset(self) -> None:
+    def test_newUsrpIsConfiguredCorrectey(self) -> None:
         self.system.addUsrp("localhost", "testusrp")
         self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
+        self.mockUsrpClient.setSyncSource.assert_called_once_with("external")
 
 
 class FakedTimeFlag(TimedFlag):

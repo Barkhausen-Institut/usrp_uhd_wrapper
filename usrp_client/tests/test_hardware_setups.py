@@ -87,9 +87,9 @@ class P2pHardwareSetup(HardwareSetup):
     def connectUsrps(self) -> System:
         usrpIps = getUsrpIps()
         self.system = System()
-        dev1 = self.system.addUsrp(ip=usrpIps[0].ip, usrpName="usrp1", port=usrpIps[0].port)
+        dev1 = self.system.newUsrp(ip=usrpIps[0].ip, usrpName="usrp1", port=usrpIps[0].port)
         dev1.configureRfConfig(self.rfConfig)
-        dev2 = self.system.addUsrp(ip=usrpIps[1].ip, usrpName="usrp2", port=usrpIps[1].port)
+        dev2 = self.system.newUsrp(ip=usrpIps[1].ip, usrpName="usrp2", port=usrpIps[1].port)
         dev2.configureRfConfig(self.rfConfig)
         return self.system
 
@@ -99,7 +99,7 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         usrpIp = getIpUsrp1()
 
         self.system = System()
-        device = self.system.addUsrp(ip=usrpIp.ip, usrpName="usrp1", port=usrpIp.port)
+        device = self.system.newUsrp(ip=usrpIp.ip, usrpName="usrp1", port=usrpIp.port)
         device.configureRfConfig(self.rfConfig)
         return self.system
 

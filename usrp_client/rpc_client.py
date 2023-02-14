@@ -106,7 +106,7 @@ class _RpcClient:
         self.__rpcClient.resetStreamingConfigs()
 
     def setSyncSource(self, syncSource: str) -> None:
-        """Tells which synchronization source to use.
+        """Set synchronization source. See https://files.ettus.com/manual/classuhd_1_1rfnoc_1_1mb__controller.html#a76d77388ad2142c4d05297c8d14131d2 for details.
 
         Args:
             syncSource (str): Use "internal" or "external".

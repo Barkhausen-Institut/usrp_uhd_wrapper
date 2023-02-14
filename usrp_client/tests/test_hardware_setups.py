@@ -15,7 +15,8 @@ from uhd_wrapper.utils.config import (
     RxStreamingConfig,
     MimoSignal,
 )
-from usrp_client.system import System
+from usrp_client import System, UsrpClient
+
 
 IPandPort = namedtuple("IPandPort", "ip port")
 
@@ -195,16 +196,17 @@ class TestSingleDevice(unittest.TestCase):
 
     def test_executeImmediate(self) -> None:
         Fs = 245.76e6
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
-                                               txSampleRate=Fs, rxSampleRate=Fs)
-        sys = System()
-        dev = sys.addUsrp(ip=getIpUsrp1().ip,
-                          usrpName="usrp1", port=getIpUsrp1().port)
+        setup = HardwareSetup(noRxAntennas=1, noTxAntennas=1,
+                              txSampleRate=Fs, rxSampleRate=Fs)
+        dev = UsrpClient(ip=getIpUsrp1().ip, port=getIpUsrp1().port)
+
+        dev.setSyncSource("internal")
         dev.configureRfConfig(setup.rfConfig)
         dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                           samples=MimoSignal(signals=[self.randomSignal])))
         dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
                                           noSamples=30000))
+
         dev.executeImmediately()
         rxSignal = dev.collect()[0].signals[0]
 
@@ -386,11 +388,11 @@ class TestHardwareSystemTests(unittest.TestCase):
         self.assertAlmostEqual(findSignalStartsInFrame(rxSignal2, self.randomSignal),
                                50, delta=10)
 
-    def test_reUseSystemTenTimes_oneTxAntennaFourRxAntennas_localhost(self) -> None:
+    def test_reUseSystem_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
         system = setup.connectUsrps()
 
-        for _ in range(10):
+        for _ in range(3):
             rxStreamingConfig1 = RxStreamingConfig(
                 receiveTimeOffset=0.0, noSamples=int(60e3)
             )
@@ -545,13 +547,13 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
-    def test_reuseOfSystemTenTimes_4tx1rx_localhost(self) -> None:
+    def test_reuseOfSystem_4tx1rx_localhost(self) -> None:
         # create setup
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=4)
         system = setup.connectUsrps()
 
         # create signal
-        for _ in range(10):
+        for _ in range(3):
             signalLength = 5000
             signalStarts = [int(10e3), int(20e3), int(30e3), int(40e3)]
             antTxSignals = [

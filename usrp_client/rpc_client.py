@@ -131,6 +131,7 @@ class UsrpClient(_RpcClient):
         """
 
         super().__init__(ip, port)
+        self.resetStreamingConfigs()
         self._rfConfiguredOnce = False
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:

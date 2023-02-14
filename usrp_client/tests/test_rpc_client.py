@@ -11,12 +11,13 @@ from uhd_wrapper.utils.config import (
     TxStreamingConfig,
     RxStreamingConfig,
 )
+from uhd_wrapper.rpc_server.rpc_server import UsrpServer
 from uhd_wrapper.tests.python.utils import fillDummyRfConfig
 
 
 class TestRpcClient(unittest.TestCase):
     def setUp(self) -> None:
-        self.mockRpcClient = Mock()
+        self.mockRpcClient = Mock(spec=UsrpServer)
         with patch(target="usrp_client.rpc_client._RpcClient._createClient",
                    new=Mock(return_value=self.mockRpcClient)):
             self.usrpClient = _RpcClient("the_ip", 1234)
@@ -92,6 +93,10 @@ class TestRpcClient(unittest.TestCase):
     def test_getMasterClockRate_functionGetsCalled(self) -> None:
         _ = self.usrpClient.getMasterClockRate()
         self.mockRpcClient.getMasterClockRate.assert_called_once()
+
+    def test_setSyncSource_functionGetsCalled(self) -> None:
+        self.usrpClient.setSyncSource("internal")
+        self.mockRpcClient.setSyncSource.assert_called_once_with("internal")
 
 
 class TestUsrpClient(unittest.TestCase):

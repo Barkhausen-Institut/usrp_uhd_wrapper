@@ -193,7 +193,7 @@ class TestSingleDevice(unittest.TestCase):
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
 
-    def test_executeImmediate(self):
+    def test_executeImmediate(self) -> None:
         Fs = 245.76e6
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
                                                txSampleRate=Fs, rxSampleRate=Fs)
@@ -210,8 +210,6 @@ class TestSingleDevice(unittest.TestCase):
 
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
         self.assertAlmostEqual(peak, 268, delta=2)
-
-
 
 
 @pytest.mark.hardware

@@ -101,6 +101,14 @@ class _RpcClient:
         """Tells USRP to reset streaming configs."""
         self.__rpcClient.resetStreamingConfigs()
 
+    def setSyncSource(self, syncSource: str) -> None:
+        """Tells which synchronization source to use.
+
+        Args:
+            syncSource (str): Use "internal" or "external".
+        """
+        self.__rpcClient.setSyncSource(syncSource)
+
 
 class UsrpClient(_RpcClient):
     """This class is the interface to the UsrpServer running on the USRP device

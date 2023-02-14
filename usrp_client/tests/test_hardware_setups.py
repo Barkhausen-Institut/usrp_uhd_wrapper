@@ -185,6 +185,36 @@ class TestSampleRateSettings(unittest.TestCase):
 
 
 @pytest.mark.hardware
+class TestSingleDevice(unittest.TestCase):
+    def setUp(self) -> None:
+        self.noSamples = 20000
+        self.randomSignal = (
+            np.random.sample((self.noSamples,))
+            + 1j * np.random.sample((self.noSamples,))
+        ) - (0.5 + 0.5j)
+
+    def test_executeImmediate(self):
+        Fs = 245.76e6
+        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+                                               txSampleRate=Fs, rxSampleRate=Fs)
+        sys = System()
+        dev = sys.addUsrp(ip=getIpUsrp1().ip,
+                          usrpName="usrp1", port=getIpUsrp1().port)
+        dev.configureRfConfig(setup.rfConfig)
+        dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
+                                          samples=MimoSignal(signals=[self.randomSignal])))
+        dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
+                                          noSamples=30000))
+        dev.execute(dev.getCurrentFpgaTime() + 0.5)
+        rxSignal = dev.collect()[0].signals[0]
+
+        peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
+        self.assertAlmostEqual(peak, 268, delta=2)
+
+
+
+
+@pytest.mark.hardware
 class TestCarrierFrequencySettings(unittest.TestCase):
     def setUp(self) -> None:
         self.transmitF = 25e6

@@ -27,27 +27,36 @@ class TestSystemInitialization(unittest.TestCase):
 
     def test_usrpClientGetsCreated(self) -> None:
         IP = "localhost"
-        usrpClient = self.system.addUsrp(IP, "dummyName", port=8520)
+        usrpClient = self.system.newUsrp(IP, "dummyName", port=8520)
         self.system._createUsrpClient.assert_called_once_with(IP, 8520)  # type: ignore
         self.assertIs(usrpClient, self.mockUsrpClient)
 
     def test_throwExceptionIfIpDuplicate_ip(self) -> None:
-        self.system.addUsrp("localhost", "testName")
+        self.system.newUsrp("localhost", "testName")
         self.assertRaises(
             ValueError,
-            lambda: self.system.addUsrp("localhost", "testName2"),
+            lambda: self.system.newUsrp("localhost", "testName2"),
         )
 
     def test_throwExceptionIfDuplicate_usrpName(self) -> None:
-        self.system.addUsrp("localhost", "testName")
+        self.system.newUsrp("localhost", "testName")
         self.assertRaises(
             ValueError,
-            lambda: self.system.addUsrp("192.168.189.131", "testName"),
+            lambda: self.system.newUsrp("192.168.189.131", "testName"),
         )
 
-    def test_streamingConfigsAreReset(self) -> None:
-        self.system.addUsrp("localhost", "testusrp")
+    def test_newUsrpIsConfiguredCorrectey(self) -> None:
+        self.system.newUsrp("localhost", "testusrp")
         self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
+        self.mockUsrpClient.setSyncSource.assert_called_once_with("external")
+
+    def test_canAddExistingUsrp(self) -> None:
+        mockUsrpClient = Mock(spec=UsrpClient)
+        mockUsrpClient.ip = "abc"
+        mockUsrpClient.port = 5000
+        self.system.addUsrp(usrpName="stuff", client=mockUsrpClient)
+        mockUsrpClient.resetStreamingConfigs.assert_called_once()
+        mockUsrpClient.setSyncSource.assert_called_once_with("external")
 
 
 class FakedTimeFlag(TimedFlag):
@@ -84,7 +93,7 @@ class FakeSystem(System):
         self._createUsrpClient.side_effect = list(  # type: ignore
             self._createUsrpClient.side_effect  # type: ignore
         ) + [mockedUsrp]
-        super().addUsrp(f"localhost{self.__noUsrps}", mockedUsrp.name)
+        super().newUsrp(f"localhost{self.__noUsrps}", mockedUsrp.name)
         return mockedUsrp
 
     def __mockUsrpFunctions(self, usrpClientMock: Mock) -> Mock:

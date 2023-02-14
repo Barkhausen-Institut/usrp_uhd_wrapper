@@ -111,29 +111,42 @@ class System:
         self.__logger.debug(f"Created USRP RPC client at IP: {ip} and Port {port}.")
         return UsrpClient.create(ip, port)
 
-    def addUsrp(
+    def newUsrp(
         self,
         ip: str,
         usrpName: str,
         *,
         port: int = 5555
     ) -> UsrpClient:
-        """Add a new USRP to the system.
+        """Create a new USRP and add it to the system.
 
         Args:
-            rfConfig (RfConfig): Configuration of the Radio Frontend.
             ip (str): IP of the USRP.
             port (int): Port where the Usrp Server is listening
             usrpName (str): Identifier of the USRP to be added.
         """
         try:
+            usrpClient = self._createUsrpClient(ip, port)
+        except RemoteError as e:
+            raise RemoteUsrpError(e.msg, usrpName)
+        return self.addUsrp(usrpName=usrpName, client=usrpClient)
+
+    def addUsrp(self, usrpName: str, client: UsrpClient) -> UsrpClient:
+        """Add an existing UsrpClient to the system
+
+        Args:
+            usrpName (str): Identifier of the Usrp to be added
+            client (UsrpClient): Prepared UsrpClient
+        """
+        try:
             self._usrpsSynced.reset()
+            ip, port = client.ip, client.port
             self.__assertUniqueUsrp(ip, port, usrpName)
 
-            usrpClient = self._createUsrpClient(ip, port)
-            usrpClient.resetStreamingConfigs()
-            self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, usrpClient)
-            return usrpClient
+            client.resetStreamingConfigs()
+            client.setSyncSource("external")
+            self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, client)
+            return client
         except RemoteError as e:
             raise RemoteUsrpError(e.msg, usrpName)
 

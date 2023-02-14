@@ -28,11 +28,17 @@ RfNocFullDuplexGraph::RfNocFullDuplexGraph(const RfNocBlockConfig& config,
         replayCtrl_->set_play_type("sc16", c);
         replayCtrl_->set_record_type("sc16", c);
     }
-    graph_->get_mb_controller()->set_sync_source("external", "external");
+    setSyncSource("internal");
 }
 
 uhd::rfnoc::replay_block_control::sptr RfNocFullDuplexGraph::getReplayControl() {
     return replayCtrl_;
+}
+
+void RfNocFullDuplexGraph::setSyncSource(const std::string &type){
+    if (type != "internal" && type != "external")
+        throw UsrpException("Invalid sync source " + type);
+    graph_->get_mb_controller()->set_sync_source(type, type);
 }
 
 bool RfNocFullDuplexGraph::useTxChannel(size_t antennaId) const {

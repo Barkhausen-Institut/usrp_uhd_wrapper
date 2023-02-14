@@ -19,7 +19,7 @@ def createSystem(
 
     The USRPs themselves can only be accessd via the `System` class. If you want
     to access a new USRP, you have to create a System beforehand and call the function
-    `addUsrp`. The radio frontend configuration is defined using the `RfConfig` dataclass,
+    `newUsrp`. The radio frontend configuration is defined using the `RfConfig` dataclass,
     cf. below.
     """
     # create configurations
@@ -36,8 +36,8 @@ def createSystem(
     rfConfig.noTxAntennas = 1
 
     system = System()
-    system.addUsrp(ip=ipUsrp1, usrpName="usrp1").configureRfConfig(rfConfig)
-    system.addUsrp(ip=ipUsrp2, usrpName="usrp2").configureRfConfig(rfConfig)
+    system.newUsrp(ip=ipUsrp1, usrpName="usrp1").configureRfConfig(rfConfig)
+    system.newUsrp(ip=ipUsrp2, usrpName="usrp2").configureRfConfig(rfConfig)
     return system
 
 

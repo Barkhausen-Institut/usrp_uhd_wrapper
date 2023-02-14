@@ -61,6 +61,13 @@ class _RpcClient:
         """
         self.__rpcClient.execute(baseTime)
 
+    def executeImmediately(self) -> None:
+        """Execute the current TX and RX streaming configs immediately, without
+        synchronizing the stream time with other USRPs in the setup.
+
+        """
+        self.__rpcClient.execute(-1)
+
     def collect(self) -> List[MimoSignal]:
         """Collect samples from RPC server and deserialize them.
 
@@ -98,6 +105,17 @@ class _RpcClient:
         """Tells USRP to reset streaming configs."""
         self.__rpcClient.resetStreamingConfigs()
 
+    def setSyncSource(self, syncSource: str) -> None:
+        """Set synchronization source. See
+        https://files.ettus.com/manual/classuhd_1_1rfnoc_1_1mb__controller.html#a76d77388ad2142c4d05297c8d14131d2
+        for details.
+
+        Args:
+            syncSource (str): Use "internal" or "external".
+
+        """
+        self.__rpcClient.setSyncSource(syncSource)
+
 
 class UsrpClient(_RpcClient):
     """This class is the interface to the UsrpServer running on the USRP device
@@ -120,6 +138,7 @@ class UsrpClient(_RpcClient):
         """
 
         super().__init__(ip, port)
+        self.resetStreamingConfigs()
         self._rfConfiguredOnce = False
 
     def configureRfConfig(self, rfConfig: RfConfig) -> None:

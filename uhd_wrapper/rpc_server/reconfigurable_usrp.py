@@ -49,6 +49,9 @@ class RestartingUsrp:
     def setTxConfig(self, txConfig: TxStreamingConfig) -> None:
         self._usrp.setTxConfig(txConfig)
 
+    def setSyncSource(self, syncSource: str) -> None:
+        self._usrp.setSyncSource(syncSource)
+
     def setTimeToZeroNextPps(self) -> None:
         self._usrp.setTimeToZeroNextPps()
 

@@ -62,6 +62,10 @@ class _RpcClient:
         self.__rpcClient.execute(baseTime)
 
     def executeImmediately(self) -> None:
+        """Execute the current TX and RX streaming configs immediately, without
+        synchronizing the stream time with other USRPs in the setup.
+
+        """
         self.__rpcClient.execute(-1)
 
     def collect(self) -> List[MimoSignal]:

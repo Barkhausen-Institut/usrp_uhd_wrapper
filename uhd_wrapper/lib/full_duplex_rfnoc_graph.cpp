@@ -36,12 +36,9 @@ uhd::rfnoc::replay_block_control::sptr RfNocFullDuplexGraph::getReplayControl() 
 }
 
 void RfNocFullDuplexGraph::setSyncSource(const std::string &type){
-    if (type == "internal")
-        graph_->get_mb_controller()->set_sync_source("internal", "internal");
-    else if (type == "external")
-        graph_->get_mb_controller()->set_sync_source("external", "external");
-    else
+    if (type != "internal" && type != "external")
         throw UsrpException("Invalid sync source " + type);
+    graph_->get_mb_controller()->set_sync_source(type, type);
 }
 
 bool RfNocFullDuplexGraph::useTxChannel(size_t antennaId) const {

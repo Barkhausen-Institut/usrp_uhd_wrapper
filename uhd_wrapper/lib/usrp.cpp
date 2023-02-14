@@ -79,8 +79,7 @@ void Usrp::performStreaming(double baseTime) {
     std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
 
     if (baseTime < 0)
-        baseTime = getCurrentFpgaTime()() + 0.1;
-
+        baseTime = getCurrentFpgaTime() + 0.05;
 
     auto txFunc = [this,baseTime]() {
         transmitThreadException_ = nullptr;
@@ -200,6 +199,10 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
         assertValidRxStreamingConfig(rxStreamingConfigs_.back(), conf,
                                      GUARD_OFFSET_S_, rfConfig_->getRxSamplingRate());
     rxStreamingConfigs_.push_back(conf);
+}
+
+void Usrp::setSyncSource(const std::string &type) {
+    fdGraph_->setSyncSource(type);
 }
 
 void Usrp::setTimeToZeroNextPps() {

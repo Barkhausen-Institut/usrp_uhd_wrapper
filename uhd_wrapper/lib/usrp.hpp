@@ -27,11 +27,14 @@ class Usrp : public UsrpInterface {
     void setRfConfig(const RfConfig& rfConfig);
     void setTxConfig(const TxStreamingConfig& conf);
     void setRxConfig(const RxStreamingConfig& conf);
+    void setSyncSource(const std::string& type);
+
     void setTimeToZeroNextPps();
     uint64_t getCurrentSystemTime();
     double getCurrentFpgaTime();
     void execute(const double baseTime);
     std::vector<MimoSignal> collect();
+
 
     double getMasterClockRate() const;
     RfConfig getRfConfig() const;

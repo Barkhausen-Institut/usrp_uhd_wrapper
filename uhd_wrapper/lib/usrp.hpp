@@ -24,22 +24,22 @@ class Usrp : public UsrpInterface {
     Usrp(const std::string& ip);
     ~Usrp();
 
-    void setRfConfig(const RfConfig& rfConfig);
-    void setTxConfig(const TxStreamingConfig& conf);
-    void setRxConfig(const RxStreamingConfig& conf);
-    void setSyncSource(const std::string& type);
+    void setRfConfig(const RfConfig& rfConfig) override;
+    void setTxConfig(const TxStreamingConfig& conf) override;
+    void setRxConfig(const RxStreamingConfig& conf) override;
+    void setSyncSource(const std::string& type) override;
 
-    void setTimeToZeroNextPps();
-    uint64_t getCurrentSystemTime();
-    double getCurrentFpgaTime();
-    void execute(const double baseTime);
-    std::vector<MimoSignal> collect();
+    void setTimeToZeroNextPps() override;
+    uint64_t getCurrentSystemTime() override;
+    double getCurrentFpgaTime() override;
+    void execute(const double baseTime) override;
+    std::vector<MimoSignal> collect() override;
 
 
-    double getMasterClockRate() const;
-    RfConfig getRfConfig() const;
-    void resetStreamingConfigs();
-    std::string getDeviceType() const;
+    double getMasterClockRate() const override;
+    RfConfig getRfConfig() const override;
+    void resetStreamingConfigs() override;
+    std::string getDeviceType() const override;
 
    private:
     // RfNoC components

@@ -78,6 +78,10 @@ void Usrp::performStreaming(double baseTime) {
     int rxDecimFactor = rfConfig_->getRxDecimationRatio();
     std::cout << "RX dec factor: " << rxDecimFactor << std::endl;
 
+    if (baseTime < 0)
+        baseTime = getCurrentFpgaTime()() + 0.1;
+
+
     auto txFunc = [this,baseTime]() {
         transmitThreadException_ = nullptr;
         try {

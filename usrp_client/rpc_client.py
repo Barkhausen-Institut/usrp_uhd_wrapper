@@ -61,6 +61,9 @@ class _RpcClient:
         """
         self.__rpcClient.execute(baseTime)
 
+    def executeImmediately(self) -> None:
+        self.__rpcClient.execute(-1)
+
     def collect(self) -> List[MimoSignal]:
         """Collect samples from RPC server and deserialize them.
 

@@ -205,7 +205,7 @@ class TestSingleDevice(unittest.TestCase):
                                           samples=MimoSignal(signals=[self.randomSignal])))
         dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
                                           noSamples=30000))
-        dev.execute(dev.getCurrentFpgaTime() + 0.5)
+        dev.executeImmediately()
         rxSignal = dev.collect()[0].signals[0]
 
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)

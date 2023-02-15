@@ -116,6 +116,15 @@ class _RpcClient:
         """
         self.__rpcClient.setSyncSource(syncSource)
 
+    def getRemoteVersion(self) -> str:
+        """Return the Python package version of the remotely running UsrpServer
+        """
+        return self.__rpcClient.getVersion()
+
+    def getLocalVersion(self) -> str:
+        import usrp_client
+        return usrp_client.__version__
+
 
 class UsrpClient(_RpcClient):
     """This class is the interface to the UsrpServer running on the USRP device

@@ -451,6 +451,36 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=10,
         )
 
+    def test_p2pWithPrecreatedUsrps(self) -> None:
+        setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        dev1 = UsrpClient(*getIpUsrp1())
+        dev1.configureRfConfig(setup.rfConfig)
+
+        dev2 = UsrpClient(*getIpUsrp2())
+        dev2.configureRfConfig(setup.rfConfig)
+
+        system = System()
+        system.addUsrp("usrp1", dev1)
+        system.addUsrp("usrp2", dev2)
+
+        txStreamingConfig1 = TxStreamingConfig(
+            sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
+        )
+        rxStreamingConfig2 = RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=int(60e3)
+        )
+        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+        system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
+        system.execute()
+        samplesSystems = system.collect()
+        rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
+
+        self.assertAlmostEqual(
+            first=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
+            second=50,
+            delta=10,
+        )
+
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         setup.rfConfig.rxSamplingRate = 245.76e6 / 1

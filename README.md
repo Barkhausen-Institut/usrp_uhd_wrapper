@@ -122,18 +122,7 @@ We have some hardware tests, for testing/debugging purposes mainly. Samples are 
 
 # For Developers
 
-In the `snippets` directory, snippets can be found. As the testing capabilities for the hardware are strongly limited, the snippets are meant for evaluating the hardware. 
-
-We also have a **debug** folder that contains some files to be used for debugging:
-
-- tx_stream: streams white noise (mean 0, std 2) that may be analysed with a spectrum analyzer. **Note**: Underflow occurs, i.e. samples are not buffered fast enough into the FPGA. To verify if a signal is sent at all, this is sufficient however
-
-# Change History
-
-- `0.0-siso-jcas`: One antenna for transmitting and receiving is supported. Further, we support receiving and transmitting at one USRP with a second USRP receiving only. This covers the usecase of JCAS.
-- `0.1-mimo`: Full-fledged MIMO support.
-- `1.0.0`: Polishing and plenty of minor bugfixes. Collected feedback from users.
-- `1.1.0`: Using RfNoC Replay block to use FPGA Memory to buffer messages.
+- run `bumpversion major|minor|patch` to bump the version by one. It automatically creates a tag and tag commit.
 
 # Authors
 

@@ -143,6 +143,11 @@ class System:
             ip, port = client.ip, client.port
             self.__assertUniqueUsrp(ip, port, usrpName)
 
+            self.__logger.info("Adding new USRP (%s:%s) with local version "
+                               "%s and remote version %s.",
+                               ip, port,
+                               client.getLocalVersion(), client.getRemoteVersion())
+
             client.resetStreamingConfigs()
             client.setSyncSource("external")
             self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, client)

@@ -79,3 +79,7 @@ class UsrpServer:
 
     def setSyncSource(self, syncType: str) -> None:
         self.__usrp.setSyncSource(syncType)
+
+    def getVersion(self) -> str:
+        import uhd_wrapper
+        return uhd_wrapper.__version__

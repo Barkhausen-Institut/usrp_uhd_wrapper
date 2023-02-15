@@ -122,7 +122,7 @@ We have some hardware tests, for testing/debugging purposes mainly. Samples are 
 
 # For Developers
 
-- run `bumpversion major|minor|patch` to bump the version by one. It automatically creates a tag and tag commit.
+- run `bumpversion major|minor|patch` to bump the version by one. It automatically creates a tag and tag commit. Make sure you are on the master branch.
 
 # Authors
 

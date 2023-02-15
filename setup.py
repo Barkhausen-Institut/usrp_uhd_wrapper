@@ -2,7 +2,7 @@ from setuptools import setup, find_packages  # type: ignore
 import os
 
 
-VERSION = "1.1.1"
+VERSION = "1.2.0"
 AUTHOR = "Maximilian Matthé"
 AUTHOR_EMAIL = "maximilian.matthe@barkhauseninstitut.org"
 

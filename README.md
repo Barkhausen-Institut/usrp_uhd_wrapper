@@ -24,6 +24,7 @@ Follow the Steps of Install/Client below to install the client. Afterwards proce
 
 `ssh` to the USRP and follow the steps of Install/Server below. Afterwards proceed with the steps of the previous section. Ensure that the USRP was restarted.
 
+
 # Install
 
 ## Server
@@ -50,6 +51,25 @@ The USRP server needs a minute to start.
 4. **For running tests:** `pip install -r requirements_tests.txt`
 
 # Before Use
+
+## Sanity Tests
+For a quick check if the USRP's RPC Server is running correctly and the connection can be established, we provide a sanity test script in the module `usrp_client.sanity` which can be run by: 
+
+``` console
+$ python -m usrp_client.sanity --help
+usage: sanity.py [-h] [--sync] [--trx] [--single] --ips IPS [IPS ...]
+
+Run several sanity tests against USRPs
+
+optional arguments:
+  -h, --help           show this help message and exit
+  --sync               Run the synchronization test against all USRPs
+  --trx                Run a transmission from first to second USRP in <ips>
+  --single             Run a transmission on a single USRP
+  --ips IPS [IPS ...]  List of IPs to check
+```
+
+## Integration Tests
 
 We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., joint communication and sensing (JCAS), local transmission, peer-to-peer-transmission...). If you want to execute them, the environment variables `USRP1_IP` and `USRP2_IP` with the corresponding IP need to be set. Execute the command `pytest .` or, if you just want to execute the hardware-related tests: `pytest . -m "hardware"`. **It is highly recommended to execute these tests before conducting your measurements**:
 

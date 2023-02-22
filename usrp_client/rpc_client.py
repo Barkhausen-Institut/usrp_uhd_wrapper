@@ -136,7 +136,7 @@ class UsrpClient(_RpcClient):
     """
 
     @staticmethod
-    def create(ip: str, port: int) -> 'UsrpClient':
+    def create(ip: str, port: int = 5555) -> 'UsrpClient':
         """Create a USRP client which is connected to the
         UsrpServer running at given ip and port"""
 

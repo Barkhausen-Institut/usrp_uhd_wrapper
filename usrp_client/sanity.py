@@ -35,9 +35,7 @@ def _defaultRfConfig() -> RfConfig:
                     noRxAntennas=1)
 
 
-def _findFirstSampleInFrameOfSignal(
-    frame: np.ndarray, txSignal: np.ndarray
-) -> Tuple[int, np.ndarray]:
+def _findFirstSampleInFrameOfSignal(frame: np.ndarray, txSignal: np.ndarray) -> int:
     correlation = np.abs(np.correlate(frame, txSignal))
     return np.argsort(correlation)[-1]
 
@@ -70,7 +68,7 @@ def checkSynchronization(ips: List[str]) -> bool:
         return False
 
 
-def checkSingle(ip) -> bool:
+def checkSingle(ip: str) -> bool:
     print("Starting simple Single-USRP TX-Rx-Test...")
     client = UsrpClient.create(ip=ip)
 

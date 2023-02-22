@@ -148,6 +148,8 @@ def parseArgs() -> argparse.Namespace:
                         default=False)
     parser.add_argument("--ips", required=True, nargs="+",
                         help="List of IPs to check")
+    parser.add_argument("--all", default=False, action='store_true',
+                        help="Run all sanity tests")
 
     return parser.parse_args()
 
@@ -155,11 +157,11 @@ def parseArgs() -> argparse.Namespace:
 def main() -> None:
     args = parseArgs()
     success = True
-    if args.sync:
+    if args.sync or args.all:
         success = success & checkSynchronization(ips=args.ips)
-    if args.trx:
+    if args.trx or args.all:
         success = success & checkTrx(ips=args.ips)
-    if args.single:
+    if args.single or args.all:
         success = success & checkSingle(ip=args.ips[0])
 
     sys.exit(0 if success else 1)

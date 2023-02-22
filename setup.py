@@ -55,8 +55,8 @@ else:
         install_requires=[
             "zerorpc~=0.6.3",
             "pyzmq~=22.3.0",
-            "numpy~=1.21.6",
-            "matplotlib~=3.5.2",
+            "numpy>=1.23.5",
+            "matplotlib>=3.6.2",
             "dataclasses-json~=0.5.7",
         ],
     )

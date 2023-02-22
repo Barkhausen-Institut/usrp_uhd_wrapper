@@ -344,8 +344,8 @@ class TestTransceivingMultiDevice(unittest.TestCase):
         self.system.mockUsrps[0].collect.return_value = [samplesUsrp1]
         self.system.mockUsrps[1].collect.return_value = [samplesUsrp2]
         samples = self.system.collect()
-        npt.assert_array_equal(samples["usrp1"][0], samplesUsrp1)
-        npt.assert_array_equal(samples["usrp2"][0], samplesUsrp2)
+        npt.assert_array_equal(samples["usrp1"][0].signals[0], samplesUsrp1.signals[0])
+        npt.assert_array_equal(samples["usrp2"][0].signals[0], samplesUsrp2.signals[0])
 
     def test_calculationBaseTime_validSynchronisation(self) -> None:
         FPGA_TIME_S_USRP1 = 0.3

@@ -66,6 +66,7 @@ optional arguments:
   --sync               Run the synchronization test against all USRPs
   --trx                Run a transmission from first to second USRP in <ips>
   --single             Run a transmission on a single USRP
+  --all                Run all tests
   --ips IPS [IPS ...]  List of IPs to check
 ```
 

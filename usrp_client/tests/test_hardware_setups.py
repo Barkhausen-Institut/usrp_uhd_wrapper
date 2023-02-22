@@ -146,7 +146,7 @@ class TestHardwareClocks(unittest.TestCase):
     def test_twoUsrpsAreSynchronized(self) -> None:
         system = self._createSystem(P2pHardwareSetup)
 
-        system.resetFpgaTimes()
+        system.synchronizeUsrps()
         fpgaTimes = system.getCurrentFpgaTimes()
         self.assertLess(abs(fpgaTimes[0] - fpgaTimes[1]), 0.05)
 

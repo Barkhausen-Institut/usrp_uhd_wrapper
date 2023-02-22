@@ -20,6 +20,14 @@ usrp\_client.rpc\_client module
    :undoc-members:
    :show-inheritance:
 
+usrp\_client.sanity module
+--------------------------
+
+.. automodule:: usrp_client.sanity
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 usrp\_client.system module
 --------------------------
 

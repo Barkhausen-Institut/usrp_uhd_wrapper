@@ -134,6 +134,25 @@ The USRP server needs a minute to start.</p>
 </section>
 <section id="before-use">
 <h1>Before Use<a class="headerlink" href="#before-use" title="Permalink to this headline">¶</a></h1>
+<section id="sanity-tests">
+<h2>Sanity Tests<a class="headerlink" href="#sanity-tests" title="Permalink to this headline">¶</a></h2>
+<p>For a quick check if the USRP’s RPC Server is running correctly and the connection can be established, we provide a sanity test script in the module <code class="docutils literal notranslate"><span class="pre">usrp_client.sanity</span></code> which can be run by:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python<span class="w"> </span>-m<span class="w"> </span>usrp_client.sanity<span class="w"> </span>--help
+<span class="go">usage: sanity.py [-h] [--sync] [--trx] [--single] --ips IPS [IPS ...]</span>
+
+<span class="go">Run several sanity tests against USRPs</span>
+
+<span class="go">optional arguments:</span>
+<span class="go">  -h, --help           show this help message and exit</span>
+<span class="go">  --sync               Run the synchronization test against all USRPs</span>
+<span class="go">  --trx                Run a transmission from first to second USRP in &lt;ips&gt;</span>
+<span class="go">  --single             Run a transmission on a single USRP</span>
+<span class="go">  --ips IPS [IPS ...]  List of IPs to check</span>
+</pre></div>
+</div>
+</section>
+<section id="integration-tests">
+<h2>Integration Tests<a class="headerlink" href="#integration-tests" title="Permalink to this headline">¶</a></h2>
 <p>We provide integration tests, i.e. we run tests against the hardware covering some easy usecases (e.g., joint communication and sensing (JCAS), local transmission, peer-to-peer-transmission…). If you want to execute them, the environment variables <code class="docutils literal notranslate"><span class="pre">USRP1_IP</span></code> and <code class="docutils literal notranslate"><span class="pre">USRP2_IP</span></code> with the corresponding IP need to be set. Execute the command <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">.</span></code> or, if you just want to execute the hardware-related tests: <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">.</span> <span class="pre">-m</span> <span class="pre">&quot;hardware&quot;</span></code>. <strong>It is highly recommended to execute these tests before conducting your measurements</strong>:</p>
 <p>On client side:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>&lt;repo&gt;
@@ -142,6 +161,7 @@ $<span class="w"> </span><span class="nv">USRP1_IP</span><span class="o">=</span
 $<span class="w"> </span>pytest<span class="w"> </span>.
 </pre></div>
 </div>
+</section>
 </section>
 <section id="use">
 <h1>Use<a class="headerlink" href="#use" title="Permalink to this headline">¶</a></h1>

@@ -45,6 +45,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-usrp_client.errors">usrp_client.errors module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-usrp_client.rpc_client">usrp_client.rpc_client module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-usrp_client.sanity">usrp_client.sanity module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-usrp_client.system">usrp_client.system module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#module-usrp_client">Module contents</a></li>
 </ul>
@@ -124,7 +125,7 @@ protocol. <cite>UsrpClient</cite> forwards user calls to the RPC server and seri
 required.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="usrp_client.rpc_client.UsrpClient.create">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#usrp_client.rpc_client.UsrpClient" title="usrp_client.rpc_client.UsrpClient"><span class="pre">usrp_client.rpc_client.UsrpClient</span></a></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.create" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5555</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#usrp_client.rpc_client.UsrpClient" title="usrp_client.rpc_client.UsrpClient"><span class="pre">usrp_client.rpc_client.UsrpClient</span></a></span></span><a class="headerlink" href="#usrp_client.rpc_client.UsrpClient.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a USRP client which is connected to the
 UsrpServer running at given ip and port</p>
 </dd></dl>
@@ -166,6 +167,43 @@ UsrpServer running at given ip and port</p>
 </dd></dl>
 
 </dd></dl>
+
+</section>
+<section id="module-usrp_client.sanity">
+<span id="usrp-client-sanity-module"></span><h2>usrp_client.sanity module<a class="headerlink" href="#module-usrp_client.sanity" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="usrp_client.sanity.checkSynchronization">
+<span class="sig-prename descclassname"><span class="pre">usrp_client.sanity.</span></span><span class="sig-name descname"><span class="pre">checkSynchronization</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ips</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#usrp_client.sanity.checkSynchronization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the USRPs are reachable and are synchronized to the same clock</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>ips</strong> – List of IP-Adresses of the USRPs to check, where the RPC server needs to run.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if all is reachable and correctly cabled. False otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="usrp_client.sanity.checkSingle">
+<span class="sig-prename descclassname"><span class="pre">usrp_client.sanity.</span></span><span class="sig-name descname"><span class="pre">checkSingle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#usrp_client.sanity.checkSingle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="usrp_client.sanity.checkTrx">
+<span class="sig-prename descclassname"><span class="pre">usrp_client.sanity.</span></span><span class="sig-name descname"><span class="pre">checkTrx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ips</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#usrp_client.sanity.checkTrx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="usrp_client.sanity.parseArgs">
+<span class="sig-prename descclassname"><span class="pre">usrp_client.sanity.</span></span><span class="sig-name descname"><span class="pre">parseArgs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">argparse.Namespace</span></span></span><a class="headerlink" href="#usrp_client.sanity.parseArgs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="usrp_client.sanity.main">
+<span class="sig-prename descclassname"><span class="pre">usrp_client.sanity.</span></span><span class="sig-name descname"><span class="pre">main</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.sanity.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </section>
 <section id="module-usrp_client.system">
@@ -249,7 +287,7 @@ synchronized. Default value: 0.2s.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="usrp_client.system.System.baseTimeOffsetSec">
-<span class="sig-name descname"><span class="pre">baseTimeOffsetSec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></em><a class="headerlink" href="#usrp_client.system.System.baseTimeOffsetSec" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">baseTimeOffsetSec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></em><a class="headerlink" href="#usrp_client.system.System.baseTimeOffsetSec" title="Permalink to this definition">¶</a></dt>
 <dd><p>This value is taken for setting the same base time for all
 USRPs. For development use mainly. Do not change. Default value: 0.2s.</p>
 </dd></dl>
@@ -364,6 +402,12 @@ Values are the Radio Frontend configurations.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.system.System.synchronizeUsrps">
+<span class="sig-name descname"><span class="pre">synchronizeUsrps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.system.System.synchronizeUsrps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Let all USRPs synchronize upon the PPS signal</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="usrp_client.system.System.synchronisationValid">
 <span class="sig-name descname"><span class="pre">synchronisationValid</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#usrp_client.system.System.synchronisationValid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns true if synchronisation of the USRPs is valid.</p>
@@ -427,7 +471,7 @@ protocol. <cite>UsrpClient</cite> forwards user calls to the RPC server and seri
 required.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="usrp_client.UsrpClient.create">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#usrp_client.rpc_client.UsrpClient" title="usrp_client.rpc_client.UsrpClient"><span class="pre">usrp_client.rpc_client.UsrpClient</span></a></span></span><a class="headerlink" href="#usrp_client.UsrpClient.create" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5555</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#usrp_client.rpc_client.UsrpClient" title="usrp_client.rpc_client.UsrpClient"><span class="pre">usrp_client.rpc_client.UsrpClient</span></a></span></span><a class="headerlink" href="#usrp_client.UsrpClient.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a USRP client which is connected to the
 UsrpServer running at given ip and port</p>
 </dd></dl>
@@ -489,7 +533,7 @@ synchronized. Default value: 0.2s.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="usrp_client.System.baseTimeOffsetSec">
-<span class="sig-name descname"><span class="pre">baseTimeOffsetSec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.3</span></em><a class="headerlink" href="#usrp_client.System.baseTimeOffsetSec" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">baseTimeOffsetSec</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.5</span></em><a class="headerlink" href="#usrp_client.System.baseTimeOffsetSec" title="Permalink to this definition">¶</a></dt>
 <dd><p>This value is taken for setting the same base time for all
 USRPs. For development use mainly. Do not change. Default value: 0.2s.</p>
 </dd></dl>
@@ -601,6 +645,12 @@ Values are the Radio Frontend configurations.</p>
 <dd class="field-even"><p>Dict[str, <a class="reference internal" href="#usrp_client.RfConfig" title="usrp_client.RfConfig">RfConfig</a>]</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="usrp_client.System.synchronizeUsrps">
+<span class="sig-name descname"><span class="pre">synchronizeUsrps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#usrp_client.System.synchronizeUsrps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Let all USRPs synchronize upon the PPS signal</p>
 </dd></dl>
 
 <dl class="py method">

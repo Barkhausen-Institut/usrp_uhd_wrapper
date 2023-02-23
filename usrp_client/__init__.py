@@ -6,12 +6,18 @@ from uhd_wrapper.utils.config import MimoSignal, TxStreamingConfig, RxStreamingC
 
 def _get_version() -> str:
     import os
+    import re
     import subprocess
 
     thisDir = os.path.dirname(__file__)
-    versionFile = os.path.join(thisDir, '../VERSION')
+    versionFile = os.path.join(thisDir, '../setup.py')
     if os.path.exists(versionFile):
-        versionStr = open(versionFile).read().strip()
+        pattern = "VERSION = "
+        versionLine = next(r.strip() for r in open(versionFile).readlines() if pattern in r)
+        versionStr = versionLine.replace(pattern, "").replace("\"", "").strip()
+        if not re.match(r"^\d+\.\d+\.\d+$", versionStr):
+            raise ValueError("Version string not in correct format: ", versionStr)
+
         try:
             gitOut = subprocess.run((f"git -C {thisDir} diff --quiet").split())
             if gitOut.returncode != 0:

@@ -47,7 +47,7 @@ def versionFromPackage(packageName: str) -> str:
     Returns:
         If package is found: version of that package. Otherwise "unknown"
     """
-    import pkg_resources
+    import pkg_resources  # type: ignore
     try:
         return pkg_resources.get_distribution(packageName).version
     except pkg_resources.DistributionNotFound:

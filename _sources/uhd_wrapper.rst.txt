@@ -10,6 +10,17 @@ Subpackages
    uhd_wrapper.rpc_server
    uhd_wrapper.utils
 
+Submodules
+----------
+
+uhd\_wrapper.versioning module
+------------------------------
+
+.. automodule:: uhd_wrapper.versioning
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Module contents
 ---------------
 

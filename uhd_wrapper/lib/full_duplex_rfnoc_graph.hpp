@@ -42,7 +42,7 @@ private:
     bool useRxChannel(size_t antennaId) const;
     bool useTxChannel(size_t antennaId) const;
 
-    const size_t PACKET_SIZE = 8192;
+    const size_t PACKET_SIZE = 8192 / 2;
 
     size_t numTxAntennas_, numRxAntennas_;
     uhd::tx_streamer::sptr currentTxStreamer_;

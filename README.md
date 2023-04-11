@@ -57,17 +57,24 @@ For a quick check if the USRP's RPC Server is running correctly and the connecti
 
 ``` console
 $ python -m usrp_client.sanity --help
-usage: sanity.py [-h] [--sync] [--trx] [--single] --ips IPS [IPS ...]
+usage: sanity.py [-h] [--sync] [--trx] [--single] [--all] --ips ip [ip ...] [--fc FC] [--tx-gain TX_GAIN] [--rx-gain RX_GAIN]
 
 Run several sanity tests against USRPs
 
 optional arguments:
-  -h, --help           show this help message and exit
-  --sync               Run the synchronization test against all USRPs
-  --trx                Run a transmission from first to second USRP in <ips>
-  --single             Run a transmission on a single USRP
-  --all                Run all tests
-  --ips IPS [IPS ...]  List of IPs to check
+  -h, --help         show this help message and exit
+
+Test selection:
+  --sync             Run the synchronization test against all USRPs (default: False)
+  --trx              Run a transmission from first to second USRP in <ips> (default: False)
+  --single           Run a transmission on a single USRP (default: False)
+  --all              Run all sanity tests (default: False)
+
+USRP configuration:
+  --ips ip [ip ...]  List of IPs to check
+  --fc FC            Carrier frequency in Hz (default: 3700000000.0)
+  --tx-gain TX_GAIN  TX gain in dB (default: 20)
+  --rx-gain RX_GAIN  RX gain in dB (default: 20)
 ```
 
 ## Integration Tests

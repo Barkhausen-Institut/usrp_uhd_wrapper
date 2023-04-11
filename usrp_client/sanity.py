@@ -8,6 +8,8 @@ from usrp_client import (System, RfConfig, UsrpClient,
                          TxStreamingConfig, RxStreamingConfig,
                          MimoSignal)
 
+cmdlineArgs: argparse.Namespace
+
 
 def _connectSystem(ips: List[str]) -> Tuple[System, List[UsrpClient]]:
     print("   Connecting USRPs...")
@@ -27,10 +29,10 @@ def _defaultRfConfig() -> RfConfig:
                     rxAnalogFilterBw=400e6,
                     txSamplingRate=Fs,
                     rxSamplingRate=Fs,
-                    txGain=20,
-                    rxGain=20,
-                    txCarrierFrequency=3.7e9,
-                    rxCarrierFrequency=3.7e9,
+                    txGain=cmdlineArgs.tx_gain,
+                    rxGain=cmdlineArgs.rx_gain,
+                    txCarrierFrequency=cmdlineArgs.fc,
+                    rxCarrierFrequency=cmdlineArgs.fc,
                     noTxAntennas=1,
                     noRxAntennas=1)
 
@@ -136,26 +138,41 @@ def checkTrx(ips: List[str]) -> bool:
 
 
 def parseArgs() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Run several sanity tests against USRPs")
-    parser.add_argument("--sync", action="store_true",
-                        help="Run the synchronization test against all USRPs",
-                        default=False)
-    parser.add_argument("--trx", action="store_true",
-                        help="Run a transmission from first to second USRP in <ips>",
-                        default=False)
-    parser.add_argument("--single", action="store_true",
-                        help="Run a transmission on a single USRP",
-                        default=False)
-    parser.add_argument("--ips", required=True, nargs="+",
-                        help="List of IPs to check")
-    parser.add_argument("--all", default=False, action='store_true',
-                        help="Run all sanity tests")
+    parser = argparse.ArgumentParser(description="Run several sanity tests against USRPs",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    group = parser.add_argument_group("Test selection")
+    group.add_argument("--sync", action="store_true",
+                       help="Run the synchronization test against all USRPs",
+                       default=False)
+    group.add_argument("--trx", action="store_true",
+                       help="Run a transmission from first to second USRP in <ips>",
+                       default=False)
+    group.add_argument("--single", action="store_true",
+                       help="Run a transmission on a single USRP",
+                       default=False)
+    group.add_argument("--all", default=False, action='store_true',
+                       help="Run all sanity tests")
+
+    group = parser.add_argument_group("USRP configuration")
+    group.add_argument("--ips", required=True, nargs="+",
+                       help="List of IPs to check",
+                       default=argparse.SUPPRESS,
+                       metavar="ip")
+    group.add_argument("--fc", required=False, default=3.7e9,
+                       help="Carrier frequency in Hz", type=float)
+    group.add_argument("--tx-gain", required=False,
+                       default=20, help="TX gain in dB", type=float)
+    group.add_argument("--rx-gain", required=False,
+                       default=20, help="RX gain in dB", type=float)
 
     return parser.parse_args()
 
 
 def main() -> None:
+    global cmdlineArgs
     args = parseArgs()
+    cmdlineArgs = args
+
     success = True
     if args.sync or args.all:
         success = success & checkSynchronization(ips=args.ips)

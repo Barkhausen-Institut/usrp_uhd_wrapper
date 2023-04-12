@@ -164,7 +164,7 @@ def parseArgs() -> argparse.Namespace:
                        default=20, help="TX gain in dB", type=float)
     group.add_argument("--rx-gain", required=False,
                        default=20, help="RX gain in dB", type=float)
-    group.add_argument("--fs", required=False, default=254.76e6, type=float,
+    group.add_argument("--fs", required=False, default=245.76e6, type=float,
                        help="Sampling rate in Hz")
 
     return parser.parse_args()

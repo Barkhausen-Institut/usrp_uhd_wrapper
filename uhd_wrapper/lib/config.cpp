@@ -45,7 +45,15 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb) {
 }
 
 void assertSamplingRate(const double actualSamplingRate,
-                        const double masterClockRate) {
+                        const double masterClockRate,
+                        bool supportsDecimation) {
+    double ratio = actualSamplingRate / masterClockRate;
+    if (!supportsDecimation) {
+        if (std::abs(ratio - 1) > 0.01)
+            throw UsrpException("Decimation not supported by device!");
+    }
+
+
     // avoid floating inprecision issues
     double mod = std::fmod(masterClockRate / actualSamplingRate, 2.0);
     if (masterClockRate == actualSamplingRate)

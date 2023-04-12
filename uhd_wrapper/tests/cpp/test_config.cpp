@@ -27,18 +27,22 @@ TEST_CASE("[SamplesDoNotFitEvenlyIntoBuffer]") {
 
 TEST_CASE("[SamplingRateSupported]") {
     SECTION("Uneven decimation rate throws exception") {
-        REQUIRE_THROWS_AS(assertSamplingRate(250e6 / 3, 250e6), UsrpException);
+        REQUIRE_THROWS_AS(assertSamplingRate(250e6 / 3, 250e6, true), UsrpException);
     }
 
     SECTION("Even decimation rate throws no exception") {
-        REQUIRE_NOTHROW(assertSamplingRate(250e6 / 4, 250e6));
+        REQUIRE_NOTHROW(assertSamplingRate(250e6 / 4, 250e6, true));
     }
     SECTION("Full sample rate throws no exception") {
-        REQUIRE_NOTHROW(assertSamplingRate(250e6 / 1, 250e6));
+        REQUIRE_NOTHROW(assertSamplingRate(250e6 / 1, 250e6, true));
     }
 
     SECTION("Close-to-correct-samplerate throws no error") {
-        REQUIRE_NOTHROW(assertSamplingRate(4.38857143e+06, 245.76e6));
+        REQUIRE_NOTHROW(assertSamplingRate(4.38857143e+06, 245.76e6, true));
+    }
+
+    SECTION("Allow only master clock rate when no decimation allowed") {
+        REQUIRE_THROWS_AS(assertSamplingRate(250e6 / 4, 250e6, false), UsrpException);
     }
 }
 

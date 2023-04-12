@@ -39,6 +39,9 @@ private:
     void setRxSampleRate(double rate);
     void setTxSampleRate(double rate);
 
+    double readRxSampleRate() const;
+    double readTxSampleRate() const;
+
     RfConfig rfConfig_;
     double masterClockRate_;
     int numTxAntennas_ = 0;

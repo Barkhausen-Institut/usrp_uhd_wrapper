@@ -30,6 +30,7 @@ public:
     double getRxSamplingRate() const;
     int getRxDecimationRatio() const;
     double getMasterClockRate() const;
+    std::vector<double> getSupportedSampleRates() const;
 
 private:
     void setRfConfigForRxAntenna(const RfConfig& conf,

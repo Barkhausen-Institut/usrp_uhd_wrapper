@@ -113,6 +113,16 @@ double RFConfiguration::getMasterClockRate() const {
     return masterClockRate_;
 }
 
+std::vector<double> RFConfiguration::getSupportedSampleRates() const {
+    double master = getMasterClockRate();
+    std::vector<double> result = { master };
+    if (supportsDecimation()) {
+        for(int i = 2; i < 58; i += 2)
+            result.push_back(master / i);
+    }
+    return result;
+}
+
 RfConfig RFConfiguration::readFromGraph() {
     RfConfig conf;
     conf.txCarrierFrequency = radioCtrl1_->get_tx_frequency(0);

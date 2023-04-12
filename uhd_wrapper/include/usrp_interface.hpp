@@ -19,6 +19,7 @@ class UsrpInterface {
     virtual std::vector<MimoSignal> collect() = 0;
     virtual void resetStreamingConfigs() = 0;
     virtual double getMasterClockRate() const = 0;
+    virtual std::vector<double> getSupportedSampleRates() const = 0;
     virtual RfConfig getRfConfig() const = 0;
     virtual std::string getDeviceType() const = 0;
 };

@@ -2,7 +2,6 @@ import unittest
 from unittest.mock import Mock, patch
 
 import numpy as np
-import numpy.testing as npt
 
 from usrp_client.rpc_client import UsrpClient, _RpcClient
 from uhd_wrapper.utils.config import (
@@ -94,6 +93,10 @@ class TestRpcClient(unittest.TestCase):
         _ = self.usrpClient.getMasterClockRate()
         self.mockRpcClient.getMasterClockRate.assert_called_once()
 
+    def test_getSupportedSampleRates(self) -> None:
+        self.usrpClient.getSupportedSampleRates()
+        self.mockRpcClient.getSupportedSampleRates.assert_called_once()
+
     def test_setSyncSource_functionGetsCalled(self) -> None:
         self.usrpClient.setSyncSource("internal")
         self.mockRpcClient.setSyncSource.assert_called_once_with("internal")
@@ -115,13 +118,3 @@ class TestUsrpClient(unittest.TestCase):
 
         self.usrpClient.configureRfConfig(RfConfig())
         self.usrpClient.execute(5)
-
-    def test_supportedSamplingRates(self) -> None:
-        supportedDecimationRatios = np.array([1, 2])
-        self.usrpClient.getSupportedDecimationRatios = (  # type: ignore
-            lambda: supportedDecimationRatios
-        )
-        npt.assert_array_almost_equal(
-            self.masterClockRate / supportedDecimationRatios,
-            self.usrpClient.getSupportedSamplingRates(),
-        )

@@ -73,6 +73,9 @@ class RestartingUsrp:
     def getMasterClockRate(self) -> float:
         return self._usrp.getMasterClockRate()
 
+    def getSupportedSampleRates(self) -> List[float]:
+        return self._usrp.getSupportedSampleRates()
+
     def getRfConfig(self) -> RfConfig:
         return self._usrp.getRfConfig()
 

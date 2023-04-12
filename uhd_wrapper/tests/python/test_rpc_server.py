@@ -203,3 +203,8 @@ class TestUsrpServer(unittest.TestCase):
     def test_resetStreamingConfigs_functionsGetsCalled(self) -> None:
         self.usrpServer.resetStreamingConfigs()
         self.usrpMock.resetStreamingConfigs.assert_called_once()
+
+    def test_getSupportedSampleRatesGetsCalled(self) -> None:
+        self.usrpMock.getSupportedSampleRates.return_value = [1, 2, 3]
+        res = self.usrpServer.getSupportedSampleRates()
+        self.assertEqual(res, [1, 2, 3])

@@ -24,7 +24,7 @@ def _connectSystem(ips: List[str]) -> Tuple[System, List[UsrpClient]]:
 
 
 def _defaultRfConfig() -> RfConfig:
-    Fs = 245.76e6
+    Fs = cmdlineArgs.fs
     return RfConfig(txAnalogFilterBw=400e6,
                     rxAnalogFilterBw=400e6,
                     txSamplingRate=Fs,
@@ -164,6 +164,8 @@ def parseArgs() -> argparse.Namespace:
                        default=20, help="TX gain in dB", type=float)
     group.add_argument("--rx-gain", required=False,
                        default=20, help="RX gain in dB", type=float)
+    group.add_argument("--fs", required=False, default=254.76e6, type=float,
+                       help="Sampling rate in Hz")
 
     return parser.parse_args()
 

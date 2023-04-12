@@ -131,6 +131,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("collect", &bi::UsrpInterface::collect)
         .def("resetStreamingConfigs", &bi::UsrpInterface::resetStreamingConfigs)
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
+        .def("getSupportedSampleRates", &bi::UsrpInterface::getSupportedSampleRates)
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig)
         .def_property_readonly("deviceType", &bi::UsrpInterface::getDeviceType);
 

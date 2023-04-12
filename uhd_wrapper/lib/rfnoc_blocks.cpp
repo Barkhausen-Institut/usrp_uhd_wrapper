@@ -1,4 +1,5 @@
 #include "rfnoc_blocks.hpp"
+#include <uhd/exception.hpp>
 
 namespace bi {
 RfNocBlockConfig RfNocBlockConfig::defaultNames() {
@@ -26,14 +27,23 @@ void RfNocBlocks::obtainBlocks() {
 
     replayCtrl_ = graph_->get_block<replay_block_control>(block_id_t(blockNames_.replayId));
 
-    ddcControl1_ = graph_->get_block<ddc_block_control>(block_id_t(blockNames_.ddcIds[0]));
-    ducControl1_ = graph_->get_block<duc_block_control>(block_id_t(blockNames_.ducIds[0]));
-    ddcControl2_ = graph_->get_block<ddc_block_control>(block_id_t(blockNames_.ddcIds[1]));
-    ducControl2_ = graph_->get_block<duc_block_control>(block_id_t(blockNames_.ducIds[1]));
+    try {
+        ddcControl1_ = graph_->get_block<ddc_block_control>(block_id_t(blockNames_.ddcIds[0]));
+        ducControl1_ = graph_->get_block<duc_block_control>(block_id_t(blockNames_.ducIds[0]));
+        ddcControl2_ = graph_->get_block<ddc_block_control>(block_id_t(blockNames_.ddcIds[1]));
+        ducControl2_ = graph_->get_block<duc_block_control>(block_id_t(blockNames_.ducIds[1]));
+    }
+    catch(uhd::lookup_error& err) {
+        std::cout << "No DDC/DUC found. Disabling decimation" << std::endl;
+    }
 }
 
 double RfNocBlocks::getCurrentFpgaTime() {
     return graph_->get_mb_controller()->get_timekeeper(0)->get_time_now().get_real_secs();
+}
+
+bool RfNocBlocks::supportsDecimation() const {
+    return ddcControl1_ != nullptr;
 }
 
 RfNocBlocks::RadioChannelPair RfNocBlocks::getRadioChannelPair(int antenna) {

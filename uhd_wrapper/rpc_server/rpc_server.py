@@ -77,6 +77,9 @@ class UsrpServer:
     def resetStreamingConfigs(self) -> None:
         self.__usrp.resetStreamingConfigs()
 
+    def getSupportedSampleRates(self) -> List[float]:
+        return self.__usrp.getSupportedSampleRates()
+
     def setSyncSource(self, syncType: str) -> None:
         self.__usrp.setSyncSource(syncType)
 

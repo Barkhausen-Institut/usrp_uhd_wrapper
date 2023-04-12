@@ -58,7 +58,8 @@ bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b);
 size_t calcNoPackages(const size_t noSamples, const size_t spb);
 size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb);
 void assertSamplingRate(const double actualSamplingRate,
-                        const double masterClockRate);
+                        const double masterClockRate,
+                        bool supportsDecimation);
 
 void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
                                   const TxStreamingConfig& newConfig,

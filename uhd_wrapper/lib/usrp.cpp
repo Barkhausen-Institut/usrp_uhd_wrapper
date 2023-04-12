@@ -142,6 +142,10 @@ double Usrp::getMasterClockRate() const {
     return rfConfig_->getMasterClockRate();
 }
 
+std::vector<double> Usrp::getSupportedSampleRates() const {
+    return rfConfig_->getSupportedSampleRates();
+}
+
 void Usrp::receive(const double baseTime, std::vector<MimoSignal> &buffers,
                    std::exception_ptr &exceptionPtr) {
     try {

@@ -36,6 +36,7 @@ public:
     uhd::rfnoc::ddc_block_control::sptr ddcControl1_, ddcControl2_;
 
     double getCurrentFpgaTime();
+    bool supportsDecimation() const;
 
     typedef std::tuple<uhd::rfnoc::radio_control::sptr, int> RadioChannelPair;
     RadioChannelPair getRadioChannelPair(int antenna);

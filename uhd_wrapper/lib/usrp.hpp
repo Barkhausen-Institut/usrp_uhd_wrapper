@@ -37,6 +37,7 @@ class Usrp : public UsrpInterface {
 
 
     double getMasterClockRate() const override;
+    std::vector<double> getSupportedSampleRates() const override;
     RfConfig getRfConfig() const override;
     void resetStreamingConfigs() override;
     std::string getDeviceType() const override;

@@ -101,6 +101,10 @@ class _RpcClient:
         """Queries the master clock rate of the USRP."""
         return self.__rpcClient.getMasterClockRate()
 
+    def getSupportedSampleRates(self) -> List[float]:
+        """Queries the samples rates supported by the device."""
+        return self.__rpcClient.getSupportedSampleRates()
+
     def resetStreamingConfigs(self) -> None:
         """Tells USRP to reset streaming configs."""
         self.__rpcClient.resetStreamingConfigs()
@@ -160,11 +164,9 @@ class UsrpClient(_RpcClient):
                                "for the USRP device before execution!")
         super().execute(baseTime)
 
-    def getSupportedDecimationRatios(self) -> np.ndarray:
-        """Returns the supported decimation ratios."""
-        decimationRatios = np.append(np.array([1]), np.arange(start=2, stop=57, step=2))
-        return decimationRatios
-
     def getSupportedSamplingRates(self) -> np.ndarray:
-        """Queries USRP for the supported sampling rates."""
-        return self.getMasterClockRate() / self.getSupportedDecimationRatios()
+        """Queries USRP for the supported sampling rates.
+
+        Deprecated! Use `getSupportedSampleRates` instead.
+        """
+        return np.array(self.getSupportedSampleRates())

@@ -151,7 +151,6 @@ class TestHardwareClocks(unittest.TestCase):
         self.assertLess(abs(fpgaTimes[0] - fpgaTimes[1]), 0.05)
 
 
-
 @pytest.mark.hardware
 class TestSampleRateSettings(unittest.TestCase):
     def setUp(self) -> None:
@@ -220,19 +219,16 @@ class TestSingleDevice(unittest.TestCase):
         setup = HardwareSetup(noRxAntennas=4, noTxAntennas=4,
                               txSampleRate=Fs, rxSampleRate=Fs)
         dev = UsrpClient(ip=getIpUsrp1().ip, port=getIpUsrp1().port)
+
         N = 10000
         OFF = 11000
         L = 100000
-        signals = []
-        signals.append(np.linspace(0, 1, N))
-        signals.append(np.linspace(1, 0, N))
-        signals.append(np.hstack(2*[np.linspace(1, 0, N//2)]))
-        signals.append(np.hstack(2*[np.linspace(0, 1, N//2)]))
-        signals = [np.random.sample((N,)) + 1j*np.random.sample((N,))-0.5-0.5j for _ in range(4)]
+        signals = [np.random.sample((N,)) + 1j*np.random.sample((N,))-0.5-0.5j
+                   for _ in range(4)]
 
         padded = [np.zeros((L,), dtype=complex) for _ in range(4)]
         for i in range(4):
-           padded[i][OFF * i + np.arange(N)] = signals[i]
+            padded[i][OFF * i + np.arange(N)] = signals[i]
 
         dev.setSyncSource("internal")
         dev.configureRfConfig(setup.rfConfig)
@@ -248,6 +244,7 @@ class TestSingleDevice(unittest.TestCase):
             for tx in range(4):
                 peak = findSignalStartsInFrame(rxSignal[rx], signals[tx])
                 self.assertAlmostEqual(peak, 342 + OFF * tx, delta=2)
+
 
 @pytest.mark.hardware
 class TestCarrierFrequencySettings(unittest.TestCase):

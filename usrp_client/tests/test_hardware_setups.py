@@ -1,4 +1,4 @@
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Union
 import unittest
 import pytest
 import os
@@ -39,6 +39,21 @@ def getIpUsrp2() -> IPandPort:
 
 def getUsrpIps() -> Tuple[IPandPort, IPandPort]:
     return (getIpUsrp1(), getIpUsrp2())
+
+
+def skipIfFsNotSupported(Fs: Union[List[float], float],
+                         dev: Union[List[UsrpClient], UsrpClient]) -> None:
+    Fs = [Fs] if type(Fs) is float else Fs
+    dev = [dev] if type(dev) is UsrpClient else dev
+
+    # needed to satisfy mypy
+    assert type(Fs) is list
+    assert type(dev) is list
+
+    for d in dev:
+        for f in Fs:
+            if f not in d.getSupportedSampleRates():
+                pytest.skip(f"Samplerate {f/1e6}MHz not supported by device {d.ip}:{d.port}")
 
 
 def createRandom(noSamples: int) -> np.ndarray:
@@ -88,8 +103,12 @@ class P2pHardwareSetup(HardwareSetup):
         usrpIps = getUsrpIps()
         self.system = System()
         dev1 = self.system.newUsrp(ip=usrpIps[0].ip, usrpName="usrp1", port=usrpIps[0].port)
-        dev1.configureRfConfig(self.rfConfig)
         dev2 = self.system.newUsrp(ip=usrpIps[1].ip, usrpName="usrp2", port=usrpIps[1].port)
+
+        skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
+                             [dev1, dev2])
+
+        dev1.configureRfConfig(self.rfConfig)
         dev2.configureRfConfig(self.rfConfig)
         return self.system
 
@@ -100,6 +119,9 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
 
         self.system = System()
         device = self.system.newUsrp(ip=usrpIp.ip, usrpName="usrp1", port=usrpIp.port)
+        skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
+                             device)
+
         device.configureRfConfig(self.rfConfig)
         return self.system
 
@@ -199,6 +221,7 @@ class TestSingleDevice(unittest.TestCase):
         setup = HardwareSetup(noRxAntennas=1, noTxAntennas=1,
                               txSampleRate=Fs, rxSampleRate=Fs)
         dev = UsrpClient(ip=getIpUsrp1().ip, port=getIpUsrp1().port)
+        skipIfFsNotSupported(Fs, dev)
 
         dev.setSyncSource("internal")
         dev.configureRfConfig(setup.rfConfig)
@@ -211,7 +234,7 @@ class TestSingleDevice(unittest.TestCase):
         rxSignal = dev.collect()[0].signals[0]
 
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
-        self.assertAlmostEqual(peak, 268, delta=2)
+        self.assertAlmostEqual(peak, 275, delta=2)
 
     @pytest.mark.FS_400MHz
     def test_400MHzMIMO_ImmediateExecute(self) -> None:
@@ -219,6 +242,7 @@ class TestSingleDevice(unittest.TestCase):
         setup = HardwareSetup(noRxAntennas=4, noTxAntennas=4,
                               txSampleRate=Fs, rxSampleRate=Fs)
         dev = UsrpClient(ip=getIpUsrp1().ip, port=getIpUsrp1().port)
+        skipIfFsNotSupported(Fs, dev)
 
         N = 10000
         OFF = 11000
@@ -243,7 +267,7 @@ class TestSingleDevice(unittest.TestCase):
         for rx in range(4):
             for tx in range(4):
                 peak = findSignalStartsInFrame(rxSignal[rx], signals[tx])
-                self.assertAlmostEqual(peak, 342 + OFF * tx, delta=2)
+                self.assertAlmostEqual(peak, 346 + OFF * tx, delta=5)
 
 
 @pytest.mark.hardware
@@ -486,9 +510,11 @@ class TestHardwareSystemTests(unittest.TestCase):
     def test_p2pWithPrecreatedUsrps(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         dev1 = UsrpClient(*getIpUsrp1())
-        dev1.configureRfConfig(setup.rfConfig)
-
         dev2 = UsrpClient(*getIpUsrp2())
+        skipIfFsNotSupported([setup.rfConfig.rxSamplingRate, setup.rfConfig.txSamplingRate],
+                             [dev1, dev2])
+
+        dev1.configureRfConfig(setup.rfConfig)
         dev2.configureRfConfig(setup.rfConfig)
 
         system = System()

@@ -32,6 +32,17 @@ class _RpcClient:
         return self.__port
 
     def _createClient(self, ip: str, port: int) -> zerorpc.Client:
+        import socket
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1)
+
+            # throws after 1second timeout. Succeeds, if USRP can be reached.
+            s.connect((ip, port))
+            s.close()
+        except socket.timeout:
+            raise IOError(f"Usrp {ip}:{port} not reachable")
+
         result = zerorpc.Client()
         result.connect(f"tcp://{ip}:{port}")
         return result

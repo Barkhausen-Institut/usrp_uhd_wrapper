@@ -132,6 +132,7 @@ void Usrp::performDownload() {
     for(const auto& config: rxStreamingConfigs_) {
         replayConfig_->configDownload(config.wordAlignedNoSamples());
         receivedSamples_.push_back(fdGraph_->download(config.wordAlignedNoSamples()));
+        shortenSignal(receivedSamples_.back(), config.noSamples);
     }
 }
 
@@ -197,7 +198,6 @@ void Usrp::setTxConfig(const TxStreamingConfig &conf) {
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
                                      GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
     txStreamingConfigs_.push_back(conf);
-    txStreamingConfigs_.back().alignToWordSize();
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {

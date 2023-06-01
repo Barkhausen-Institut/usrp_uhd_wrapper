@@ -239,15 +239,16 @@ class TestSingleDevice(unittest.TestCase):
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
         self.assertAlmostEqual(peak, 275, delta=2)
 
-    def test_allowsOddTXSampleCount(self) -> None:
+    def test_allowsOddTxRxSampleCount(self) -> None:
         dev = self._getDevice(Fs=245.76e6)
         signal = np.append(self.randomSignal, [0])
         dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                           samples=MimoSignal(signals=[signal])))
         dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
-                                          noSamples=30000))
+                                          noSamples=30001))
         dev.executeImmediately()
         rxSignal = dev.collect()[0].signals[0]
+        self.assertEqual(len(rxSignal), 30001)
 
         self.assertAlmostEqual(findSignalStartsInFrame(rxSignal, signal),
                                275,

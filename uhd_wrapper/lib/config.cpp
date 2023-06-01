@@ -152,9 +152,24 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     return os;
 }
 
+void _resizeSignal(MimoSignal& samples, size_t length) {
+    for (auto& s : samples) {
+        s.resize(length);
+    }
+}
+
+void extendToWordSize(MimoSignal& samples) {
+    _resizeSignal(samples, nextMultipleOfWordSize(samples[0].size()));
+}
+
+void shortenSignal(MimoSignal& samples, size_t length) {
+    if (samples[0].size() < length)
+        throw UsrpException("Signal is too short and cannot be shortened further");
+    _resizeSignal(samples, length);
+}
+
 void TxStreamingConfig::alignToWordSize() {
-    for (auto& s : samples)
-        s.resize(nextMultipleOfWordSize(s.size()));
+    extendToWordSize(samples);
 }
 
 size_t RxStreamingConfig::wordAlignedNoSamples() const {

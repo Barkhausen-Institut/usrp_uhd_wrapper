@@ -88,30 +88,51 @@ TEST_CASE("[ValidTxStreamingConfig]") {
     }
 }
 
-TEST_CASE("TxStreamingConfig") {
-    SECTION("Align to word size") {
+
+TEST_CASE("MimoSignal") {
+    SECTION("extendToWordSize") {
         SECTION("zero length is already aligned") {
             MimoSignal samples{{}};
-            TxStreamingConfig config(samples, 0);
-            config.alignToWordSize();
+            extendToWordSize(samples);
 
-            REQUIRE(config.samples[0].size() == 0);
+            REQUIRE(samples[0].size() == 0);
         }
 
         SECTION("zeros are appended in MIMO") {
             MimoSignal samples{{1}, {2}};
-            TxStreamingConfig config(samples, 0);
-            config.alignToWordSize();
+            extendToWordSize(samples);
 
-            REQUIRE(config.samples[0].size() == 8);
-            REQUIRE(config.samples[1].size() == 8);
-            REQUIRE(config.samples[0][0] == sample(1));
-            REQUIRE(config.samples[1][0] == sample(2));
+            REQUIRE(samples[0].size() == 8);
+            REQUIRE(samples[1].size() == 8);
+            REQUIRE(samples[0][0] == sample(1));
+            REQUIRE(samples[1][0] == sample(2));
 
             for(int i = 1; i < 8; i++) {
-                REQUIRE(config.samples[0][i] == sample(0));
-                REQUIRE(config.samples[1][i] == sample(0));
+                REQUIRE(samples[0][i] == sample(0));
+                REQUIRE(samples[1][i] == sample(0));
             }
+        }
+    }
+
+    SECTION("shortenSignal") {
+        SECTION("signal is kept") {
+            MimoSignal samples{{1, 2, 3}};
+            shortenSignal(samples, 3);
+            REQUIRE(samples[0][2] == sample(3));
+            REQUIRE(samples[0].size() == 3);
+        }
+
+        SECTION("signal is shortened") {
+            MimoSignal samples{{1, 2, 3}};
+            shortenSignal(samples, 2);
+            REQUIRE(samples[0][1] == sample(2));
+            REQUIRE(samples[0].size() == 2);
+        }
+
+        SECTION("Signal cannot be further shortened") {
+            MimoSignal samples{{1, 2, 3}};
+            REQUIRE_THROWS_AS(shortenSignal(samples, 4),
+                              UsrpException);
         }
     }
 }

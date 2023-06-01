@@ -54,6 +54,8 @@ struct RxStreamingConfig {
 };
 
 size_t nextMultipleOfWordSize(size_t count);
+void extendToWordSize(MimoSignal& samples);
+void shortenSignal(MimoSignal& samples, size_t length);
 
 bool operator==(const RfConfig& a, const RfConfig& b);
 bool operator!=(const RfConfig& a, const RfConfig& b);

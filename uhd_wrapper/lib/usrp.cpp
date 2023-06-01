@@ -5,6 +5,7 @@
 #include <uhd/types/ref_vector.hpp>
 #include <uhd/rfnoc/mb_controller.hpp>
 
+#include "config.hpp"
 #include "usrp.hpp"
 #include "usrp_exception.hpp"
 

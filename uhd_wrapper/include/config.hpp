@@ -39,6 +39,8 @@ struct TxStreamingConfig {
         : samples(_samples), sendTimeOffset(_sendTimeOffset) {}
     MimoSignal samples;
     double sendTimeOffset;
+
+    void alignToWordSize();
 };
 
 struct RxStreamingConfig {
@@ -49,6 +51,8 @@ struct RxStreamingConfig {
     unsigned int noSamples;
     double receiveTimeOffset;
 };
+
+size_t nextMultipleOfWordSize(size_t count);
 
 bool operator==(const RfConfig& a, const RfConfig& b);
 bool operator!=(const RfConfig& a, const RfConfig& b);

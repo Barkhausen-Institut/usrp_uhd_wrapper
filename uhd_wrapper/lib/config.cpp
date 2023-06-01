@@ -44,6 +44,16 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb) {
     return noSamplesLastBuffer;
 }
 
+size_t nextMultipleOfWordSize(size_t count) {
+    const size_t WORD_SIZE = 8;
+    size_t rem = count % WORD_SIZE;
+
+    if (rem == 0)
+        return count;
+    else
+        return count + WORD_SIZE - rem;
+}
+
 void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate,
                         bool supportsDecimation) {
@@ -148,6 +158,11 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     os << "Number of Tx antennas: " << conf.noTxAntennas << std::endl;
     os << "Number of rx antenans: " << conf.noRxAntennas << std::endl;
     return os;
+}
+
+void TxStreamingConfig::alignToWordSize() {
+    for (auto& s : samples)
+        s.resize(nextMultipleOfWordSize(s.size()));
 }
 
 }  // namespace bi

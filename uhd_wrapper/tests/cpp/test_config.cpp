@@ -88,6 +88,34 @@ TEST_CASE("[ValidTxStreamingConfig]") {
     }
 }
 
+TEST_CASE("TxStreamingConfig") {
+    SECTION("Align to word size") {
+        SECTION("zero length is already aligned") {
+            MimoSignal samples{{}};
+            TxStreamingConfig config(samples, 0);
+            config.alignToWordSize();
+
+            REQUIRE(config.samples[0].size() == 0);
+        }
+
+        SECTION("zeros are appended in MIMO") {
+            MimoSignal samples{{1}, {2}};
+            TxStreamingConfig config(samples, 0);
+            config.alignToWordSize();
+
+            REQUIRE(config.samples[0].size() == 8);
+            REQUIRE(config.samples[1].size() == 8);
+            REQUIRE(config.samples[0][0] == sample(1));
+            REQUIRE(config.samples[1][0] == sample(2));
+
+            for(int i = 1; i < 8; i++) {
+                REQUIRE(config.samples[0][i] == sample(0));
+                REQUIRE(config.samples[1][i] == sample(0));
+            }
+        }
+    }
+}
+
 TEST_CASE("[ValidRxStreamingConfig]") {
     double guardOffset = 1.0;
     double fs = 20e6;
@@ -213,5 +241,19 @@ TEST_CASE("[ValidRfConfig]") {
         conf.noRxAntennas = 0;
         REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
     }
+}
+
+TEST_CASE("nextMultipleOfWordSize") {
+    REQUIRE(nextMultipleOfWordSize(0) == 0);
+    REQUIRE(nextMultipleOfWordSize(8) == 8);
+
+    REQUIRE(nextMultipleOfWordSize(1) == 8);
+    REQUIRE(nextMultipleOfWordSize(2) == 8);
+
+    REQUIRE(nextMultipleOfWordSize(9) == 16);
+    REQUIRE(nextMultipleOfWordSize(13) == 16);
+    REQUIRE(nextMultipleOfWordSize(15) == 16);
+
+    REQUIRE(nextMultipleOfWordSize(17) == 24);
 }
 }  // namespace bi

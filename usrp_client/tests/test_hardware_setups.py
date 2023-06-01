@@ -226,15 +226,18 @@ class TestSingleDevice(unittest.TestCase):
         dev.configureRfConfig(setup.rfConfig)
         return dev
 
+    def _executeNow(self, dev: UsrpClient,
+                    txSamples: np.ndarray, noRxSamples: int) -> np.ndarray:
+        dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
+                                          samples=MimoSignal(signals=[txSamples])))
+        dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
+                                          noSamples=noRxSamples))
+        dev.executeImmediately()
+        return dev.collect()[0].signals[0]
+
     def test_executeImmediate(self) -> None:
         dev = self._getDevice(Fs=245.76e6)
-        dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
-                                          samples=MimoSignal(signals=[self.randomSignal])))
-        dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
-                                          noSamples=30000))
-
-        dev.executeImmediately()
-        rxSignal = dev.collect()[0].signals[0]
+        rxSignal = self._executeNow(dev, self.randomSignal, 30000)
 
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
         self.assertAlmostEqual(peak, 275, delta=2)
@@ -242,14 +245,9 @@ class TestSingleDevice(unittest.TestCase):
     def test_allowsOddTxRxSampleCount(self) -> None:
         dev = self._getDevice(Fs=245.76e6)
         signal = np.append(self.randomSignal, [0])
-        dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
-                                          samples=MimoSignal(signals=[signal])))
-        dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
-                                          noSamples=30001))
-        dev.executeImmediately()
-        rxSignal = dev.collect()[0].signals[0]
-        self.assertEqual(len(rxSignal), 30001)
+        rxSignal = self._executeNow(dev, signal, 30001)
 
+        self.assertEqual(len(rxSignal), 30001)
         self.assertAlmostEqual(findSignalStartsInFrame(rxSignal, signal),
                                275,
                                delta=2)

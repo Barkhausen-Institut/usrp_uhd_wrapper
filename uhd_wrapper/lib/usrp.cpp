@@ -197,6 +197,7 @@ void Usrp::setTxConfig(const TxStreamingConfig &conf) {
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
                                      GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
     txStreamingConfigs_.push_back(conf);
+    txStreamingConfigs_.back().alignToWordSize();
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {

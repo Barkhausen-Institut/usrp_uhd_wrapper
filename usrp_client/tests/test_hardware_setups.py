@@ -216,8 +216,7 @@ class TestSingleDevice(unittest.TestCase):
             + 1j * np.random.sample((self.noSamples,))
         ) - (0.5 + 0.5j)
 
-    def test_executeImmediate(self) -> None:
-        Fs = 245.76e6
+    def _getDevice(self, Fs: float) -> UsrpClient:
         setup = HardwareSetup(noRxAntennas=1, noTxAntennas=1,
                               txSampleRate=Fs, rxSampleRate=Fs)
         dev = UsrpClient(ip=getIpUsrp1().ip, port=getIpUsrp1().port)
@@ -225,6 +224,10 @@ class TestSingleDevice(unittest.TestCase):
 
         dev.setSyncSource("internal")
         dev.configureRfConfig(setup.rfConfig)
+        return dev
+
+    def test_executeImmediate(self) -> None:
+        dev = self._getDevice(Fs=245.76e6)
         dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                           samples=MimoSignal(signals=[self.randomSignal])))
         dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
@@ -236,13 +239,23 @@ class TestSingleDevice(unittest.TestCase):
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
         self.assertAlmostEqual(peak, 275, delta=2)
 
+    def test_allowsOddTXSampleCount(self) -> None:
+        dev = self._getDevice(Fs=245.76e6)
+        signal = np.append(self.randomSignal, [0])
+        dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
+                                          samples=MimoSignal(signals=[signal])))
+        dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
+                                          noSamples=30000))
+        dev.executeImmediately()
+        rxSignal = dev.collect()[0].signals[0]
+
+        self.assertAlmostEqual(findSignalStartsInFrame(rxSignal, signal),
+                               275,
+                               delta=2)
+
     @pytest.mark.FS_400MHz
     def test_400MHzMIMO_ImmediateExecute(self) -> None:
-        Fs = 491.52e6
-        setup = HardwareSetup(noRxAntennas=4, noTxAntennas=4,
-                              txSampleRate=Fs, rxSampleRate=Fs)
-        dev = UsrpClient(ip=getIpUsrp1().ip, port=getIpUsrp1().port)
-        skipIfFsNotSupported(Fs, dev)
+        dev = self._getDevice(Fs=491.52e6)
 
         N = 10000
         OFF = 11000
@@ -254,8 +267,6 @@ class TestSingleDevice(unittest.TestCase):
         for i in range(4):
             padded[i][OFF * i + np.arange(N)] = signals[i]
 
-        dev.setSyncSource("internal")
-        dev.configureRfConfig(setup.rfConfig)
         dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                           samples=MimoSignal(signals=padded)))
         dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,

@@ -149,11 +149,16 @@ class System:
                                client.getLocalVersion(), client.getRemoteVersion())
 
             client.resetStreamingConfigs()
-            client.setSyncSource("external")
             self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, client)
+            self.__updateSyncSources()
             return client
         except RemoteError as e:
             raise RemoteUsrpError(e.msg, usrpName)
+
+    def __updateSyncSources(self) -> None:
+        source = "internal" if len(self.__usrpClients) <= 1 else "external"
+        for usrp in self.__usrpClients.values():
+            usrp.client.setSyncSource(source)
 
     def __assertUniqueUsrp(self, ip: str, port: int, usrpName: str) -> None:
         self.__assertUniqueUsrpName(usrpName)

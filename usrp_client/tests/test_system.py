@@ -45,10 +45,25 @@ class TestSystemInitialization(unittest.TestCase):
             lambda: self.system.newUsrp("192.168.189.131", "testName"),
         )
 
-    def test_newUsrpIsConfiguredCorrectey(self) -> None:
+    def test_newUsrpResetsStreamingConfigs(self) -> None:
         self.system.newUsrp("localhost", "testusrp")
         self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
-        self.mockUsrpClient.setSyncSource.assert_called_once_with("external")
+
+    def test_singleNewUsrpUsesInternalReference(self) -> None:
+        self.system.newUsrp("localhost", "testusrp")
+        self.mockUsrpClient.setSyncSource.assert_called_once_with("internal")
+
+    def test_multipleNewUsrpsUseExternalReference(self) -> None:
+        mock1 = Mock()
+        mock2 = Mock()
+        self.system._createUsrpClient.side_effect = [mock1, mock2]  # type: ignore
+        self.system.newUsrp("localhost", "testusrp1")
+        mock1.setSyncSource.assert_called_once_with("internal")
+        mock1.reset_mock()
+
+        self.system.newUsrp("localhost", "testusrp2")
+        mock1.setSyncSource.assert_called_once_with("external")
+        mock2.setSyncSource.assert_called_once_with("external")
 
     def test_canAddExistingUsrp(self) -> None:
         mockUsrpClient = Mock(spec=UsrpClient)
@@ -56,7 +71,7 @@ class TestSystemInitialization(unittest.TestCase):
         mockUsrpClient.port = 5000
         self.system.addUsrp(usrpName="stuff", client=mockUsrpClient)
         mockUsrpClient.resetStreamingConfigs.assert_called_once()
-        mockUsrpClient.setSyncSource.assert_called_once_with("external")
+        mockUsrpClient.setSyncSource.assert_called_once_with("internal")
 
 
 class FakedTimeFlag(TimedFlag):

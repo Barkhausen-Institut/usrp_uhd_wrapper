@@ -102,7 +102,7 @@ void Usrp::performStreaming(double baseTime) {
         try {
             for(const auto& config: rxStreamingConfigs_) {
                 double streamTime = config.receiveTimeOffset + baseTime;
-                size_t numRxSamples = config.noSamples;
+                size_t numRxSamples = config.wordAlignedNoSamples();
                 replayConfig_->configReceive(numRxSamples);
 
                 // We need to multiply with the rx decim factor because we
@@ -130,8 +130,8 @@ void Usrp::performDownload() {
     fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
 
     for(const auto& config: rxStreamingConfigs_) {
-        replayConfig_->configDownload(config.noSamples);
-        receivedSamples_.push_back(fdGraph_->download(config.noSamples));
+        replayConfig_->configDownload(config.wordAlignedNoSamples());
+        receivedSamples_.push_back(fdGraph_->download(config.wordAlignedNoSamples()));
     }
 }
 

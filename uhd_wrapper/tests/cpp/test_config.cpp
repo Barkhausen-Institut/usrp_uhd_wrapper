@@ -163,6 +163,17 @@ TEST_CASE("[ValidRxStreamingConfig]") {
     }
 }
 
+TEST_CASE("RxStreamingConfig") {
+    SECTION("wordAlignedNoSamples") {
+        REQUIRE(RxStreamingConfig(8, 0.0).wordAlignedNoSamples() == 8);
+        REQUIRE(RxStreamingConfig(0, 0.0).wordAlignedNoSamples() == 0);
+
+        REQUIRE(RxStreamingConfig(1, 0.0).wordAlignedNoSamples() == 8);
+        REQUIRE(RxStreamingConfig(2, 0.0).wordAlignedNoSamples() == 8);
+        REQUIRE(RxStreamingConfig(9, 0.0).wordAlignedNoSamples() == 16);
+    }
+}
+
 TEST_CASE("[ValidTxSignal]") {
     TxStreamingConfig conf;
     const size_t MAX_NUM_SAMPLES = (size_t)55e3;
@@ -202,13 +213,6 @@ TEST_CASE("[ValidTxSignal]") {
 
     SECTION("NoSamplesProvided") {
         conf.samples = {};
-        REQUIRE_THROWS_AS(
-            assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
-            UsrpException);
-    }
-
-    SECTION("UnevenAmountOfSamples") {
-        conf.samples = {samples_vec((size_t)99, sample(0, 0))};
         REQUIRE_THROWS_AS(
             assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
             UsrpException);

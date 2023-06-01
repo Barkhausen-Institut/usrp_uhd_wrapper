@@ -88,6 +88,55 @@ TEST_CASE("[ValidTxStreamingConfig]") {
     }
 }
 
+
+TEST_CASE("MimoSignal") {
+    SECTION("extendToWordSize") {
+        SECTION("zero length is already aligned") {
+            MimoSignal samples{{}};
+            extendToWordSize(samples);
+
+            REQUIRE(samples[0].size() == 0);
+        }
+
+        SECTION("zeros are appended in MIMO") {
+            MimoSignal samples{{1}, {2}};
+            extendToWordSize(samples);
+
+            REQUIRE(samples[0].size() == 8);
+            REQUIRE(samples[1].size() == 8);
+            REQUIRE(samples[0][0] == sample(1));
+            REQUIRE(samples[1][0] == sample(2));
+
+            for(int i = 1; i < 8; i++) {
+                REQUIRE(samples[0][i] == sample(0));
+                REQUIRE(samples[1][i] == sample(0));
+            }
+        }
+    }
+
+    SECTION("shortenSignal") {
+        SECTION("signal is kept") {
+            MimoSignal samples{{1, 2, 3}};
+            shortenSignal(samples, 3);
+            REQUIRE(samples[0][2] == sample(3));
+            REQUIRE(samples[0].size() == 3);
+        }
+
+        SECTION("signal is shortened") {
+            MimoSignal samples{{1, 2, 3}};
+            shortenSignal(samples, 2);
+            REQUIRE(samples[0][1] == sample(2));
+            REQUIRE(samples[0].size() == 2);
+        }
+
+        SECTION("Signal cannot be further shortened") {
+            MimoSignal samples{{1, 2, 3}};
+            REQUIRE_THROWS_AS(shortenSignal(samples, 4),
+                              UsrpException);
+        }
+    }
+}
+
 TEST_CASE("[ValidRxStreamingConfig]") {
     double guardOffset = 1.0;
     double fs = 20e6;
@@ -135,6 +184,17 @@ TEST_CASE("[ValidRxStreamingConfig]") {
     }
 }
 
+TEST_CASE("RxStreamingConfig") {
+    SECTION("wordAlignedNoSamples") {
+        REQUIRE(RxStreamingConfig(8, 0.0).wordAlignedNoSamples() == 8);
+        REQUIRE(RxStreamingConfig(0, 0.0).wordAlignedNoSamples() == 0);
+
+        REQUIRE(RxStreamingConfig(1, 0.0).wordAlignedNoSamples() == 8);
+        REQUIRE(RxStreamingConfig(2, 0.0).wordAlignedNoSamples() == 8);
+        REQUIRE(RxStreamingConfig(9, 0.0).wordAlignedNoSamples() == 16);
+    }
+}
+
 TEST_CASE("[ValidTxSignal]") {
     TxStreamingConfig conf;
     const size_t MAX_NUM_SAMPLES = (size_t)55e3;
@@ -179,13 +239,6 @@ TEST_CASE("[ValidTxSignal]") {
             UsrpException);
     }
 
-    SECTION("UnevenAmountOfSamples") {
-        conf.samples = {samples_vec((size_t)99, sample(0, 0))};
-        REQUIRE_THROWS_AS(
-            assertValidTxSignal(conf.samples, MAX_NUM_SAMPLES, (size_t)1),
-            UsrpException);
-    }
-
     SECTION("Forbid NAN values") {
         conf.samples = {{{NAN,0}, {0,1}, {0, 0}, {0, 1}}};
         REQUIRE_THROWS_AS(
@@ -213,5 +266,19 @@ TEST_CASE("[ValidRfConfig]") {
         conf.noRxAntennas = 0;
         REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
     }
+}
+
+TEST_CASE("nextMultipleOfWordSize") {
+    REQUIRE(nextMultipleOfWordSize(0) == 0);
+    REQUIRE(nextMultipleOfWordSize(8) == 8);
+
+    REQUIRE(nextMultipleOfWordSize(1) == 8);
+    REQUIRE(nextMultipleOfWordSize(2) == 8);
+
+    REQUIRE(nextMultipleOfWordSize(9) == 16);
+    REQUIRE(nextMultipleOfWordSize(13) == 16);
+    REQUIRE(nextMultipleOfWordSize(15) == 16);
+
+    REQUIRE(nextMultipleOfWordSize(17) == 24);
 }
 }  // namespace bi

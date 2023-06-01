@@ -44,6 +44,16 @@ size_t calcNoSamplesLastBuffer(const size_t noSamples, const size_t spb) {
     return noSamplesLastBuffer;
 }
 
+size_t nextMultipleOfWordSize(size_t count) {
+    const size_t WORD_SIZE = 8;
+    size_t rem = count % WORD_SIZE;
+
+    if (rem == 0)
+        return count;
+    else
+        return count + WORD_SIZE - rem;
+}
+
 void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate,
                         bool supportsDecimation) {
@@ -86,10 +96,6 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
         throw UsrpException(
             "Invalid RX streaming config: the offset of the new config is too "
             "small.");
-    if (newConfig.noSamples % SAMPLES_PER_CYCLE != 0)
-        throw UsrpException(
-            "Number of samples to receive must be a multiple of " +
-            std::to_string(SAMPLES_PER_CYCLE));
 }
 
 void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
@@ -114,10 +120,6 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
                          }) != antSignal.end())
             throw UsrpException("The antenna signal contains nan values!");
     }
-
-    if (lengthSignal % SAMPLES_PER_CYCLE != 0)
-        throw UsrpException("The amount of samples must be a multiple of " +
-                            std::to_string(SAMPLES_PER_CYCLE));
 }
 
 void assertValidRfConfig(const RfConfig& conf) {
@@ -148,6 +150,30 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     os << "Number of Tx antennas: " << conf.noTxAntennas << std::endl;
     os << "Number of rx antenans: " << conf.noRxAntennas << std::endl;
     return os;
+}
+
+void _resizeSignal(MimoSignal& samples, size_t length) {
+    for (auto& s : samples) {
+        s.resize(length);
+    }
+}
+
+void extendToWordSize(MimoSignal& samples) {
+    _resizeSignal(samples, nextMultipleOfWordSize(samples[0].size()));
+}
+
+void shortenSignal(MimoSignal& samples, size_t length) {
+    if (samples[0].size() < length)
+        throw UsrpException("Signal is too short and cannot be shortened further");
+    _resizeSignal(samples, length);
+}
+
+void TxStreamingConfig::alignToWordSize() {
+    extendToWordSize(samples);
+}
+
+size_t RxStreamingConfig::wordAlignedNoSamples() const {
+    return nextMultipleOfWordSize(noSamples);
 }
 
 }  // namespace bi

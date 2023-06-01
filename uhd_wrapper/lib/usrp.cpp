@@ -5,6 +5,7 @@
 #include <uhd/types/ref_vector.hpp>
 #include <uhd/rfnoc/mb_controller.hpp>
 
+#include "config.hpp"
 #include "usrp.hpp"
 #include "usrp_exception.hpp"
 
@@ -101,7 +102,7 @@ void Usrp::performStreaming(double baseTime) {
         try {
             for(const auto& config: rxStreamingConfigs_) {
                 double streamTime = config.receiveTimeOffset + baseTime;
-                size_t numRxSamples = config.noSamples;
+                size_t numRxSamples = config.wordAlignedNoSamples();
                 replayConfig_->configReceive(numRxSamples);
 
                 // We need to multiply with the rx decim factor because we
@@ -129,8 +130,9 @@ void Usrp::performDownload() {
     fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
 
     for(const auto& config: rxStreamingConfigs_) {
-        replayConfig_->configDownload(config.noSamples);
-        receivedSamples_.push_back(fdGraph_->download(config.noSamples));
+        replayConfig_->configDownload(config.wordAlignedNoSamples());
+        receivedSamples_.push_back(fdGraph_->download(config.wordAlignedNoSamples()));
+        shortenSignal(receivedSamples_.back(), config.noSamples);
     }
 }
 
@@ -196,6 +198,7 @@ void Usrp::setTxConfig(const TxStreamingConfig &conf) {
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
                                      GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
     txStreamingConfigs_.push_back(conf);
+    txStreamingConfigs_.back().alignToWordSize();
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {

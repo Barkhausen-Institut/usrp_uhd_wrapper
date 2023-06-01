@@ -4,7 +4,6 @@
 
 namespace bi {
 const int SAMPLES_PER_BUFFER = 2000;
-const int SAMPLES_PER_CYCLE = 2;
 typedef std::complex<float> sample;
 typedef std::vector<sample> samples_vec;
 typedef std::vector<samples_vec> MimoSignal;
@@ -39,6 +38,8 @@ struct TxStreamingConfig {
         : samples(_samples), sendTimeOffset(_sendTimeOffset) {}
     MimoSignal samples;
     double sendTimeOffset;
+
+    void alignToWordSize();
 };
 
 struct RxStreamingConfig {
@@ -48,7 +49,13 @@ struct RxStreamingConfig {
         : noSamples(_noSamples), receiveTimeOffset(_receiveTimeOffset) {}
     unsigned int noSamples;
     double receiveTimeOffset;
+
+    size_t wordAlignedNoSamples() const;
 };
+
+size_t nextMultipleOfWordSize(size_t count);
+void extendToWordSize(MimoSignal& samples);
+void shortenSignal(MimoSignal& samples, size_t length);
 
 bool operator==(const RfConfig& a, const RfConfig& b);
 bool operator!=(const RfConfig& a, const RfConfig& b);

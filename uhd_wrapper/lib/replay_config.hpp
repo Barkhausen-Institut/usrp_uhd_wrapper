@@ -13,6 +13,9 @@ public:
     virtual uint64_t get_record_fullness(const size_t port) const = 0;
     virtual uint64_t get_play_position(const size_t port) const = 0;
     virtual void config_play(const uint64_t offset, const uint64_t size, const size_t port) = 0;
+
+    virtual size_t get_num_input_ports() const = 0;
+    virtual size_t get_num_output_ports() const = 0;
 };
 
 class ReplayBlockWrapper : public ReplayBlockInterface {
@@ -40,6 +43,14 @@ public:
 
     void config_play(const uint64_t offset, const uint64_t size, const size_t port) {
         replayCtrl_->config_play(offset, size, port);
+    }
+
+    size_t get_num_input_ports() const {
+        return replayCtrl_->get_num_input_ports();
+    }
+
+    virtual size_t get_num_output_ports() const {
+        return replayCtrl_->get_num_output_ports();
     }
 
 private:

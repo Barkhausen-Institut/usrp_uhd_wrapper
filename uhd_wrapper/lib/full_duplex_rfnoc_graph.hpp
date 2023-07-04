@@ -24,6 +24,8 @@ public:
     RfNocFullDuplexGraph(const RfNocBlockConfig& config, uhd::rfnoc::rfnoc_graph::sptr graph);
     uhd::rfnoc::replay_block_control::sptr getReplayControl();
 
+    using RfNocBlocks::getNumAntennas;
+
     void setSyncSource(const std::string& type);
 
     uhd::tx_streamer::sptr connectForUpload(size_t numTxAntennas);

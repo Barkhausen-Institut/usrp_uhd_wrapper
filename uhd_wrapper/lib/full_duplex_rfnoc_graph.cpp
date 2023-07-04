@@ -6,8 +6,6 @@
 
 namespace bi {
 
-const int MAX_ANTENNAS = 4;
-
 void _showRfNoCConnections(uhd::rfnoc::rfnoc_graph::sptr graph) {
     auto edges = graph->enumerate_active_connections();
     std::cout << "Connections in graph: " << std::endl;
@@ -24,7 +22,7 @@ RfNocFullDuplexGraph::RfNocFullDuplexGraph(const RfNocBlockConfig& config,
                                            uhd::rfnoc::rfnoc_graph::sptr graph)
     : RfNocBlocks(config, graph) {
 
-    for(int c = 0; c < MAX_ANTENNAS; c++) {
+    for(size_t c = 0; c < getNumAntennas(); c++) {
         replayCtrl_->set_play_type("sc16", c);
         replayCtrl_->set_record_type("sc16", c);
     }
@@ -59,7 +57,7 @@ uhd::tx_streamer::sptr RfNocFullDuplexGraph::connectForUpload(size_t numTxAntenn
     uhd::stream_args_t streamArgs("fc32", "sc16");
     currentTxStreamer_ = graph_->create_tx_streamer(numTxAntennas_, streamArgs);
 
-    for (size_t i = 0; i < MAX_ANTENNAS; i++) {
+    for (size_t i = 0; i < getNumAntennas(); i++) {
         if (useTxChannel(i)) {
             graph_->connect(currentTxStreamer_, i,
                             replayCtrl_->get_block_id(), i);
@@ -140,7 +138,7 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxAntennas, size_t numR
     using uhd::rfnoc::block_id_t;
 
     graph_->release();
-    for (size_t i = 0; i < MAX_ANTENNAS; i++) {
+    for (size_t i = 0; i < getNumAntennas(); i++) {
         auto [radio, radioChan] = getRadioChannelPair(i);
 
         if (useTxChannel(i)) {
@@ -172,7 +170,7 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
 
     {
         std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
-        for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
+        for (size_t channel = 0; channel < getNumAntennas(); channel++) {
             if (useTxChannel(channel))
                 replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
         }
@@ -213,7 +211,7 @@ void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
 
     {
         std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
-        for (size_t channel = 0; channel < MAX_ANTENNAS; channel++) {
+        for (size_t channel = 0; channel < getNumAntennas(); channel++) {
             auto [radio, radioChan] = getRadioChannelPair(channel);
             if (useRxChannel(channel))
                 radio->issue_stream_cmd(rxStreamCmd, radioChan);

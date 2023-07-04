@@ -14,6 +14,9 @@ public:
     IMPLEMENT_CONST_MOCK0(get_mem_size);
     IMPLEMENT_CONST_MOCK1(get_record_fullness);
     IMPLEMENT_CONST_MOCK1(get_play_position);
+
+    IMPLEMENT_CONST_MOCK0(get_num_input_ports);
+    IMPLEMENT_CONST_MOCK0(get_num_output_ports);
 };
 
 TEST_CASE("Sanity") {
@@ -131,6 +134,8 @@ TEST_CASE("Replay Block Config") {
 
     ALLOW_CALL(replay, get_mem_size()).RETURN(MEM_SIZE);
     ALLOW_CALL(replay, get_record_fullness(_)).RETURN(0);
+    ALLOW_CALL(replay, get_num_input_ports()).RETURN(4);
+    ALLOW_CALL(replay, get_num_output_ports()).RETURN(4);
 
 
     std::shared_ptr<bi::ReplayBlockInterface> ptrReplay(&replay, [](auto) {});

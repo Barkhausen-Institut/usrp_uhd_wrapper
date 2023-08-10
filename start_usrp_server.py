@@ -11,7 +11,7 @@ def parseArgs() -> argparse.Namespace:
                         help="Determine the IP of the USRP to connect to")
     parser.add_argument("--rpc-port", type=int, default=5555,
                         help="Port where the RPC server listens to")
-    parser.add_argument("--usrp-type", type=str, default="x410", 
+    parser.add_argument("--usrp-type", type=str, default="x410",
                         help="Type of USRP to be expected")
 
     return parser.parse_args()

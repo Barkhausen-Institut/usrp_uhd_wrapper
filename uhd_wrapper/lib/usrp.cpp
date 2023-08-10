@@ -13,9 +13,6 @@ using namespace std::literals::chrono_literals;
 
 namespace bi {
 
-const int MAX_ANTENNAS = 4;
-const int CHANNELS = 1;
-
 using uhd::rfnoc::block_id_t;
 using uhd::rfnoc::rfnoc_graph;
 using uhd::rfnoc::noc_block_base;
@@ -33,9 +30,10 @@ Usrp::Usrp(const std::string& ip)  {
 
     // Need to perform one cycle of connections such that the radios are preinitialized
     // in order to be able to set a reasonable RF config and sample rate for the DDC/DUC
-    fdGraph_->connectForUpload(MAX_ANTENNAS);
-    fdGraph_->connectForStreaming(MAX_ANTENNAS, MAX_ANTENNAS);
-    fdGraph_->connectForDownload(MAX_ANTENNAS);
+    const int numAnts = fdGraph_->getNumAntennas();
+    fdGraph_->connectForUpload(numAnts);
+    fdGraph_->connectForStreaming(numAnts, numAnts);
+    fdGraph_->connectForDownload(numAnts);
 }
 
 Usrp::~Usrp() {

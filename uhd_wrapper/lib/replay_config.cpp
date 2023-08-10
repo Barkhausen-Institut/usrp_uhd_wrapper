@@ -7,7 +7,6 @@
 using namespace std::literals::chrono_literals;
 
 namespace bi {
-const int MAX_ANTENNAS = 4;
 
 BlockOffsetTracker::BlockOffsetTracker(size_t memSize, size_t sampleSize)
 : numStreams_(0), MEM_SIZE(memSize), SAMPLE_SIZE(sampleSize) {
@@ -133,17 +132,19 @@ void ReplayBlockConfig::configDownload(size_t numSamples) {
 void ReplayBlockConfig::clearRecordingBuffer() {
     std::this_thread::sleep_for(10ms);
 
+    int numPorts = replayBlock_->get_num_input_ports();
+
     bool needClear = false;
     for(int t = 0; t < 3; t++) {
         needClear = false;
-        for(int c = 0; c < MAX_ANTENNAS; c++)
+        for(int c = 0; c < numPorts; c++)
             needClear |= (replayBlock_->get_record_fullness(c) > 0);
 
         if (!needClear)
             break;
 
         std::cout << "Trying to clear the buffer" << std::endl;
-        for(int c = 0; c < MAX_ANTENNAS; c++)
+        for(int c = 0; c < numPorts; c++)
             replayBlock_->record_restart(c);
     }
     if (needClear)

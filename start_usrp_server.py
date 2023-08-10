@@ -11,6 +11,8 @@ def parseArgs() -> argparse.Namespace:
                         help="Determine the IP of the USRP to connect to")
     parser.add_argument("--rpc-port", type=int, default=5555,
                         help="Port where the RPC server listens to")
+    parser.add_argument("--usrp-type", type=str, default="x410",
+                        help="Type of USRP to be expected")
 
     return parser.parse_args()
 
@@ -19,8 +21,9 @@ def parseArgs() -> argparse.Namespace:
 args = parseArgs()
 IP_USRP = args.uhd_ip
 PORT = args.rpc_port
+TYPE = args.usrp_type
 
-usrp = RestartingUsrp(IP_USRP)
+usrp = RestartingUsrp(IP_USRP, desiredDeviceType=TYPE)
 
 # start server
 rpcServer = zerorpc.Server(UsrpServer(usrp))

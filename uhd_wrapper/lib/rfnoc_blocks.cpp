@@ -46,11 +46,16 @@ bool RfNocBlocks::supportsDecimation() const {
     return ddcControl1_ != nullptr;
 }
 
+size_t RfNocBlocks::getNumAntennas() const {
+    return radioCtrl1_->get_num_input_ports() + radioCtrl2_->get_num_input_ports();
+}
+
 RfNocBlocks::RadioChannelPair RfNocBlocks::getRadioChannelPair(int antenna) {
-    if (antenna < 2)
+    int numAntennasPerRadio = radioCtrl1_->get_num_input_ports();
+    if (antenna < numAntennasPerRadio)
         return {radioCtrl1_, antenna};
     else
-        return {radioCtrl2_, antenna - 2};
+        return {radioCtrl2_, antenna - numAntennasPerRadio};
 }
 
 }

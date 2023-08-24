@@ -144,17 +144,19 @@ RfConfig RFConfiguration::readFromGraph() {
 }
 
 RFConfiguration::DDCChannelPair RFConfiguration::getDDCChannelPair(int antenna) {
-    if (antenna < 2)
+    int numAntennasPerRadio = radioCtrl1_->get_num_input_ports();
+    if (antenna < numAntennasPerRadio)
         return {ddcControl1_, antenna};
     else
-        return {ddcControl2_, antenna - 2};
+        return {ddcControl2_, antenna - numAntennasPerRadio};
 }
 
 RFConfiguration::DUCChannelPair RFConfiguration::getDUCChannelPair(int antenna) {
-    if (antenna < 2)
+    int numAntennasPerRadio = radioCtrl1_->get_num_input_ports();
+    if (antenna < numAntennasPerRadio)
         return {ducControl1_, antenna};
     else
-        return {ducControl2_, antenna - 2};
+        return {ducControl2_, antenna - numAntennasPerRadio};
 }
 
 double RFConfiguration::readRxSampleRate() const {

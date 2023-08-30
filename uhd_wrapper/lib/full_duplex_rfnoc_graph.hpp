@@ -46,6 +46,7 @@ private:
 
     const size_t PACKET_SIZE = 8192 / 2;
 
+    std::string currentSyncSource_;
     size_t numTxAntennas_, numRxAntennas_;
     uhd::tx_streamer::sptr currentTxStreamer_;
     uhd::rx_streamer::sptr currentRxStreamer_;

@@ -37,11 +37,10 @@ void RfNocFullDuplexGraph::setSyncSource(const std::string &type){
     if (type != "internal" && type != "external")
         throw UsrpException("Invalid sync source " + type);
 
-    auto controller = graph_->get_mb_controller();
-    if (controller->get_clock_source() != type)
-        controller->set_clock_source(type);
-    if (controller->get_time_source() != type)
-        controller->set_time_source(type);
+    if (currentSyncSource_ == type)
+        return;
+    graph_->get_mb_controller()->set_sync_source(type, type);
+    currentSyncSource_ = type;
 }
 
 bool RfNocFullDuplexGraph::useTxChannel(size_t antennaId) const {

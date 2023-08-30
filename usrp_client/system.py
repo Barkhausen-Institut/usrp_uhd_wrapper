@@ -82,6 +82,7 @@ class System:
     def __init__(self, logLevel: int = logging.INFO) -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
         self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
+        self._syncSourceSet = False
         self.__logger = self.__createLogger(logLevel)
 
     def __createLogger(self, logLevel: int) -> logging.Logger:
@@ -95,7 +96,8 @@ class System:
 
         logger = logging.getLogger(__name__)
         logger.setLevel(logLevel)
-        logger.addHandler(handler)
+        if not logger.hasHandlers():
+            logger.addHandler(handler)
         logger.debug("Created system")
         return logger
 
@@ -150,15 +152,19 @@ class System:
 
             client.resetStreamingConfigs()
             self.__usrpClients[usrpName] = LabeledUsrp(usrpName, ip, port, client)
-            self.__updateSyncSources()
+            self._syncSourceSet = False
             return client
         except RemoteError as e:
             raise RemoteUsrpError(e.msg, usrpName)
 
     def __updateSyncSources(self) -> None:
+        if self._syncSourceSet:
+            return
+
         source = "internal" if len(self.__usrpClients) <= 1 else "external"
         for usrp in self.__usrpClients.values():
             usrp.client.setSyncSource(source)
+        self._syncSourceSet = True
 
     def __assertUniqueUsrp(self, ip: str, port: int, usrpName: str) -> None:
         self.__assertUniqueUsrpName(usrpName)
@@ -228,6 +234,7 @@ class System:
 
     def synchronizeUsrps(self) -> None:
         """Let all USRPs synchronize upon the PPS signal"""
+        self.__updateSyncSources()
         self.__synchronizeUsrps()
 
     def __synchronizeUsrps(self) -> None:
@@ -294,7 +301,7 @@ class System:
 
         Samples are buffered, timeouts are calculated, Usrps are synchronized...
         """
-        self.__synchronizeUsrps()
+        self.synchronizeUsrps()
         baseTimeSec = self.__calculateBaseTimeSec()
 
         def callExecuteAtUsrp(usrpName: str) -> None:

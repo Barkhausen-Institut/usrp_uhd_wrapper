@@ -18,9 +18,14 @@ from uhd_wrapper.utils.config import (
 
 
 class TestSystemInitialization(unittest.TestCase):
+    def _createUsrpMock(self) -> Mock:
+        mock = Mock(spec=UsrpClient)
+        mock.getCurrentFpgaTime.return_value = 1
+        return mock
+
     def setUp(self) -> None:
         self.system = System()
-        self.mockUsrpClient = Mock()
+        self.mockUsrpClient = self._createUsrpMock()
 
         self.system._createUsrpClient = Mock()  # type: ignore
         self.system._createUsrpClient.return_value = self.mockUsrpClient  # type: ignore
@@ -49,27 +54,30 @@ class TestSystemInitialization(unittest.TestCase):
         self.system.newUsrp("localhost", "testusrp")
         self.mockUsrpClient.resetStreamingConfigs.assert_called_once()
 
-    def test_singleNewUsrpUsesInternalReference(self) -> None:
+    def test_singleNewUsrpUsesInternalReference_calledOnlyOnce(self) -> None:
         self.system.newUsrp("localhost", "testusrp")
+        self.system.execute()
+        self.system.execute()
         self.mockUsrpClient.setSyncSource.assert_called_once_with("internal")
 
-    def test_multipleNewUsrpsUseExternalReference(self) -> None:
-        mock1 = Mock()
-        mock2 = Mock()
+    def test_multipleNewUsrpsUseExternalReference_calledOnlyOnce(self) -> None:
+        mock1 = self._createUsrpMock()
+        mock2 = self._createUsrpMock()
         self.system._createUsrpClient.side_effect = [mock1, mock2]  # type: ignore
         self.system.newUsrp("localhost", "testusrp1")
-        mock1.setSyncSource.assert_called_once_with("internal")
-        mock1.reset_mock()
-
         self.system.newUsrp("localhost", "testusrp2")
+        self.system.execute()
+        self.system.execute()
+
         mock1.setSyncSource.assert_called_once_with("external")
         mock2.setSyncSource.assert_called_once_with("external")
 
-    def test_canAddExistingUsrp(self) -> None:
-        mockUsrpClient = Mock(spec=UsrpClient)
+    def test_canAddPreInitializedUsrp(self) -> None:
+        mockUsrpClient = self._createUsrpMock()
         mockUsrpClient.ip = "abc"
         mockUsrpClient.port = 5000
         self.system.addUsrp(usrpName="stuff", client=mockUsrpClient)
+        self.system.execute()
         mockUsrpClient.resetStreamingConfigs.assert_called_once()
         mockUsrpClient.setSyncSource.assert_called_once_with("internal")
 

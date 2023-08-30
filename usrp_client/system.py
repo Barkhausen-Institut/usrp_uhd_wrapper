@@ -96,7 +96,8 @@ class System:
 
         logger = logging.getLogger(__name__)
         logger.setLevel(logLevel)
-        logger.addHandler(handler)
+        if not logger.hasHandlers():
+            logger.addHandler(handler)
         logger.debug("Created system")
         return logger
 

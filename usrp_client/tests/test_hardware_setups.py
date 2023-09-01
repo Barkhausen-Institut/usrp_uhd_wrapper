@@ -129,7 +129,6 @@ class P2pHardwareSetup(HardwareSetup):
             raise RuntimeError("Devices with unequal clock rates not supported!")
         self._adjustSamplingRates(mc)
 
-
         skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
                              [dev1, dev2])
 

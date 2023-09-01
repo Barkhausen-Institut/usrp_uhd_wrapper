@@ -4,6 +4,9 @@ import pytest
 import os
 import time
 from collections import namedtuple
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 import matplotlib.pyplot as plt  # noqa
 
@@ -76,7 +79,7 @@ class HardwareSetup:
     def __init__(
         self,
         *,
-        txGain: float = 30,
+        txGain: float = 10,
         rxGain: float = 20,
         rxSampleRate: float = 12.288e6,
         txSampleRate: float = 12.288e6,
@@ -96,6 +99,22 @@ class HardwareSetup:
         self.rfConfig.txCarrierFrequency = txFc
         self.rfConfig.noRxAntennas = noRxAntennas
         self.rfConfig.noTxAntennas = noTxAntennas
+
+    def _adjustSamplingRates(self, masterClockRate: float) -> None:
+        def adjust(samplingRate: float) -> float:
+            if samplingRate < 1:
+                if abs(np.round(1/samplingRate) - 1/samplingRate) > 0.01:
+                    msg = f"Relative sampling rate {samplingRate} is not a valid relative rate"
+                    raise RuntimeError(msg)
+                result = samplingRate * masterClockRate
+                LOGGER.info("Adjusting relative sampling rate " +
+                            f"1/{1/samplingRate:.0f} to {result/1e6:.2f}MHz")
+                return result
+            else:
+                return samplingRate
+
+        self.rfConfig.txSamplingRate = adjust(self.rfConfig.txSamplingRate)
+        self.rfConfig.rxSamplingRate = adjust(self.rfConfig.rxSamplingRate)
 
 
 class P2pHardwareSetup(HardwareSetup):
@@ -119,6 +138,8 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
 
         self.system = System()
         device = self.system.newUsrp(ip=usrpIp.ip, usrpName="usrp1", port=usrpIp.port)
+        self._adjustSamplingRates(device.getMasterClockRate())
+
         skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
                              device)
 
@@ -192,17 +213,17 @@ class TestSampleRateSettings(unittest.TestCase):
         return peak
 
     def test_equalSampleRateTxRx(self) -> None:
-        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 2, txRate=245.76e6 / 2)
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=1. / 2, txRate=1. / 2)
 
         self.assertAlmostEqual(fPeak, self.transmitF, delta=0.01)
 
     def test_HigherTxSampleRate(self) -> None:
-        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 4, txRate=245.76e6 / 2)
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=0.25, txRate=0.5)
 
         self.assertAlmostEqual(fPeak, self.transmitF * 2, delta=0.01)
 
     def test_LowerTxSampleRate(self) -> None:
-        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=245.76e6 / 2, txRate=245.76e6 / 6)
+        fPeak = self._transmitAndGetRxPeakFrequency(rxRate=1 / 2, txRate=1 / 6)
 
         self.assertAlmostEqual(fPeak, self.transmitF / 3, delta=0.01)
 

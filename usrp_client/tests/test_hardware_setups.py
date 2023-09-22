@@ -313,14 +313,14 @@ class TestSingleDevice(unittest.TestCase):
 @pytest.mark.hardware
 class TestCarrierFrequencySettings(unittest.TestCase):
     def setUp(self) -> None:
-        self.transmitF = 25e6
-        self.R = 245.76e6 / 2
+        self.transmitF = 1/10
+        self.R = 1 / 2
         self.Fc = 3.75e9
 
-        self.txSignal = np.exp(1j*2*np.pi*self.transmitF/self.R*np.arange(20e3))
+        self.txSignal = np.exp(1j*2*np.pi*self.transmitF*np.arange(20e3))
 
-    def _transmitAndGetRxPeakFrequency(self, sampleRate: float,
-                                       txCarrier: float, rxCarrier: float) -> float:
+    def _transmitAndGetRxPeakFrequency(self, sampleRate: float, txCarrier: float,
+                                       rxCarrier: float) -> Tuple[float, float]:
         setup = LocalTransmissionHardwareSetup(
             noRxAntennas=1, noTxAntennas=1,
             txFc=txCarrier, rxFc=rxCarrier,
@@ -332,19 +332,19 @@ class TestCarrierFrequencySettings(unittest.TestCase):
         spec = np.fft.fft(rxSamples)[:N//2]
         peak = np.argmax(spec).item() / N
 
-        return peak * self.R
+        return peak, setup.rfConfig.txSamplingRate
 
     def test_equalCarriers(self) -> None:
-        fPeak = self._transmitAndGetRxPeakFrequency(
+        fPeak, realSampleRate = self._transmitAndGetRxPeakFrequency(
             sampleRate=self.R, txCarrier=self.Fc, rxCarrier=self.Fc)
-        self.assertAlmostEqual(fPeak, self.transmitF, delta=10e3)
+        self.assertAlmostEqual(fPeak, self.transmitF, delta=1e-2)
 
     def test_10MHzOffset(self) -> None:
         Fo = 10e6
 
-        fPeak = self._transmitAndGetRxPeakFrequency(
+        fPeak, realSampleRate = self._transmitAndGetRxPeakFrequency(
             sampleRate=self.R, txCarrier=self.Fc, rxCarrier=self.Fc+Fo)
-        self.assertAlmostEqual(fPeak, self.transmitF-Fo, delta=10e3)
+        self.assertAlmostEqual(fPeak, self.transmitF-Fo/realSampleRate, delta=1e-2)
 
 
 @pytest.mark.hardware

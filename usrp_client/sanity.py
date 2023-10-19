@@ -3,6 +3,7 @@ import sys
 import logging
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 
 from usrp_client import (System, RfConfig, UsrpClient,
                          TxStreamingConfig, RxStreamingConfig,
@@ -89,6 +90,9 @@ def checkSingle(ip: str) -> bool:
 
         client.executeImmediately()
         rxSig = client.collect()
+        if cmdlineArgs.plot:
+            plt.plot(abs(rxSig[0].signals[0]))
+            plt.show()
 
         peaks.append(_findFirstSampleInFrameOfSignal(rxSig[0].signals[0], signal))
 
@@ -124,7 +128,12 @@ def checkTrx(ips: List[str]) -> bool:
         system.execute()
         rxSig = system.collect()
 
-        peaks.append(_findFirstSampleInFrameOfSignal(rxSig["usrp1"][0].signals[0], signal))
+        if cmdlineArgs.plot:
+            plt.plot(abs(rxSig["usrp1"][0].signals[0]))
+            plt.show()
+
+        peaks.append(_findFirstSampleInFrameOfSignal(
+            rxSig["usrp1"][0].signals[0], signal))
 
     peakDiff = max(peaks) - min(peaks)
     print("   Found peaks: ", peaks)
@@ -152,6 +161,8 @@ def parseArgs() -> argparse.Namespace:
                        default=False)
     group.add_argument("--all", default=False, action='store_true',
                        help="Run all sanity tests")
+    group.add_argument("--plot", action='store_true', default=False,
+                       help="Plot received signals")
 
     group = parser.add_argument_group("USRP configuration")
     group.add_argument("--ips", required=True, nargs="+",

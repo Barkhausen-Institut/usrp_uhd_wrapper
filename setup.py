@@ -44,6 +44,8 @@ else:
         },
         classifiers=[
             "Programming Language :: Python :: 3.9",
+            "Programming Language :: Python :: 3.10",
+            "Programming Language :: Python :: 3.11",
             "License :: OSI Approved :: GNU Affero General Public License v3",
             "Operating System :: OS Independent",
             "Development Status :: 2 - Pre-Alpha",
@@ -54,7 +56,7 @@ else:
         python_requires=">=3.9",
         install_requires=[
             "zerorpc~=0.6.3",
-            "pyzmq~=22.3.0",
+            "pyzmq~=25.1.1",
             "numpy>=1.23.5",
             "matplotlib>=3.6.2",
             "dataclasses-json~=0.5.7",

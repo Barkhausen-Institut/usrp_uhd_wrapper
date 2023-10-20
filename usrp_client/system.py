@@ -164,6 +164,7 @@ class System:
         source = "internal" if len(self.__usrpClients) <= 1 else "external"
         for usrp in self.__usrpClients.values():
             usrp.client.setSyncSource(source)
+        self.resetFpgaTimes()
         self._syncSourceSet = True
 
     def __assertUniqueUsrp(self, ip: str, port: int, usrpName: str) -> None:

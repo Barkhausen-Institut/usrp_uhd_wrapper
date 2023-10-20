@@ -1,104 +1,26 @@
-from typing import List
 import time
 
-import numpy as np
-
 import uhd_wrapper.usrp_pybinding as pybinding
-from uhd_wrapper.usrp_pybinding import (
-    RfConfig,
-    RxStreamingConfig,
-    TxStreamingConfig,
-    Usrp,
-)
 
 
-class RestartingUsrp:
-    RestartTrials = 5
-    SleepTime = 5
+class RestartingUsrp(pybinding.Usrp):
+    @staticmethod
+    def create(ip: str, desiredDeviceType: str = "x410") -> 'RestartingUsrp':
+        RestartTrials = 5
+        SleepTime = 5
 
-    def __init__(self, ip: str, desiredDeviceType: str = "x410") -> None:
-        self._ip = ip
-
-        self._usrp = self._startUsrpMultipleTimes()
-        self._checkIfOnCorrectUsrp(desiredDeviceType)
-
-    def _checkIfOnCorrectUsrp(self, desiredDeviceType: str) -> None:
-        if self._usrp.deviceType.upper() != desiredDeviceType.upper():
-            raise RuntimeError(
-                f"""Current USRP is {self._usrp.deviceType},
-                you requested to start on {desiredDeviceType}."""
-            )
-
-    def _startUsrpMultipleTimes(self) -> Usrp:
-        for _ in range(self.RestartTrials):
+        for _ in range(RestartTrials):
             try:
-                return pybinding.createUsrp(self._ip)
+                result = RestartingUsrp(ip)
             except RuntimeError:
-                print(
-                    f"Creation of USRP failed... Retrying after {self.SleepTime} seconds."
+                print(f"Creating of USRP failed... Retrying after {SleepTime} seconds.")
+                time.sleep(SleepTime)
+                continue
+
+            if result.deviceType.upper() != desiredDeviceType.upper():
+                raise RuntimeError(
+                    f"""Current USRP is {result.deviceType},
+                    you requested to start on {desiredDeviceType}."""
                 )
-                time.sleep(self.SleepTime)
+            return result
         raise RuntimeError("Could not start USRP... exiting.")
-
-    def setRfConfig(self, rfConfig: RfConfig) -> None:
-        self._usrp.setRfConfig(rfConfig)
-
-    def setRxConfig(self, rxConfig: RxStreamingConfig) -> None:
-        self._usrp.setRxConfig(rxConfig)
-
-    def setTxConfig(self, txConfig: TxStreamingConfig) -> None:
-        self._usrp.setTxConfig(txConfig)
-
-    def setSyncSource(self, syncSource: str) -> None:
-        self._usrp.setSyncSource(syncSource)
-
-    def setTimeToZeroNextPps(self) -> None:
-        self._usrp.setTimeToZeroNextPps()
-
-    def getCurrentSystemTime(self) -> int:
-        return self._usrp.getCurrentSystemTime()
-
-    def getCurrentFpgaTime(self) -> int:
-        return self._usrp.getCurrentFpgaTime()
-
-    def execute(self, baseTime: float) -> None:
-        self._usrp.execute(baseTime)
-
-    def collect(self) -> List[List[np.ndarray]]:
-        return self._usrp.collect()
-
-    def resetStreamingConfigs(self) -> None:
-        self._usrp.resetStreamingConfigs()
-
-    def getMasterClockRate(self) -> float:
-        return self._usrp.getMasterClockRate()
-
-    def getSupportedSampleRates(self) -> List[float]:
-        return self._usrp.getSupportedSampleRates()
-
-    def getRfConfig(self) -> RfConfig:
-        return self._usrp.getRfConfig()
-
-    def getNumAntennas(self) -> int:
-        return self._usrp.getNumAntennas()
-
-
-class MimoReconfiguringUsrp(RestartingUsrp):
-    def __init__(self, ip: str, desiredType: str = "x410") -> None:
-        super().__init__(ip, desiredType)
-        self._currentRfConfig: RfConfig = None
-
-    def setRfConfig(self, rfConfig: RfConfig) -> None:
-        if self.__mimoConfigChanged(rfConfig):
-            del self._usrp
-            self._usrp = self._startUsrpMultipleTimes()
-        self._usrp.setRfConfig(rfConfig)
-        self._currentRfConfig = rfConfig
-
-    def __mimoConfigChanged(self, newRfConfig: RfConfig) -> bool:
-        hasChanged = False
-        if self._currentRfConfig is not None:
-            hasChanged = (
-                self._currentRfConfig.noRxAntennas != newRfConfig.noRxAntennas
-            ) or (self._currentRfConfig.noTxAntennas != newRfConfig.noTxAntennas)
-        return hasChanged

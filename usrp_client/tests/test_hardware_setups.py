@@ -439,13 +439,14 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     @pytest.mark.basic_hardware
     def test_offsetTxAndRxConfigs_localhost(self) -> None:
-        Fs = 245.76e6/20
+        Fs = 1/20
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
                                                txSampleRate=Fs, rxSampleRate=Fs)
         system = setup.connectUsrps()
 
         samplesOffset = 20000
-        timeOffset = samplesOffset / Fs
+        realSampleRate = setup.rfConfig.txSamplingRate
+        timeOffset = samplesOffset / realSampleRate
 
         txSignal = MimoSignal(signals=[self.randomSignal])
         system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
@@ -464,13 +465,14 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     @pytest.mark.basic_hardware
     def test_multipleTxAndRxConfigs_localhost(self) -> None:
-        Fs = 245.76e6/20
+        Fs = 1/20
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
                                                txSampleRate=Fs, rxSampleRate=Fs)
         system = setup.connectUsrps()
 
         samplesOffset = 20000
-        timeOffset = samplesOffset / Fs
+        realSampleRate = setup.rfConfig.txSamplingRate
+        timeOffset = samplesOffset / realSampleRate
 
         txSignal = MimoSignal(signals=[self.randomSignal])
         system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
@@ -574,7 +576,6 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.addUsrp("usrp1", dev1)
         system.addUsrp("usrp2", dev2)
 
-
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
         )
@@ -656,7 +657,8 @@ class TestHardwareSystemTests(unittest.TestCase):
         S = np.fft.fft(samplesRx)
         fIdx = (frequencies * len(S)).astype(int)
         SatF = abs(S[fIdx])
-        self.assertTrue(np.all(SatF > 10*np.mean(abs(S))), msg=f"{SatF=} not greater than {10*np.mean(abs(S))}")
+        self.assertTrue(np.all(SatF > 10*np.mean(abs(S))),
+                        msg=f"{SatF=} not greater than {10*np.mean(abs(S))}")
 
         # plt.semilogy(abs(S), '-x')
         # plt.show()

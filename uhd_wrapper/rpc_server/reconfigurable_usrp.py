@@ -79,6 +79,9 @@ class RestartingUsrp:
     def getRfConfig(self) -> RfConfig:
         return self._usrp.getRfConfig()
 
+    def getNumAntennas(self) -> int:
+        return self._usrp.getNumAntennas()
+
 
 class MimoReconfiguringUsrp(RestartingUsrp):
     def __init__(self, ip: str, desiredType: str = "x410") -> None:

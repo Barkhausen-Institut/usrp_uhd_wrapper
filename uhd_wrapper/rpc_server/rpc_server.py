@@ -80,6 +80,9 @@ class UsrpServer:
     def getSupportedSampleRates(self) -> List[float]:
         return self.__usrp.getSupportedSampleRates()
 
+    def getNumAntennas(self) -> int:
+        return self.__usrp.getNumAntennas()
+
     def setSyncSource(self, syncType: str) -> None:
         self.__usrp.setSyncSource(syncType)
 

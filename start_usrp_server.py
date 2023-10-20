@@ -23,7 +23,7 @@ IP_USRP = args.uhd_ip
 PORT = args.rpc_port
 TYPE = args.usrp_type
 
-usrp = RestartingUsrp(IP_USRP, desiredDeviceType=TYPE)
+usrp = RestartingUsrp.create(IP_USRP, desiredDeviceType=TYPE)
 
 # start server
 rpcServer = zerorpc.Server(UsrpServer(usrp))

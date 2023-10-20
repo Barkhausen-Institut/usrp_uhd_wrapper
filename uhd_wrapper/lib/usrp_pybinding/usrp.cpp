@@ -120,6 +120,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def(py::self == py::self);
 
     py::class_<bi::UsrpInterface>(m, "Usrp")
+        .def(py::init(&bi::createUsrp))
         .def("setRfConfig", &bi::UsrpInterface::setRfConfig)
         .def("setRxConfig", &bi::UsrpInterface::setRxConfig)
         .def("setTxConfig", &bi::UsrpInterface::setTxConfig)

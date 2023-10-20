@@ -79,10 +79,10 @@ class HardwareSetup:
     def __init__(
         self,
         *,
-        txGain: float = 10,
-        rxGain: float = 20,
-        rxSampleRate: float = 12.288e6,
-        txSampleRate: float = 12.288e6,
+        txGain: float = 20,
+        rxGain: float = 30,
+        rxSampleRate: float = 1 / 4,
+        txSampleRate: float = 1 / 4,
         txFc: float = 3.75e9,
         rxFc: float = 3.75e9,
         noRxAntennas: int,
@@ -387,7 +387,7 @@ class TestHardwareSystemTests(unittest.TestCase):
     def test_2x2mimo_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(
             noRxAntennas=2, noTxAntennas=2,
-            txSampleRate=245.76e6 / 2, rxSampleRate=245.76e6 / 2)
+            txSampleRate=1 / 2, rxSampleRate=1 / 2)
         system = setup.connectUsrps()
 
         tx = np.zeros((2, 2*self.noSamples+2000), dtype=complex)
@@ -535,22 +535,26 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxStreamingConfig2 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)
         )
-        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
-        system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
-        system.execute()
-        samplesSystems = system.collect()
-        rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
 
-        self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
-            second=50,
-            delta=10,
-        )
+        peaks = []
+        for _ in range(3):
+            system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+            system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
+            system.execute()
+
+            samplesSystems = system.collect()
+            rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
+            peaks.append(findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal))
+
+        self.assertLess(max(peaks) - min(peaks), 4, msg=f"Peaks {peaks} are not equal")
+        self.assertGreater(min(peaks), 20)
+
 
     def test_p2pWithPrecreatedUsrps(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         dev1 = UsrpClient(*getIpUsrp1())
         dev2 = UsrpClient(*getIpUsrp2())
+        setup._adjustSamplingRates(dev1.getMasterClockRate())
         skipIfFsNotSupported([setup.rfConfig.rxSamplingRate, setup.rfConfig.txSamplingRate],
                              [dev1, dev2])
 
@@ -561,28 +565,30 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.addUsrp("usrp1", dev1)
         system.addUsrp("usrp2", dev2)
 
+
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
         )
         rxStreamingConfig2 = RxStreamingConfig(
             receiveTimeOffset=0.0, noSamples=int(60e3)
         )
-        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
-        system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
-        system.execute()
-        samplesSystems = system.collect()
-        rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
+        peaks = []
+        for _ in range(3):
+            system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+            system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig2)
+            system.execute()
+            samplesSystems = system.collect()
+            rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
+            peaks.append(findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal))
 
-        self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
-            second=50,
-            delta=10,
-        )
+        self.assertLess(max(peaks) - min(peaks), 4, msg=f"Peaks {peaks} are not equal")
+        self.assertGreater(min(peaks), 20)
+
 
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
-        setup.rfConfig.rxSamplingRate = 245.76e6 / 1
-        setup.rfConfig.txSamplingRate = 245.76e6 / 1
+        setup.rfConfig.rxSamplingRate = 1
+        setup.rfConfig.txSamplingRate = 1
 
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
@@ -592,24 +598,26 @@ class TestHardwareSystemTests(unittest.TestCase):
             receiveTimeOffset=0.0, noSamples=int(60e3)
         )
 
-        system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
-        system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
+        rxSamples = []
+        for _ in range(2):
+            system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
+            system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
 
-        system.execute()
-        samplesSystem = system.collect()
-        rxSamplesUsrp1 = samplesSystem["usrp1"][0].signals[0]
+            system.execute()
+            samplesSystem = system.collect()
+            rxSamples.append(samplesSystem["usrp1"][0].signals[0])
 
         # plt.plot(abs(rxSamplesUsrp1))
         # plt.show()
 
         self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=268,
-            delta=10,
+            first=findSignalStartsInFrame(rxSamples[0], self.randomSignal),
+            second=findSignalStartsInFrame(rxSamples[1], self.randomSignal),
+            delta=2,
         )
 
     def test_longTxSignal_localhost(self) -> None:
-        Fs = 245.76e6
+        Fs = 1
         numFreqs = 50
         frequencies = (np.arange(numFreqs) + 1) / (4*numFreqs)
         numSamples = 200000
@@ -666,14 +674,8 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertAlmostEqual(
             first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=50,
-            delta=10,
-        )
-        self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
-            second=50,
-            delta=10,
-        )
+            second=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
+            delta=2)
 
     def test_reuseOfSystem_4tx1rx_localhost(self) -> None:
         # create setup

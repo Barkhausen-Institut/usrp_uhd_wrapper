@@ -23,12 +23,16 @@ class TestSystemInitialization(unittest.TestCase):
         mock.getCurrentFpgaTime.return_value = 1
         return mock
 
-    def setUp(self) -> None:
-        self.system = System()
-        self.mockUsrpClient = self._createUsrpMock()
+    def _createSystem(self, syncSource: str = 'auto') -> System:
+        system = System(syncSource=syncSource)
 
-        self.system._createUsrpClient = Mock()  # type: ignore
-        self.system._createUsrpClient.return_value = self.mockUsrpClient  # type: ignore
+        system._createUsrpClient = Mock()  # type: ignore
+        system._createUsrpClient.return_value = self.mockUsrpClient  # type: ignore
+        return system
+
+    def setUp(self) -> None:
+        self.mockUsrpClient = self._createUsrpMock()
+        self.system = self._createSystem()
 
     def test_usrpClientGetsCreated(self) -> None:
         IP = "localhost"
@@ -59,6 +63,22 @@ class TestSystemInitialization(unittest.TestCase):
         self.system.execute()
         self.system.execute()
         self.mockUsrpClient.setSyncSource.assert_called_once_with("internal")
+
+    def test_singleUsrp_canForceSyncSource(self) -> None:
+        system = self._createSystem(syncSource='external')
+        system.newUsrp("localhost", "usrp1")
+        system.execute()
+        self.mockUsrpClient.setSyncSource.assert_called_once_with("external")
+
+    def test_multipleUsrps_cannotUseInternalSync(self) -> None:
+        system = self._createSystem(syncSource='internal')
+        mock1 = self._createUsrpMock()
+        mock2 = self._createUsrpMock()
+        system._createUsrpClient.side_effect = [mock1, mock2]  # type: ignore
+        with self.assertRaises(RuntimeError):
+            system.newUsrp("localhost1", "usrp1")
+            system.newUsrp("localhost1", "usrp2")
+            system.execute()
 
     def test_multipleNewUsrpsUseExternalReference_calledOnlyOnce(self) -> None:
         mock1 = self._createUsrpMock()

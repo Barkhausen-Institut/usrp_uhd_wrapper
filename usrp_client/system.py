@@ -79,10 +79,11 @@ class System:
     syncTimeOut = 20 * 60.0  # every 20 minutes
     """Timeout of synchronisation."""
 
-    def __init__(self, logLevel: int = logging.INFO) -> None:
+    def __init__(self, logLevel: int = logging.INFO, *, syncSource: str = 'auto') -> None:
         self.__usrpClients: Dict[str, LabeledUsrp] = {}
         self._usrpsSynced = TimedFlag(resetTimeSec=System.syncTimeOut)
         self._syncSourceSet = False
+        self._syncSourceRequest = syncSource
         self.__logger = self.__createLogger(logLevel)
 
     def __createLogger(self, logLevel: int) -> logging.Logger:
@@ -157,11 +158,20 @@ class System:
         except RemoteError as e:
             raise RemoteUsrpError(e.msg, usrpName)
 
+    def __calculateSyncSource(self) -> str:
+        if self._syncSourceRequest == 'auto':
+            source = "internal" if len(self.__usrpClients) <= 1 else "external"
+        else:
+            source = self._syncSourceRequest
+            if len(self.__usrpClients) > 1 and source == 'internal':
+                raise RuntimeError("Cannot use 'internal' reference with multiple USRPs")
+        return source
+
     def __updateSyncSources(self) -> None:
         if self._syncSourceSet:
             return
 
-        source = "internal" if len(self.__usrpClients) <= 1 else "external"
+        source = self.__calculateSyncSource()
         for usrp in self.__usrpClients.values():
             usrp.client.setSyncSource(source)
         self.resetFpgaTimes()

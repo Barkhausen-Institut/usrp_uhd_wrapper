@@ -43,7 +43,7 @@ class _RpcClient:
         except socket.timeout:
             raise IOError(f"Usrp {ip}:{port} not reachable")
 
-        result = zerorpc.Client()
+        result = zerorpc.Client(heartbeat=10)
         result.connect(f"tcp://{ip}:{port}")
         return result
 

@@ -301,4 +301,8 @@ std::string Usrp::getDeviceType() const {
     return graph_->get_mb_controller()->get_mboard_name();
 }
 
+size_t Usrp::getNumAntennas() const {
+    return fdGraph_->getNumAntennas();
+}
+
 }  // namespace bi

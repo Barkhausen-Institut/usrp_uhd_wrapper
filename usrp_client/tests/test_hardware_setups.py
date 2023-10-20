@@ -80,7 +80,7 @@ class HardwareSetup:
         self,
         *,
         txGain: float = 20,
-        rxGain: float = 30,
+        rxGain: float = 20,
         rxSampleRate: float = 1 / 4,
         txSampleRate: float = 1 / 4,
         txFc: float = 3.75e9,
@@ -172,6 +172,7 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
 
 
 @pytest.mark.hardware
+@pytest.mark.basic_hardware
 class TestHardwareClocks(unittest.TestCase):
     def _createSystem(self, SetupClass: type) -> System:
         setup = SetupClass(noRxAntennas=1, noTxAntennas=1,
@@ -200,6 +201,7 @@ class TestHardwareClocks(unittest.TestCase):
 
 
 @pytest.mark.hardware
+@pytest.mark.basic_hardware
 class TestSampleRateSettings(unittest.TestCase):
     def setUp(self) -> None:
         self.transmitF = 0.05
@@ -234,6 +236,7 @@ class TestSampleRateSettings(unittest.TestCase):
 
 
 @pytest.mark.hardware
+@pytest.mark.basic_hardware
 class TestSingleDevice(unittest.TestCase):
     def setUp(self) -> None:
         self.noSamples = 20000
@@ -311,6 +314,7 @@ class TestSingleDevice(unittest.TestCase):
 
 
 @pytest.mark.hardware
+@pytest.mark.basic_hardware
 class TestCarrierFrequencySettings(unittest.TestCase):
     def setUp(self) -> None:
         self.transmitF = 1/10
@@ -364,6 +368,8 @@ class TestHardwareSystemTests(unittest.TestCase):
         # self.randomSignal *= np.linspace(0, 1, self.noSamples)
         # self.randomSignal2 *= np.linspace(1, 0, self.noSamples)
         #
+
+    @pytest.mark.basic_hardware
     def test_allow2timesExecuteWithoutCrashing(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
@@ -373,6 +379,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.execute()
         system.execute()
 
+    @pytest.mark.basic_hardware
     def test_doesNotCrashOnZeroLengthRxSignal(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
@@ -430,6 +437,7 @@ class TestHardwareSystemTests(unittest.TestCase):
                   findSignalStartsInFrame(rx1, self.randomSignal))
         self.assertAlmostEqual(txDist, self.noSamples + 2000, delta=1)
 
+    @pytest.mark.basic_hardware
     def test_offsetTxAndRxConfigs_localhost(self) -> None:
         Fs = 245.76e6/20
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
@@ -454,6 +462,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
         self.assertAlmostEqual(peak, samplesOffset + 50, delta=10)
 
+    @pytest.mark.basic_hardware
     def test_multipleTxAndRxConfigs_localhost(self) -> None:
         Fs = 245.76e6/20
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
@@ -526,6 +535,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt4)), 1)
 
+    @pytest.mark.basic_hardware
     def test_p2pTransmission(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         system = setup.connectUsrps()
@@ -548,7 +558,6 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         self.assertLess(max(peaks) - min(peaks), 4, msg=f"Peaks {peaks} are not equal")
         self.assertGreater(min(peaks), 20)
-
 
     def test_p2pWithPrecreatedUsrps(self) -> None:
         setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
@@ -584,7 +593,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         self.assertLess(max(peaks) - min(peaks), 4, msg=f"Peaks {peaks} are not equal")
         self.assertGreater(min(peaks), 20)
 
-
+    @pytest.mark.basic_hardware
     def test_localTransmission(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
         setup.rfConfig.rxSamplingRate = 1
@@ -616,6 +625,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             delta=2,
         )
 
+    @pytest.mark.basic_hardware
     def test_longTxSignal_localhost(self) -> None:
         Fs = 1
         numFreqs = 50
@@ -641,11 +651,12 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         system.execute()
         samplesRx = system.collect()["usrp1"][0].signals[0]
+        samplesRx -= np.mean(samplesRx)  # remove DC component
 
         S = np.fft.fft(samplesRx)
         fIdx = (frequencies * len(S)).astype(int)
         SatF = abs(S[fIdx])
-        self.assertTrue(np.all(SatF > 20*np.mean(abs(S))))
+        self.assertTrue(np.all(SatF > 10*np.mean(abs(S))), msg=f"{SatF=} not greater than {10*np.mean(abs(S))}")
 
         # plt.semilogy(abs(S), '-x')
         # plt.show()

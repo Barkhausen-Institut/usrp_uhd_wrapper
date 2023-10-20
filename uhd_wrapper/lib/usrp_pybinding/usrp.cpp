@@ -133,6 +133,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def("getMasterClockRate", &bi::UsrpInterface::getMasterClockRate)
         .def("getSupportedSampleRates", &bi::UsrpInterface::getSupportedSampleRates)
         .def("getRfConfig", &bi::UsrpInterface::getRfConfig)
+        .def("getNumAntennas", &bi::UsrpInterface::getNumAntennas)
         .def_property_readonly("deviceType", &bi::UsrpInterface::getDeviceType);
 
     py::register_exception<bi::UsrpException>(m, "UsrpException");

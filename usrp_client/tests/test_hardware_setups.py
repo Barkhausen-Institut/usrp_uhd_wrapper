@@ -59,6 +59,19 @@ def skipIfFsNotSupported(Fs: Union[List[float], float],
                 pytest.skip(f"Samplerate {f/1e6}MHz not supported by device {d.ip}:{d.port}")
 
 
+def skipIfAntennaCountNotAvailable(requiredAntennaCount: int,
+                                   devices: Union[UsrpClient, List[UsrpClient]]) -> None:
+
+    # ensure devices is a list
+    devices = [devices] if type(devices) is UsrpClient else devices
+    assert type(devices) is list   # needed to satisfy mypy
+
+    for dev in devices:
+        avail = dev.getNumAntennas()
+        if avail < requiredAntennaCount:
+            pytest.skip(f"{requiredAntennaCount} antennas needed, {avail} available.")
+
+
 def createRandom(noSamples: int) -> np.ndarray:
     return 2 * (
         np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,))
@@ -131,6 +144,9 @@ class P2pHardwareSetup(HardwareSetup):
 
         skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
                              [dev1, dev2])
+        skipIfAntennaCountNotAvailable(
+            max(self.rfConfig.noRxAntennas, self.rfConfig.noTxAntennas),
+            [dev1, dev2])
 
         dev1.configureRfConfig(self.rfConfig)
         dev2.configureRfConfig(self.rfConfig)
@@ -147,6 +163,9 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
 
         skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
                              device)
+        skipIfAntennaCountNotAvailable(
+            max(self.rfConfig.noRxAntennas, self.rfConfig.noTxAntennas),
+            device)
 
         device.configureRfConfig(self.rfConfig)
         return self.system

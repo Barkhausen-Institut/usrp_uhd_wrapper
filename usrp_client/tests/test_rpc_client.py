@@ -101,6 +101,10 @@ class TestRpcClient(unittest.TestCase):
         self.usrpClient.setSyncSource("internal")
         self.mockRpcClient.setSyncSource.assert_called_once_with("internal")
 
+    def test_getNumAntennas_functionGetsCalled(self) -> None:
+        self.usrpClient.getNumAntennas()
+        self.mockRpcClient.getNumAntennas.assert_called_once()
+
 
 class TestUsrpClient(unittest.TestCase):
     def setUp(self) -> None:

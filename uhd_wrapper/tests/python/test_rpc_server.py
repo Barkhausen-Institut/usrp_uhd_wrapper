@@ -208,3 +208,8 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.getSupportedSampleRates.return_value = [1, 2, 3]
         res = self.usrpServer.getSupportedSampleRates()
         self.assertEqual(res, [1, 2, 3])
+
+    def test_getNumAntennas_functionGetsCalled(self) -> None:
+        self.usrpMock.getNumAntennas.return_value = 42
+        res = self.usrpServer.getNumAntennas()
+        self.assertEqual(res, 42)

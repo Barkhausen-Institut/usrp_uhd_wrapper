@@ -41,6 +41,7 @@ class Usrp : public UsrpInterface {
     RfConfig getRfConfig() const override;
     void resetStreamingConfigs() override;
     std::string getDeviceType() const override;
+    size_t getNumAntennas() const override;
 
    private:
     // RfNoC components

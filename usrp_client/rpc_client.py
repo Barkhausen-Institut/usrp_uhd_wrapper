@@ -131,6 +131,10 @@ class _RpcClient:
         """
         self.__rpcClient.setSyncSource(syncSource)
 
+    def getNumAntennas(self) -> int:
+        """Return the number of available TX and RX antennas of the device"""
+        return self.__rpcClient.getNumAntennas()
+
     def getRemoteVersion(self) -> str:
         """Return the Python package version of the remotely running UsrpServer
         """

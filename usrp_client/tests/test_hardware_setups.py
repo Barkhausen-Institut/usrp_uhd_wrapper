@@ -68,7 +68,6 @@ def skipIfAntennaCountNotAvailable(requiredAntennaCount: int,
 
     for dev in devices:
         avail = dev.getNumAntennas()
-        print(avail)
         if avail < requiredAntennaCount:
             pytest.skip(f"{requiredAntennaCount} antennas needed, {avail} available.")
 

@@ -17,7 +17,7 @@ class StreamMapper : public StreamMapperBase, public RfNocBlocks {
 public:
     StreamMapper(const RfNocBlockConfig& blockNames, uhd::rfnoc::rfnoc_graph::sptr graph);
 
-    virtual void configureRxAntenna(const RxStreamingConfig& rxConfig) = 0;
+    virtual void configureRxAntenna(const RxStreamingConfig& rxConfig);
 
 };
 

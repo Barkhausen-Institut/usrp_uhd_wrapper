@@ -25,6 +25,7 @@ Usrp::Usrp(const std::string& ip)  {
 
     fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_);
     rfConfig_ = std::make_shared<RFConfiguration>(blockNames, graph_);
+    streamMapper_ = std::make_shared<StreamMapper>(blockNames, graph_);
 
     createRfNocBlocks();
 
@@ -102,6 +103,8 @@ void Usrp::performStreaming(double baseTime) {
                 double streamTime = config.receiveTimeOffset + baseTime;
                 size_t numRxSamples = config.wordAlignedNoSamples();
                 replayConfig_->configReceive(numRxSamples);
+
+                streamMapper_->configureRxAntenna(config);
 
                 // We need to multiply with the rx decim factor because we
                 // instruct the radio to create a given amount of samples, which

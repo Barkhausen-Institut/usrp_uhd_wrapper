@@ -1,11 +1,23 @@
 #ifndef STREAM_MAPPER_H_
 #define STREAM_MAPPER_H_
 
+#include "rfnoc_blocks.hpp"
+
 namespace bi {
 
-class StreamMapper {
+class StreamMapperBase {
 public:
-    StreamMapper();
+    StreamMapperBase();
+
+    virtual void configureRxAntenna(const RxStreamingConfig& rxConfig) = 0;
+
+};
+
+class StreamMapper : public StreamMapperBase, public RfNocBlocks {
+public:
+    StreamMapper(const RfNocBlockConfig& blockNames, uhd::rfnoc::rfnoc_graph::sptr graph);
+
+    virtual void configureRxAntenna(const RxStreamingConfig& rxConfig) = 0;
 
 };
 

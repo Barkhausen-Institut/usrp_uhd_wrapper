@@ -29,7 +29,7 @@ class TestRpcClient(unittest.TestCase):
         rxConfig = RxStreamingConfig(receiveTimeOffset=1.0, noSamples=int(1e3))
         self.usrpClient.configureRx(rxConfig=rxConfig)
         self.mockRpcClient.configureRx.assert_called_with(
-            rxConfig.receiveTimeOffset, rxConfig.noSamples
+            rxConfig.receiveTimeOffset, rxConfig.noSamples, ''
         )
 
     def test_configureTxSerializesCorrectly(self) -> None:

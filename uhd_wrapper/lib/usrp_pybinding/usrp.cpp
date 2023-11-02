@@ -104,8 +104,10 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
-        .def(py::init<const unsigned int, const double>(), py::arg("noSamples"),
-             py::arg("receiveTimeOffset"))
+        .def(py::init<const unsigned int, const double, const std::string&>(),
+             py::arg("noSamples"),
+             py::arg("receiveTimeOffset"),
+             py::arg("antennaPort") = "")
         .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
         .def_readwrite("receiveTimeOffset",
                        &bi::RxStreamingConfig::receiveTimeOffset)

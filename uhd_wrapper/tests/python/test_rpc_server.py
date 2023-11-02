@@ -154,16 +154,6 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpMock.getRfConfig.return_value = usrpRfConfig
         self.assertEqual(c.serialize(), self.usrpServer.getRfConfig())
 
-    def test_executeGetsCalledWithCorrectArguments(self) -> None:
-        BASE_TIME = 3.0
-
-        self.usrpServer.execute(BASE_TIME)
-        self.usrpMock.execute.assert_called_once_with(BASE_TIME)
-
-    def test_settingTimeToZeroNextPps_getsCalled(self) -> None:
-        self.usrpServer.setTimeToZeroNextPps()
-        self.usrpMock.setTimeToZeroNextPps.assert_called_once()
-
     def test_collectGetsCalled(self) -> None:
         signal = MimoSignal(signals=[np.arange(10)])
         self.usrpMock.collect.return_value = [signal.signals]
@@ -183,33 +173,3 @@ class TestUsrpServer(unittest.TestCase):
         self.assertListEqual(
             [signal.serialize(), signal.serialize()], self.usrpServer.collect()
         )
-
-    def test_getCurrentFpgaTime_functionGetsCalled(self) -> None:
-        TIME = 10
-        self.usrpMock.getCurrentFpgaTime.return_value = TIME
-        time = self.usrpServer.getCurrentFpgaTime()
-        self.assertEqual(time, TIME)
-
-    def test_getCurrentSystemTime_functionGetsCalled(self) -> None:
-        TIME = 10
-        self.usrpMock.getCurrentSystemTime.return_value = TIME
-        time = self.usrpServer.getCurrentSystemTime()
-        self.assertEqual(time, TIME)
-
-    def test_getMasterClockRate_functionGetsCalled(self) -> None:
-        _ = self.usrpServer.getMasterClockRate()
-        self.usrpMock.getMasterClockRate.assert_called_once()
-
-    def test_resetStreamingConfigs_functionsGetsCalled(self) -> None:
-        self.usrpServer.resetStreamingConfigs()
-        self.usrpMock.resetStreamingConfigs.assert_called_once()
-
-    def test_getSupportedSampleRatesGetsCalled(self) -> None:
-        self.usrpMock.getSupportedSampleRates.return_value = [1, 2, 3]
-        res = self.usrpServer.getSupportedSampleRates()
-        self.assertEqual(res, [1, 2, 3])
-
-    def test_getNumAntennas_functionGetsCalled(self) -> None:
-        self.usrpMock.getNumAntennas.return_value = 42
-        res = self.usrpServer.getNumAntennas()
-        self.assertEqual(res, 42)

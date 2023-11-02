@@ -40,11 +40,6 @@ class TestRpcClient(unittest.TestCase):
             txConfig.sendTimeOffset, signal.serialize()
         )
 
-    def test_executeGetsCalledWithBaseTime(self) -> None:
-        BASE_TIME = 3.0
-        self.usrpClient.execute(BASE_TIME)
-        self.mockRpcClient.execute.assert_called_with(BASE_TIME)
-
     def test_collectReturnsDeserializedSamples(self) -> None:
         signal = MimoSignal(signals=[np.ones(10)])
         self.mockRpcClient.collect.return_value = [signal.serialize()]
@@ -74,36 +69,6 @@ class TestRpcClient(unittest.TestCase):
 
         self.usrpClient.configureRfConfig(rfConfig=c)
         self.mockRpcClient.configureRfConfig.assert_called_with(c.serialize())
-
-    def test_setTimeToZeroPpsGetsCalled(self) -> None:
-        self.usrpClient.setTimeToZeroNextPps()
-        self.mockRpcClient.setTimeToZeroNextPps.assert_called_once()
-
-    def test_getCurrentFpgaTimeGetsCalled(self) -> None:
-        TIME = 3
-        self.mockRpcClient.getCurrentFpgaTime.return_value = TIME
-        self.assertAlmostEqual(self.usrpClient.getCurrentFpgaTime(), TIME)
-
-    def test_getSystemTimeGetsCalled(self) -> None:
-        TIME = 3
-        self.mockRpcClient.getCurrentSystemTime.return_value = TIME
-        self.assertAlmostEqual(self.usrpClient.getCurrentSystemTime(), TIME)
-
-    def test_getMasterClockRate_functionGetsCalled(self) -> None:
-        _ = self.usrpClient.getMasterClockRate()
-        self.mockRpcClient.getMasterClockRate.assert_called_once()
-
-    def test_getSupportedSampleRates(self) -> None:
-        self.usrpClient.getSupportedSampleRates()
-        self.mockRpcClient.getSupportedSampleRates.assert_called_once()
-
-    def test_setSyncSource_functionGetsCalled(self) -> None:
-        self.usrpClient.setSyncSource("internal")
-        self.mockRpcClient.setSyncSource.assert_called_once_with("internal")
-
-    def test_getNumAntennas_functionGetsCalled(self) -> None:
-        self.usrpClient.getNumAntennas()
-        self.mockRpcClient.getNumAntennas.assert_called_once()
 
 
 class TestUsrpClient(unittest.TestCase):

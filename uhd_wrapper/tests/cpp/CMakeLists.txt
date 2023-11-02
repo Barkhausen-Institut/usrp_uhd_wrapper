@@ -9,7 +9,8 @@ target_include_directories(CatchMain PUBLIC ${PROJECT_3RD_PARTY_DIR})
 include(CTest)
 add_executable(unittests
   test_config.cpp
-  test_replay_config.cpp)
+  test_replay_config.cpp
+  test_stream_mapping.cpp)
 target_link_libraries(unittests CatchMain usrp) # no need to touch this
 target_include_directories(unittests PRIVATE ../../include/)
 target_include_directories(unittests PRIVATE ../../lib/)

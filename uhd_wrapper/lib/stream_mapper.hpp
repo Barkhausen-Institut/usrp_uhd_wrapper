@@ -19,6 +19,10 @@ public:
 
     virtual void configureRxAntenna(const RxStreamingConfig& rxConfig);
 
+private:
+    std::string defaultRxPort_;
+    std::string calculateDefaultRxPort();
+
 };
 
 }

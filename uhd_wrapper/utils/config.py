@@ -39,6 +39,7 @@ class RfConfig:
 class RxStreamingConfig:
     receiveTimeOffset: float = 0.0
     noSamples: int = 0
+    antennaPort: str = ""
 
 
 @dataclass

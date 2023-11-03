@@ -57,9 +57,11 @@ class UsrpServer:
             )
         )
 
-    def configureRx(self, receiveTimeOffset: float, noSamples: int) -> None:
+    def configureRx(self, receiveTimeOffset: float, noSamples: int, antennaPort: str) -> None:
         self.__usrp.setRxConfig(
-            RxStreamingConfig(noSamples=noSamples, receiveTimeOffset=receiveTimeOffset)
+            RxStreamingConfig(noSamples=noSamples,
+                              receiveTimeOffset=receiveTimeOffset,
+                              antennaPort=antennaPort)
         )
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:

@@ -53,7 +53,9 @@ class _RpcClient:
         Args:
             rxConfig (RxStreamingConfig): Streaming config.
         """
-        self.__rpcClient.configureRx(rxConfig.receiveTimeOffset, rxConfig.noSamples)
+        self.__rpcClient.configureRx(rxConfig.receiveTimeOffset,
+                                     rxConfig.noSamples,
+                                     rxConfig.antennaPort)
 
     def configureTx(self, txConfig: TxStreamingConfig) -> None:
         """Call `configureTx` on server and serialize `txConfig`."""

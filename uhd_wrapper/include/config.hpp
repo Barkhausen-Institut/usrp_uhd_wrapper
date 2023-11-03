@@ -45,10 +45,14 @@ struct TxStreamingConfig {
 struct RxStreamingConfig {
     RxStreamingConfig() {}
     RxStreamingConfig(const unsigned int _noSamples,
-                      const double _receiveTimeOffset)
-        : noSamples(_noSamples), receiveTimeOffset(_receiveTimeOffset) {}
+                      const double _receiveTimeOffset,
+                      const std::string& _antennaPort = "")
+        : noSamples(_noSamples),
+          receiveTimeOffset(_receiveTimeOffset),
+          antennaPort(_antennaPort) {}
     unsigned int noSamples;
     double receiveTimeOffset;
+    std::string antennaPort;
 
     size_t wordAlignedNoSamples() const;
 };

@@ -16,6 +16,7 @@
 #include "full_duplex_rfnoc_graph.hpp"
 #include "rf_configuration.hpp"
 #include "replay_config.hpp"
+#include "stream_mapper.hpp"
 
 namespace bi {
 
@@ -49,6 +50,7 @@ class Usrp : public UsrpInterface {
     std::shared_ptr<RfNocFullDuplexGraph> fdGraph_;
     std::shared_ptr<RFConfiguration> rfConfig_;
     std::shared_ptr<ReplayBlockConfig> replayConfig_;
+    std::shared_ptr<StreamMapper> streamMapper_;
 
 
     void createRfNocBlocks();

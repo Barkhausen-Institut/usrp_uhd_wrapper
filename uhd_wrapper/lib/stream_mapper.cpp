@@ -13,16 +13,14 @@ StreamMapper::StreamMapper(const RfNocBlockConfig& blockNames,
 }
 
 void StreamMapper::configureRxAntenna(const RxStreamingConfig &rxConfig) {
-    std::cout << "Configuring RX Port ";
+    std::string antennaPort = defaultRxPort_;
+    if (rxConfig.antennaPort != "")
+        antennaPort = rxConfig.antennaPort;
+    UHD_LOGGER_INFO("uhd_wrapper") << "Configuring RX Port " << antennaPort;
     for(size_t ant = 0; ant < getNumAntennas(); ant++) {
         auto [radio, channel] = getRadioChannelPair(ant);
-        std::string antennaPort = defaultRxPort_;
-        if (rxConfig.antennaPort != "")
-            antennaPort = rxConfig.antennaPort;
-        std::cout << antennaPort << " ";
         radio->set_rx_antenna(antennaPort, channel);
     }
-    std::cout << std::endl;
 }
 
 std::string StreamMapper::calculateDefaultRxPort() {

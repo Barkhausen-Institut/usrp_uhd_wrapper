@@ -43,6 +43,18 @@ def _findFirstSampleInFrameOfSignal(frame: np.ndarray, txSignal: np.ndarray) -> 
     return np.argsort(correlation)[-1]
 
 
+def _calculateSNR(txSignal: np.ndarray, rxSignal: np.ndarray, peak: int) -> float:
+    dcOffset = np.mean(rxSignal)
+    rxSignal = rxSignal - dcOffset
+    end = peak+len(txSignal)
+    sigPart = rxSignal[peak:end]
+    noisePart = rxSignal[end:end+1000]
+    rxPow = np.mean(abs(sigPart) ** 2)
+    rxNoise = np.mean(abs(noisePart) ** 2)
+
+    return 10 * np.log10((rxPow-rxNoise)/rxNoise)
+
+
 def checkSynchronization(ips: List[str]) -> bool:
     """Check if the USRPs are reachable and are synchronized to the same clock
 
@@ -80,6 +92,7 @@ def checkSingle(ip: str) -> bool:
 
     signal = np.random.rand(1000) - 0.5
     peaks = []
+    snrs = []
 
     for i in range(3):
 
@@ -94,10 +107,14 @@ def checkSingle(ip: str) -> bool:
             plt.plot(abs(rxSig[0].signals[0]))
             plt.show()
 
-        peaks.append(_findFirstSampleInFrameOfSignal(rxSig[0].signals[0], signal))
+        rx = rxSig[0].signals[0]
+        peak = _findFirstSampleInFrameOfSignal(rx, signal)
+        peaks.append(peak)
+        snrs.append(_calculateSNR(signal, rx, peak))
 
     peakDiff = max(peaks) - min(peaks)
     print("   Found peaks: ", peaks)
+    print("   SNRs       : ", snrs)
     if peakDiff > 5:
         print("   Peaks too far apart!. Check if antennas are connected")
         print("ERROR")
@@ -117,6 +134,7 @@ def checkTrx(ips: List[str]) -> bool:
 
     signal = np.random.rand(1000) - 0.5
     peaks = []
+    snrs = []
 
     for i in range(3):
 
@@ -132,11 +150,14 @@ def checkTrx(ips: List[str]) -> bool:
             plt.plot(abs(rxSig["usrp1"][0].signals[0]))
             plt.show()
 
-        peaks.append(_findFirstSampleInFrameOfSignal(
-            rxSig["usrp1"][0].signals[0], signal))
+        rx = rxSig["usrp1"][0].signals[0]
+        peak = _findFirstSampleInFrameOfSignal(rx, signal)
+        peaks.append(peak)
+        snrs.append(_calculateSNR(signal, rx, peak))
 
     peakDiff = max(peaks) - min(peaks)
     print("   Found peaks: ", peaks)
+    print("   SNRs       : ", snrs)
     if peakDiff > 5:
         print("   Peaks too far apart!. Check if antennas are connected")
         print("ERROR")

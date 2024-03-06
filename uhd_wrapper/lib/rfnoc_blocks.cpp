@@ -1,5 +1,6 @@
 #include "rfnoc_blocks.hpp"
 #include <uhd/exception.hpp>
+#include "usrp_exception.hpp"
 
 namespace bi {
 RfNocBlockConfig RfNocBlockConfig::defaultNames() {
@@ -54,8 +55,12 @@ RfNocBlocks::RadioChannelPair RfNocBlocks::getRadioChannelPair(int antenna) {
     int numAntennasPerRadio = radioCtrl1_->get_num_input_ports();
     if (antenna < numAntennasPerRadio)
         return {radioCtrl1_, antenna};
-    else
+    else if (antenna < 2 * numAntennasPerRadio)
         return {radioCtrl2_, antenna - numAntennasPerRadio};
+    else {
+        std::cout << "Requested Antenna Index not available " << antenna << std::endl;
+        throw UsrpException("Requested Antenna Index not available");
+    }
 }
 
 }

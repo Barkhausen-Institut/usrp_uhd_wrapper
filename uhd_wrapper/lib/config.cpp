@@ -149,7 +149,7 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     os << "RX Sampling Rate: " << conf.rxSamplingRate << std::endl;
 
     os << "Number of Tx antennas: " << conf.noTxAntennas << std::endl;
-    os << "Number of Rx antenans: " << conf.noRxAntennas << std::endl;
+    os << "Number of Rx antennas: " << conf.noRxAntennas << std::endl;
 
     os << "TX mapping [";
     std::copy(conf.txAntennaMapping.begin(),

@@ -23,15 +23,16 @@ Usrp::Usrp(const std::string& ip)  {
     graph_ = rfnoc_graph::make("addr="+ip);
     RfNocBlockConfig blockNames = RfNocBlockConfig::defaultNames();
 
-    fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_);
-    rfConfig_ = std::make_shared<RFConfiguration>(blockNames, graph_);
     streamMapper_ = std::make_shared<StreamMapper>(blockNames, graph_);
+    fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_, *streamMapper_);
+    rfConfig_ = std::make_shared<RFConfiguration>(blockNames, graph_, *streamMapper_);
 
     createRfNocBlocks();
 
     // Need to perform one cycle of connections such that the radios are preinitialized
     // in order to be able to set a reasonable RF config and sample rate for the DDC/DUC
     const int numAnts = fdGraph_->getNumAntennas();
+    streamMapper_->setDefaultMapping(numAnts);
     fdGraph_->connectForUpload(numAnts);
     fdGraph_->connectForStreaming(numAnts, numAnts);
     fdGraph_->connectForDownload(numAnts);

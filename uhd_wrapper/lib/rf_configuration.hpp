@@ -10,6 +10,7 @@
 
 #include "config.hpp"
 #include "rfnoc_blocks.hpp"
+#include "stream_mapper.hpp"
 
 namespace bi {
 
@@ -17,7 +18,8 @@ namespace bi {
 class RFConfiguration : private RfNocBlocks {
 public:
     RFConfiguration(const RfNocBlockConfig& blockNames,
-                    uhd::rfnoc::rfnoc_graph::sptr graph);
+                    uhd::rfnoc::rfnoc_graph::sptr graph,
+                    const StreamMapper& streamMapper);
 
     RfConfig readFromGraph();
     void setRfConfig(const RfConfig& config);
@@ -43,6 +45,7 @@ private:
     double readRxSampleRate() const;
     double readTxSampleRate() const;
 
+    const StreamMapper& streamMapper_;
     RfConfig rfConfig_;
     double masterClockRate_;
     int numTxAntennas_ = 0;

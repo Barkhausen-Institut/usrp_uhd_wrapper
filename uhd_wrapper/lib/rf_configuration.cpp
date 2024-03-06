@@ -5,8 +5,9 @@ namespace bi {
 
 
 RFConfiguration::RFConfiguration(const RfNocBlockConfig& blockNames,
-                                 uhd::rfnoc::rfnoc_graph::sptr graph)
-    : RfNocBlocks(blockNames, graph) {
+                                 uhd::rfnoc::rfnoc_graph::sptr graph,
+                                 const StreamMapper& streamMapper)
+    : RfNocBlocks(blockNames, graph), streamMapper_(streamMapper) {
     masterClockRate_ = radioCtrl1_->get_tick_rate();
 }
 
@@ -16,12 +17,14 @@ void RFConfiguration::setRfConfig(const RfConfig &conf) {
     numTxAntennas_ = conf.noTxAntennas;
     numRxAntennas_ = conf.noRxAntennas;
 
-    for (int idxRxAntenna = 0; idxRxAntenna < conf.noRxAntennas; idxRxAntenna++)
-        setRfConfigForRxAntenna(conf, idxRxAntenna);
+    for (int idxRxAntenna = 0; idxRxAntenna < numRxAntennas_; idxRxAntenna++)
+        setRfConfigForRxAntenna(conf,
+                                streamMapper_.mapRxStreamToAntenna(idxRxAntenna));
     setRxSampleRate(conf.rxSamplingRate);
 
-    for (int idxTxAntenna = 0; idxTxAntenna < conf.noTxAntennas; idxTxAntenna++)
-        setRfConfigForTxAntenna(conf, idxTxAntenna);
+    for (int idxTxAntenna = 0; idxTxAntenna < numTxAntennas_; idxTxAntenna++)
+        setRfConfigForTxAntenna(conf,
+                                streamMapper_.mapTxStreamToAntenna(idxTxAntenna));
     setTxSampleRate(conf.txSamplingRate);
 
     rfConfig_ = readFromGraph();
@@ -53,7 +56,7 @@ void RFConfiguration::setRxSampleRate(double rate) {
         return;
 
     for(int ant = 0; ant < numRxAntennas_; ant++) {
-      auto [ddc, channel] = getDDCChannelPair(ant);
+      auto [ddc, channel] = getDDCChannelPair(streamMapper_.mapRxStreamToAntenna(ant));
       ddc->set_output_rate(rate, channel);
     }
 }
@@ -76,7 +79,7 @@ void RFConfiguration::setTxSampleRate(double rate) {
         return;
 
     for(int ant = 0; ant < numTxAntennas_; ant++) {
-      auto [duc, channel] = getDUCChannelPair(ant);
+      auto [duc, channel] = getDUCChannelPair(streamMapper_.mapTxStreamToAntenna(ant));
       duc->set_input_rate(rate, channel);
     }
 }

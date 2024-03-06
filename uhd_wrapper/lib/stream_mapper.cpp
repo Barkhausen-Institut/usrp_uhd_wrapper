@@ -23,6 +23,11 @@ void StreamMapperBase::setRfConfig(const RfConfig &config) {
         rxMapping_ = defaultMapping(config.noRxAntennas);
 }
 
+void StreamMapperBase::setDefaultMapping(int numStreams) {
+    txMapping_ = defaultMapping(numStreams);
+    rxMapping_ = defaultMapping(numStreams);
+}
+
 void StreamMapperBase::checkMapping(const StreamMapperBase::Mapping& mapping,
                                     uint numStreams) {
     if (mapping.size() != numStreams)

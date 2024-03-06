@@ -12,6 +12,7 @@ public:
     virtual void configureRxAntenna(const RxStreamingConfig& rxConfig) = 0;
 
     void setRfConfig(const RfConfig& config);
+    void setDefaultMapping(int numStreams);
     uint mapTxStreamToAntenna(uint streamIdx) const;
     uint mapRxStreamToAntenna(uint streamIdx) const;
 

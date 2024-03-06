@@ -32,7 +32,7 @@ Usrp::Usrp(const std::string& ip)  {
     // Need to perform one cycle of connections such that the radios are preinitialized
     // in order to be able to set a reasonable RF config and sample rate for the DDC/DUC
     const int numAnts = fdGraph_->getNumAntennas();
-    streamMapper_->setDefaultMapping(numAnts);
+    streamMapper_->applyDefaultMapping(numAnts);
     fdGraph_->connectForUpload(numAnts);
     fdGraph_->connectForStreaming(numAnts, numAnts);
     fdGraph_->connectForDownload(numAnts);

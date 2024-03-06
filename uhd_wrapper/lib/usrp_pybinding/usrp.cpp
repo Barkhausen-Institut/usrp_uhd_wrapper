@@ -100,6 +100,8 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency)
         .def_readwrite("noRxAntennas", &bi::RfConfig::noRxAntennas)
         .def_readwrite("noTxAntennas", &bi::RfConfig::noTxAntennas)
+        .def_readwrite("txAntennaMapping", &bi::RfConfig::txAntennaMapping)
+        .def_readwrite("rxAntennaMapping", &bi::RfConfig::rxAntennaMapping)
         .def(py::self == py::self);
 
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")

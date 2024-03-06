@@ -11,6 +11,19 @@ public:
 
     virtual void configureRxAntenna(const RxStreamingConfig& rxConfig) = 0;
 
+    void setRfConfig(const RfConfig& config);
+    uint mapTxStreamToAntenna(uint streamIdx) const;
+    uint mapRxStreamToAntenna(uint streamIdx) const;
+
+private:
+    typedef std::vector<int> Mapping;
+    Mapping txMapping_;
+    Mapping rxMapping_;
+
+    uint mapStreamToAntenna(uint streamIdx, const Mapping& mapping) const;
+    Mapping defaultMapping(uint numStreams) const;
+    void checkMapping(const Mapping& mapping, uint numStreams);
+
 };
 
 class StreamMapper : public StreamMapperBase, public RfNocBlocks {

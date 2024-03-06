@@ -26,6 +26,8 @@ class RfConfig:
     rxCarrierFrequency: float = 0.0
     noTxAntennas: int = 1
     noRxAntennas: int = 1
+    txAntennaMapping: list[int] = field(default_factory=list)
+    rxAntennaMapping: list[int] = field(default_factory=list)
 
     def serialize(self) -> str:
         return self.to_json()  # type: ignore

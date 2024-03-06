@@ -30,6 +30,8 @@ struct RfConfig {
     float txAnalogFilterBw, rxAnalogFilterBw;
     float txSamplingRate, rxSamplingRate;
     int noTxAntennas, noRxAntennas;
+    std::vector<int> txAntennaMapping;
+    std::vector<int> rxAntennaMapping;
 };
 
 struct TxStreamingConfig {

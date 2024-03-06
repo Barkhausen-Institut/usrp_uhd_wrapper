@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <iterator>
 
 #include "config.hpp"
 #include "usrp_exception.hpp"
@@ -148,7 +149,18 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     os << "RX Sampling Rate: " << conf.rxSamplingRate << std::endl;
 
     os << "Number of Tx antennas: " << conf.noTxAntennas << std::endl;
-    os << "Number of rx antenans: " << conf.noRxAntennas << std::endl;
+    os << "Number of Rx antenans: " << conf.noRxAntennas << std::endl;
+
+    os << "TX mapping [";
+    std::copy(conf.txAntennaMapping.begin(),
+              conf.txAntennaMapping.end(),
+              std::ostream_iterator<int>(os));
+    os << "]" << std::endl;
+    os << "RX mapping [";
+    std::copy(conf.rxAntennaMapping.begin(),
+              conf.rxAntennaMapping.end(),
+              std::ostream_iterator<int>(os));
+    os << "]" << std::endl;
     return os;
 }
 

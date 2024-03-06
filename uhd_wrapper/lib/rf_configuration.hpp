@@ -52,10 +52,10 @@ private:
     int numRxAntennas_ = 0;
 
     typedef std::tuple<uhd::rfnoc::ddc_block_control::sptr, int> DDCChannelPair;
-    DDCChannelPair getDDCChannelPair(int antenna);
+    DDCChannelPair getDDCChannelPair(int antenna) const;
 
     typedef std::tuple<uhd::rfnoc::duc_block_control::sptr, int> DUCChannelPair;
-    DUCChannelPair getDUCChannelPair(int antenna);
+    DUCChannelPair getDUCChannelPair(int antenna) const;
 
 };
 }

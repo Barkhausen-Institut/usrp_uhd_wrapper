@@ -15,13 +15,16 @@ using namespace std::literals::chrono_literals;
 
 #include "config.hpp"
 #include "rfnoc_blocks.hpp"
+#include "stream_mapper.hpp"
 
 namespace bi {
 
 
 class RfNocFullDuplexGraph : private RfNocBlocks {
 public:
-    RfNocFullDuplexGraph(const RfNocBlockConfig& config, uhd::rfnoc::rfnoc_graph::sptr graph);
+    RfNocFullDuplexGraph(const RfNocBlockConfig& config,
+                         uhd::rfnoc::rfnoc_graph::sptr graph,
+                         const StreamMapper& streamMapper);
     uhd::rfnoc::replay_block_control::sptr getReplayControl();
 
     using RfNocBlocks::getNumAntennas;
@@ -46,6 +49,7 @@ private:
 
     const size_t PACKET_SIZE = 8192 / 2;
 
+    const StreamMapper& streamMapper_;
     std::string currentSyncSource_;
     size_t numTxAntennas_, numRxAntennas_;
     uhd::tx_streamer::sptr currentTxStreamer_;

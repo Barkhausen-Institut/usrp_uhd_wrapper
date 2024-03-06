@@ -128,14 +128,17 @@ std::vector<double> RFConfiguration::getSupportedSampleRates() const {
 
 RfConfig RFConfiguration::readFromGraph() {
     RfConfig conf;
-    conf.txCarrierFrequency = radioCtrl1_->get_tx_frequency(0);
-    conf.txGain = radioCtrl1_->get_tx_gain(0);
-    conf.txAnalogFilterBw = radioCtrl1_->get_tx_bandwidth(0);
+    auto [rxRadio, rxChan] = getRadioChannelPair(streamMapper_.mapRxStreamToAntenna(0));
+    auto [txRadio, txChan] = getRadioChannelPair(streamMapper_.mapTxStreamToAntenna(0));
+
+    conf.txCarrierFrequency = txRadio->get_tx_frequency(txChan);
+    conf.txGain = txRadio->get_tx_gain(txChan);
+    conf.txAnalogFilterBw = txRadio->get_tx_bandwidth(txChan);
     conf.txSamplingRate = readTxSampleRate();
 
-    conf.rxCarrierFrequency = radioCtrl1_->get_rx_frequency(0);
-    conf.rxGain = radioCtrl1_->get_rx_gain(0);
-    conf.rxAnalogFilterBw = radioCtrl1_->get_rx_bandwidth(0);
+    conf.rxCarrierFrequency = rxRadio->get_rx_frequency(rxChan);
+    conf.rxGain = rxRadio->get_rx_gain(rxChan);
+    conf.rxAnalogFilterBw = rxRadio->get_rx_bandwidth(rxChan);
     conf.rxSamplingRate = readRxSampleRate();
 
     // TODO!
@@ -146,7 +149,7 @@ RfConfig RFConfiguration::readFromGraph() {
     return conf;
 }
 
-RFConfiguration::DDCChannelPair RFConfiguration::getDDCChannelPair(int antenna) {
+RFConfiguration::DDCChannelPair RFConfiguration::getDDCChannelPair(int antenna) const {
     int numAntennasPerRadio = radioCtrl1_->get_num_input_ports();
     if (antenna < numAntennasPerRadio)
         return {ddcControl1_, antenna};
@@ -154,7 +157,7 @@ RFConfiguration::DDCChannelPair RFConfiguration::getDDCChannelPair(int antenna) 
         return {ddcControl2_, antenna - numAntennasPerRadio};
 }
 
-RFConfiguration::DUCChannelPair RFConfiguration::getDUCChannelPair(int antenna) {
+RFConfiguration::DUCChannelPair RFConfiguration::getDUCChannelPair(int antenna) const {
     int numAntennasPerRadio = radioCtrl1_->get_num_input_ports();
     if (antenna < numAntennasPerRadio)
         return {ducControl1_, antenna};
@@ -163,15 +166,19 @@ RFConfiguration::DUCChannelPair RFConfiguration::getDUCChannelPair(int antenna) 
 }
 
 double RFConfiguration::readRxSampleRate() const {
-    if (supportsDecimation())
-        return ddcControl1_->get_output_rate(0);
+    if (supportsDecimation()) {
+        auto [ddc, chan] = getDDCChannelPair(streamMapper_.mapRxStreamToAntenna(0));
+        return ddc->get_output_rate(chan);
+    }
     else
         return getMasterClockRate();
 }
 
 double RFConfiguration::readTxSampleRate() const {
-    if (supportsDecimation())
-        return ducControl1_->get_input_rate(0);
+    if (supportsDecimation()) {
+        auto [duc, chan] = getDUCChannelPair(streamMapper_.mapTxStreamToAntenna(0));
+        return duc->get_input_rate(chan);
+    }
     else
         return getMasterClockRate();
 }

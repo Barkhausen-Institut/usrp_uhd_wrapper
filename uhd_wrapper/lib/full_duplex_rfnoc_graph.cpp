@@ -1,5 +1,6 @@
 #include "full_duplex_rfnoc_graph.hpp"
 
+#include <chrono>
 #include <uhd/utils/graph_utils.hpp>
 
 #include "usrp_exception.hpp"
@@ -19,8 +20,9 @@ std::ostream& operator<<(std::ostream& os, const uhd::rfnoc::graph_edge_t& edge)
 }
 
 RfNocFullDuplexGraph::RfNocFullDuplexGraph(const RfNocBlockConfig& config,
-                                           uhd::rfnoc::rfnoc_graph::sptr graph)
-    : RfNocBlocks(config, graph) {
+                                           uhd::rfnoc::rfnoc_graph::sptr graph,
+                                           const StreamMapper& streamMapper)
+    : RfNocBlocks(config, graph), streamMapper_(streamMapper) {
 
     for(size_t c = 0; c < getNumAntennas(); c++) {
         replayCtrl_->set_play_type("sc16", c);
@@ -143,15 +145,18 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxAntennas, size_t numR
 
     graph_->release();
     for (size_t i = 0; i < getNumAntennas(); i++) {
-        auto [radio, radioChan] = getRadioChannelPair(i);
 
         if (useTxChannel(i)) {
+            uint antIdx = streamMapper_.mapTxStreamToAntenna(i);
+            auto [radio, radioChan] = getRadioChannelPair(antIdx);
             uhd::rfnoc::connect_through_blocks(graph_,
                                                replayCtrl_->get_block_id(), i,
                                                radio->get_block_id(), radioChan, false);
         }
 
         if (useRxChannel(i)) {
+            uint antIdx = streamMapper_.mapRxStreamToAntenna(i);
+            auto [radio, radioChan] = getRadioChannelPair(antIdx);
             uhd::rfnoc::connect_through_blocks(graph_,
                                                radio->get_block_id(), radioChan,
                                                replayCtrl_->get_block_id(), i, true);
@@ -175,8 +180,9 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
     {
         std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
         for (size_t channel = 0; channel < getNumAntennas(); channel++) {
-            if (useTxChannel(channel))
+            if (useTxChannel(channel)) {
                 replayCtrl_->issue_stream_cmd(txStreamCmd, channel);
+            }
         }
     }
 
@@ -216,9 +222,15 @@ void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
     {
         std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);
         for (size_t channel = 0; channel < getNumAntennas(); channel++) {
-            auto [radio, radioChan] = getRadioChannelPair(channel);
-            if (useRxChannel(channel))
+            if (useRxChannel(channel)) {
+                // Need to map from the stream to the radio channel (i.e.
+                // antenna idx) because the stream command is issued on the
+                // transmitter side of the graph edge, which is the radio in the
+                // Rx case, but the replay block in the Tx case.
+                int antIdx = streamMapper_.mapRxStreamToAntenna(channel);
+                auto [radio, radioChan] = getRadioChannelPair(antIdx);
                 radio->issue_stream_cmd(rxStreamCmd, radioChan);
+            }
         }
     }
 
@@ -285,6 +297,7 @@ MimoSignal RfNocFullDuplexGraph::download(size_t numRxSamples) {
         size_t remainingSamples = numRxSamples - totalSamplesReceived;
         size_t reqSamples = std::min(remainingSamples, PACKET_SIZE);
         size_t numSamplesReceived = currentRxStreamer_->recv(buffers, reqSamples, mdRx, 0.1, false);
+        // std::this_thread::sleep_for(std::chrono::milliseconds(10));
 
         totalSamplesReceived += numSamplesReceived;
         if (mdRx.error_code != uhd::rx_metadata_t::error_code_t::ERROR_CODE_NONE)

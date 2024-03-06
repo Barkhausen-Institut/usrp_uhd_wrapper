@@ -190,6 +190,7 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 }
 
 void Usrp::setRfConfig(const RfConfig &conf) {
+    streamMapper_->setRfConfig(conf);
     rfConfig_->setRfConfig(conf);
     replayConfig_->setAntennaCount(conf.noTxAntennas, conf.noRxAntennas);
 }

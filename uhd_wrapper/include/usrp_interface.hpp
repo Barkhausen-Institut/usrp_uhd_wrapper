@@ -27,5 +27,5 @@ class UsrpInterface {
     virtual size_t getNumAntennas() const = 0;
 };
 
-std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip);
+std::unique_ptr<UsrpInterface> createUsrp(const std::string& ip, double masterClockRate=0.0);
 }  // namespace bi

@@ -13,6 +13,8 @@ def parseArgs() -> argparse.Namespace:
                         help="Port where the RPC server listens to")
     parser.add_argument("--usrp-type", type=str, default="x410",
                         help="Type of USRP to be expected")
+    parser.add_argument("--master-clock-rate", type=float, default=0,
+                        help="Master Clock Rate to configure. Leave empty or set 0 to leave unchanged.")
 
     return parser.parse_args()
 
@@ -23,7 +25,7 @@ IP_USRP = args.uhd_ip
 PORT = args.rpc_port
 TYPE = args.usrp_type
 
-usrp = RestartingUsrp.create(IP_USRP, desiredDeviceType=TYPE)
+usrp = RestartingUsrp.create(IP_USRP, desiredDeviceType=TYPE, masterClockRate=args.master_clock_rate)
 
 # start server
 rpcServer = zerorpc.Server(UsrpServer(usrp))

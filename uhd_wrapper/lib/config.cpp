@@ -11,8 +11,11 @@ bool operator==(const RfConfig& a, const RfConfig& b) {
     equal &= a.rxGain == b.rxGain;
     equal &= a.txCarrierFrequency == b.txCarrierFrequency;
     equal &= a.rxCarrierFrequency == b.rxCarrierFrequency;
-    equal &= a.txAnalogFilterBw == b.txAnalogFilterBw;
-    equal &= a.rxAnalogFilterBw == b.rxAnalogFilterBw;
+
+    // Do not compare the analog filter bandwidth, since we are actually not using it at all.
+    // equal &= a.txAnalogFilterBw == b.txAnalogFilterBw;
+    // equal &= a.rxAnalogFilterBw == b.rxAnalogFilterBw;
+
     equal &= a.txSamplingRate == b.txSamplingRate;
     equal &= a.rxSamplingRate == b.rxSamplingRate;
     return equal;

@@ -5,7 +5,7 @@ import uhd_wrapper.usrp_pybinding as pybinding
 
 class RestartingUsrp(pybinding.Usrp):
     @staticmethod
-    def create(ip: str, masterClockRate: float = 0, 
+    def create(ip: str, masterClockRate: float = 0,
                desiredDeviceType: str = "x410") -> 'RestartingUsrp':
         RestartTrials = 5
         SleepTime = 5

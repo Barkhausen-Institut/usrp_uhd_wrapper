@@ -26,8 +26,8 @@ IP_USRP = args.uhd_ip
 PORT = args.rpc_port
 TYPE = args.usrp_type
 
-usrp = RestartingUsrp.create(IP_USRP, 
-                             desiredDeviceType=TYPE, 
+usrp = RestartingUsrp.create(IP_USRP,
+                             desiredDeviceType=TYPE,
                              masterClockRate=args.master_clock_rate)
 
 # start server

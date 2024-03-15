@@ -5,13 +5,14 @@ import uhd_wrapper.usrp_pybinding as pybinding
 
 class RestartingUsrp(pybinding.Usrp):
     @staticmethod
-    def create(ip: str, desiredDeviceType: str = "x410") -> 'RestartingUsrp':
+    def create(ip: str, masterClockRate: float = 0,
+               desiredDeviceType: str = "x410") -> 'RestartingUsrp':
         RestartTrials = 5
         SleepTime = 5
 
         for _ in range(RestartTrials):
             try:
-                result = RestartingUsrp(ip)
+                result = RestartingUsrp(ip, masterClockRate)
             except RuntimeError:
                 print(f"Creating of USRP failed... Retrying after {SleepTime} seconds.")
                 time.sleep(SleepTime)

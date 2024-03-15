@@ -18,9 +18,14 @@ using uhd::rfnoc::rfnoc_graph;
 using uhd::rfnoc::noc_block_base;
 
 
-Usrp::Usrp(const std::string& ip)  {
+Usrp::Usrp(const std::string& ip, double masterClockRate)  {
     ip_ = ip;
-    graph_ = rfnoc_graph::make("addr="+ip);
+    std::string clockStr = "";
+    if (masterClockRate > 0)
+        clockStr = "master_clock_rate=" + std::to_string(masterClockRate) + ",";
+    std::cout << "MCR: " << clockStr << masterClockRate << std::endl;
+
+    graph_ = rfnoc_graph::make(clockStr + "addr="+ip);
     RfNocBlockConfig blockNames = RfNocBlockConfig::defaultNames();
 
     fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_);
@@ -287,8 +292,8 @@ std::vector<MimoSignal> Usrp::collect() {
 
     return receivedSamples_;
 }
-std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip) {
-    return std::make_unique<Usrp>(ip);
+std::unique_ptr<UsrpInterface> createUsrp(const std::string &ip, double masterClockRate) {
+    return std::make_unique<Usrp>(ip, masterClockRate);
 }
 
 void Usrp::resetStreamingConfigs() {

@@ -22,7 +22,7 @@ namespace bi {
 
 class Usrp : public UsrpInterface {
    public:
-    Usrp(const std::string& ip);
+    Usrp(const std::string& ip, double masterClockRate);
     ~Usrp();
 
     void setRfConfig(const RfConfig& rfConfig) override;

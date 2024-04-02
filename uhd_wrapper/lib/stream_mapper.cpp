@@ -1,8 +1,74 @@
 #include "stream_mapper.hpp"
+#include "usrp_exception.hpp"
+
+const int NUM_ANTENNAS = 4;
 
 namespace bi {
 StreamMapperBase::StreamMapperBase() {
 }
+
+void StreamMapperBase::setRfConfig(const RfConfig &config) {
+    if (config.txAntennaMapping.size() > 0) {
+        checkMapping(config.txAntennaMapping, config.noTxStreams);
+        txMapping_ = config.txAntennaMapping;
+    }
+    else
+        txMapping_ = defaultMapping(config.noTxStreams);
+
+    if (config.rxAntennaMapping.size() > 0) {
+        checkMapping(config.rxAntennaMapping, config.noRxStreams);
+        rxMapping_ = config.rxAntennaMapping;
+    }
+    else
+        rxMapping_ = defaultMapping(config.noRxStreams);
+}
+
+void StreamMapperBase::applyDefaultMapping(int numStreams) {
+    txMapping_ = defaultMapping(numStreams);
+    rxMapping_ = defaultMapping(numStreams);
+}
+
+void StreamMapperBase::checkMapping(const StreamMapperBase::Mapping& mapping,
+                                    uint numStreams) {
+    if (mapping.size() != numStreams)
+        throw UsrpException("Mapping length does not equal antenna count");
+
+    for (uint t = 0; t < mapping.size(); t++) {
+        if (mapping[t] >= NUM_ANTENNAS)
+            throw UsrpException("Mapping contains an invalid antenna idx!");
+    }
+}
+
+StreamMapperBase::Mapping StreamMapperBase::defaultMapping(uint numStreams) const {
+    Mapping result;
+    for (uint s = 0; s < numStreams; s++)
+        result.push_back(s);
+    return result;
+}
+
+uint StreamMapperBase::mapTxStreamToAntenna(uint streamIdx) const {
+    return mapStreamToAntenna(streamIdx, txMapping_);
+}
+
+uint StreamMapperBase::mapRxStreamToAntenna(uint streamIdx) const {
+    return mapStreamToAntenna(streamIdx, rxMapping_);
+}
+
+uint StreamMapperBase::mapStreamToAntenna(uint streamIdx,
+                                          const StreamMapperBase::Mapping& mapping) const {
+    if (streamIdx >= mapping.size())
+        throw UsrpException("Stream Idx out of bounds");
+    return mapping[streamIdx];
+}
+
+uint StreamMapperBase::getNumRxStreams() const {
+    return rxMapping_.size();
+}
+
+uint StreamMapperBase::getNumTxStreams() const {
+    return txMapping_.size();
+}
+
 
 StreamMapper::StreamMapper(const RfNocBlockConfig& blockNames,
                            uhd::rfnoc::rfnoc_graph::sptr graph)
@@ -17,8 +83,8 @@ void StreamMapper::configureRxAntenna(const RxStreamingConfig &rxConfig) {
     if (rxConfig.antennaPort != "")
         antennaPort = rxConfig.antennaPort;
     UHD_LOGGER_INFO("uhd_wrapper") << "Configuring RX Port " << antennaPort;
-    for(size_t ant = 0; ant < getNumAntennas(); ant++) {
-        auto [radio, channel] = getRadioChannelPair(ant);
+    for(size_t stream = 0; stream < getNumRxStreams(); stream++) {
+        auto [radio, channel] = getRadioChannelPair(mapRxStreamToAntenna(stream));
         radio->set_rx_antenna(antennaPort, channel);
     }
 }

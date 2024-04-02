@@ -16,6 +16,12 @@ from .serialization import (
 @dataclass_json
 @dataclass
 class RfConfig:
+    """Describes the RF configuration of the USRP. In particular, carrier
+    frequency, sampling rate, TX/RX gains are contained in this structure.
+    Moreover, the stream to antenna mapping is described in the elements
+    `txAntennaMapping` and `rxAntennaMapping`.
+
+    """
     txAnalogFilterBw: float = 0.0
     rxAnalogFilterBw: float = 0.0
     txSamplingRate: float = 0.0
@@ -24,8 +30,24 @@ class RfConfig:
     rxGain: float = 0.0
     txCarrierFrequency: float = 0.0
     rxCarrierFrequency: float = 0.0
-    noTxAntennas: int = 1
-    noRxAntennas: int = 1
+    noTxStreams: int = 1
+    noRxStreams: int = 1
+
+    txAntennaMapping: List[int] = field(default_factory=list)
+    """Describes the mapping from a TX stream to an according TX antenna. If not
+    empty, contains a list which describes the stream mapping. The nth element
+    of the list identifies the antenna index (zero-based) where the nth stream
+    is transmitted from.
+
+    If empty, uses a default mapping (i.e. first stream is mapped to first
+    antenna, second stream to second antenna and so on), i.e. `[0, 1, 2, ...,
+    noTxStreams-1]`.
+    """
+
+    rxAntennaMapping: List[int] = field(default_factory=list)
+    """Describes the mapping from an RX antenna to the RX streams. Consider the
+    `txAntennaMapping` for a description of the format.
+    """
 
     def serialize(self) -> str:
         return self.to_json()  # type: ignore
@@ -45,6 +67,7 @@ class RxStreamingConfig:
 @dataclass
 class MimoSignal:
     signals: List[np.ndarray] = field(default_factory=list)
+
     """Each List item corresponds to one antenna frame."""
 
     def serialize(self) -> List[SerializedComplexArray]:

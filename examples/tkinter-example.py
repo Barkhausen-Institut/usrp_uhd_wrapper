@@ -21,8 +21,8 @@ rfConfig.txGain = 50
 rfConfig.rxGain = 50
 rfConfig.txCarrierFrequency = 8e9
 rfConfig.rxCarrierFrequency = 8e9
-rfConfig.noRxAntennas = 1
-rfConfig.noTxAntennas = 1
+rfConfig.noRxStreams = 1
+rfConfig.noTxStreams = 1
 
 device = usrpSystem.newUsrp(ip="192.168.189.133", usrpName="usrp1")
 device.configureRfConfig(rfConfig)

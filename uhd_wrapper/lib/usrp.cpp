@@ -28,15 +28,16 @@ Usrp::Usrp(const std::string& ip, double masterClockRate)  {
     graph_ = rfnoc_graph::make(clockStr + "addr="+ip);
     RfNocBlockConfig blockNames = RfNocBlockConfig::defaultNames();
 
-    fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_);
-    rfConfig_ = std::make_shared<RFConfiguration>(blockNames, graph_);
     streamMapper_ = std::make_shared<StreamMapper>(blockNames, graph_);
+    fdGraph_ = std::make_shared<RfNocFullDuplexGraph>(blockNames, graph_, *streamMapper_);
+    rfConfig_ = std::make_shared<RFConfiguration>(blockNames, graph_, *streamMapper_);
 
     createRfNocBlocks();
 
     // Need to perform one cycle of connections such that the radios are preinitialized
     // in order to be able to set a reasonable RF config and sample rate for the DDC/DUC
     const int numAnts = fdGraph_->getNumAntennas();
+    streamMapper_->applyDefaultMapping(numAnts);
     fdGraph_->connectForUpload(numAnts);
     fdGraph_->connectForStreaming(numAnts, numAnts);
     fdGraph_->connectForDownload(numAnts);
@@ -61,7 +62,7 @@ void Usrp::createRfNocBlocks() {
 }
 
 void Usrp::performUpload() {
-    fdGraph_->connectForUpload(rfConfig_->getNumTxAntennas());
+    fdGraph_->connectForUpload(rfConfig_->getNumTxStreams());
     for(const auto& config : txStreamingConfigs_) {
         const auto& txSignal = config.samples;
         const size_t numSamples = txSignal[0].size();
@@ -73,8 +74,8 @@ void Usrp::performUpload() {
 
 
 void Usrp::performStreaming(double baseTime) {
-    fdGraph_->connectForStreaming(rfConfig_->getNumTxAntennas(),
-                                  rfConfig_->getNumRxAntennas());
+    fdGraph_->connectForStreaming(rfConfig_->getNumTxStreams(),
+                                  rfConfig_->getNumRxStreams());
 
     // We need to make sure that the sample rate is set again, because when disconnecting
     // the DDC/DUC blocks it might happen that the rate is reset. Therefore, to be on the safe
@@ -133,7 +134,7 @@ void Usrp::performStreaming(double baseTime) {
 
 void Usrp::performDownload() {
     receivedSamples_.clear();
-    fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
+    fdGraph_->connectForDownload(rfConfig_->getNumRxStreams());
 
     for(const auto& config: rxStreamingConfigs_) {
         replayConfig_->configDownload(config.wordAlignedNoSamples());
@@ -194,12 +195,13 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 }
 
 void Usrp::setRfConfig(const RfConfig &conf) {
+    streamMapper_->setRfConfig(conf);
     rfConfig_->setRfConfig(conf);
-    replayConfig_->setAntennaCount(conf.noTxAntennas, conf.noRxAntennas);
+    replayConfig_->setStreamCount(conf.noTxStreams, conf.noRxStreams);
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
-    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxAntennas());
+    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxStreams());
     if (txStreamingConfigs_.size() > 0)
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
                                      GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());

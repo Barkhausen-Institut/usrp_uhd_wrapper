@@ -1,5 +1,6 @@
 #include <iostream>
 #include <algorithm>
+#include <iterator>
 
 #include "config.hpp"
 #include "usrp_exception.hpp"
@@ -101,15 +102,15 @@ void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
             "small.");
 }
 
-void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
-                         const size_t noTxAntennas) {
-    size_t noSignals = antSamples.size();
+void assertValidTxSignal(const MimoSignal& streamSamples, const size_t maxSamples,
+                         const size_t noTxStreams) {
+    size_t noSignals = streamSamples.size();
     if (noSignals == 0) throw UsrpException("No signal provided.");
-    size_t lengthSignal = antSamples[0].size();
-    if (antSamples.size() != noTxAntennas)
+    size_t lengthSignal = streamSamples[0].size();
+    if (streamSamples.size() != noTxStreams)
         throw UsrpException(
             "The number of signals must match the number of tx antennas.");
-    for (const auto& antSignal : antSamples) {
+    for (const auto& antSignal : streamSamples) {
         if (antSignal.size() > maxSamples)
             throw UsrpException(
                 "Transmitted signal length must not be larger than " +
@@ -126,15 +127,15 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
 }
 
 void assertValidRfConfig(const RfConfig& conf) {
-    if (conf.noTxAntennas > 4 || conf.noTxAntennas < 1)
+    if (conf.noTxStreams > 4 || conf.noTxStreams < 1)
         throw UsrpException(
-            "You provided " + std::to_string(conf.noTxAntennas) +
-            "Tx antennas. Number of antennas must be within interval [1,4].");
+            "You provided " + std::to_string(conf.noTxStreams) +
+            "Tx Streams. Number of Streams must be within interval [1,4].");
 
-    if (conf.noRxAntennas > 4 || conf.noRxAntennas < 1)
+    if (conf.noRxStreams > 4 || conf.noRxStreams < 1)
         throw UsrpException(
-            "You provided " + std::to_string(conf.noRxAntennas) +
-            "Rx antennas. Number of antennas must be in interval [1,4].");
+            "You provided " + std::to_string(conf.noRxStreams) +
+            "Rx Streams. Number of Streams must be in interval [1,4].");
 }
 
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
@@ -150,8 +151,19 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     os << "TX Sampling Rate: " << conf.txSamplingRate << std::endl;
     os << "RX Sampling Rate: " << conf.rxSamplingRate << std::endl;
 
-    os << "Number of Tx antennas: " << conf.noTxAntennas << std::endl;
-    os << "Number of rx antenans: " << conf.noRxAntennas << std::endl;
+    os << "Number of Tx Streams: " << conf.noTxStreams << std::endl;
+    os << "Number of Rx Streams: " << conf.noRxStreams << std::endl;
+
+    os << "TX mapping [";
+    std::copy(conf.txAntennaMapping.begin(),
+              conf.txAntennaMapping.end(),
+              std::ostream_iterator<int>(os));
+    os << "]" << std::endl;
+    os << "RX mapping [";
+    std::copy(conf.rxAntennaMapping.begin(),
+              conf.rxAntennaMapping.end(),
+              std::ostream_iterator<int>(os));
+    os << "]" << std::endl;
     return os;
 }
 

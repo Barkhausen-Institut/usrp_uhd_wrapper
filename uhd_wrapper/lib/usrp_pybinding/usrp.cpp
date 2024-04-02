@@ -89,7 +89,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
              py::arg("rxCarrierFrequency"), py::arg("txCarrierFrequency"),
              py::arg("txAnalogFilterBw"), py::arg("rxAnalogFilterBw"),
              py::arg("txSamplingRate"), py::arg("rxSamplingRate"),
-             py::arg("noRxAntennas"), py::arg("noTxAntennas"))
+             py::arg("noRxStreams"), py::arg("noTxStreams"))
         .def_readwrite("txSamplingRate", &bi::RfConfig::txSamplingRate)
         .def_readwrite("rxSamplingRate", &bi::RfConfig::rxSamplingRate)
         .def_readwrite("txAnalogFilterBw", &bi::RfConfig::txAnalogFilterBw)
@@ -98,8 +98,10 @@ PYBIND11_MODULE(usrp_pybinding, m) {
         .def_readwrite("rxGain", &bi::RfConfig::rxGain)
         .def_readwrite("txCarrierFrequency", &bi::RfConfig::txCarrierFrequency)
         .def_readwrite("rxCarrierFrequency", &bi::RfConfig::rxCarrierFrequency)
-        .def_readwrite("noRxAntennas", &bi::RfConfig::noRxAntennas)
-        .def_readwrite("noTxAntennas", &bi::RfConfig::noTxAntennas)
+        .def_readwrite("noRxStreams", &bi::RfConfig::noRxStreams)
+        .def_readwrite("noTxStreams", &bi::RfConfig::noTxStreams)
+        .def_readwrite("txAntennaMapping", &bi::RfConfig::txAntennaMapping)
+        .def_readwrite("rxAntennaMapping", &bi::RfConfig::rxAntennaMapping)
         .def(py::self == py::self);
 
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")

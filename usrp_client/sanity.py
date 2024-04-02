@@ -34,8 +34,11 @@ def _defaultRfConfig() -> RfConfig:
                     rxGain=cmdlineArgs.rx_gain,
                     txCarrierFrequency=cmdlineArgs.fc,
                     rxCarrierFrequency=cmdlineArgs.fc,
-                    noTxAntennas=1,
-                    noRxAntennas=1)
+                    noTxStreams=1,
+                    noRxStreams=1,
+                    txAntennaMapping=[cmdlineArgs.tx_port],
+                    rxAntennaMapping=[cmdlineArgs.rx_port],
+                    )
 
 
 def _findFirstSampleInFrameOfSignal(frame: np.ndarray, txSignal: np.ndarray) -> int:
@@ -198,6 +201,10 @@ def parseArgs() -> argparse.Namespace:
                        default=20, help="RX gain in dB", type=float)
     group.add_argument("--fs", required=False, default=245.76e6, type=float,
                        help="Sampling rate in Hz")
+    group.add_argument("--tx-port", required=False, default=0,
+                       help="TX antenna port", type=int)
+    group.add_argument("--rx-port", required=False, default=0,
+                       help="RX antenna port", type=int)
 
     return parser.parse_args()
 

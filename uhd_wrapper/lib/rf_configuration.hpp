@@ -26,8 +26,6 @@ public:
 
     void renewSampleRateSettings();
 
-    // int getNumTxAntennas() const;
-    // int getNumRxAntennas() const;
     int getNumTxStreams() const;
     int getNumRxStreams() const;
     double getTxSamplingRate() const;
@@ -50,8 +48,6 @@ private:
     const StreamMapper& streamMapper_;
     RfConfig rfConfig_;
     double masterClockRate_;
-    //int numTxAntennas_ = 0;
-    //int numRxAntennas_ = 0;
     int numTxStreams_ = 0;
     int numRxStreams_ = 0;
 

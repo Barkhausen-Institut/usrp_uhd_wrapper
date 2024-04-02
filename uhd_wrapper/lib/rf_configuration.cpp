@@ -89,14 +89,6 @@ void RFConfiguration::renewSampleRateSettings() {
     setTxSampleRate(rfConfig_.txSamplingRate);
 }
 
-// int RFConfiguration::getNumTxAntennas() const {
-//     return rfConfig_.noTxAntennas;
-// }
-
-// int RFConfiguration::getNumRxAntennas() const {
-//     return rfConfig_.noRxAntennas;
-// }
-
 int RFConfiguration::getNumTxStreams() const {
     return rfConfig_.noTxStreams;
 }

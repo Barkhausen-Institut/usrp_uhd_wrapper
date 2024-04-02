@@ -82,7 +82,7 @@ ReplayBlockConfig::ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> repla
       txBlocks_(MEM_SIZE/2, SAMPLE_SIZE), rxBlocks_(MEM_SIZE/2, SAMPLE_SIZE) {
 }
 
-void ReplayBlockConfig::setAntennaCount(size_t numTx, size_t numRx) {
+void ReplayBlockConfig::setStreamCount(size_t numTx, size_t numRx) {
     txBlocks_.setStreamCount(numTx);
     rxBlocks_.setStreamCount(numRx);
 

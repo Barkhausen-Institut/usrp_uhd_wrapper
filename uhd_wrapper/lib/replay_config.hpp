@@ -88,7 +88,7 @@ class ReplayBlockConfig {
 public:
     ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl);
 
-    void setAntennaCount(size_t numTx, size_t numRx);
+    void setStreamCount(size_t numTx, size_t numRx);
     void reset();
     void configUpload(size_t numSamples);
     void configTransmit(size_t numSamples);

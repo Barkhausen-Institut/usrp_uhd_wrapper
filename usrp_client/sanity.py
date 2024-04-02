@@ -34,8 +34,8 @@ def _defaultRfConfig() -> RfConfig:
                     rxGain=cmdlineArgs.rx_gain,
                     txCarrierFrequency=cmdlineArgs.fc,
                     rxCarrierFrequency=cmdlineArgs.fc,
-                    noTxAntennas=1,
-                    noRxAntennas=1,
+                    noTxStreams=1,
+                    noRxStreams=1,
                     txAntennaMapping=[cmdlineArgs.tx_port],
                     rxAntennaMapping=[cmdlineArgs.rx_port],
                     )

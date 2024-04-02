@@ -152,7 +152,7 @@ TEST_CASE("Replay Block Config") {
     }
 
     SECTION("Single Antenna") {
-        block.setAntennaCount(1, 1);
+        block.setStreamCount(1, 1);
 
         SECTION("Single upload with 10 samples") {
             REQUIRE_CALL(replay, record(0u, 10*4u, 0u));
@@ -172,7 +172,7 @@ TEST_CASE("Replay Block Config") {
     }
 
     SECTION("Two antennas, single config") {
-        block.setAntennaCount(2, 2);
+        block.setStreamCount(2, 2);
 
         SECTION("Single upload") {
             REQUIRE_CALL(replay, record(0u, 10*4u, 0u));
@@ -196,7 +196,7 @@ TEST_CASE("Replay Block Config") {
     }
 
     SECTION("Single Antenna, multiple configs") {
-        block.setAntennaCount(1, 1);
+        block.setStreamCount(1, 1);
         trompeloeil::sequence seq;
 
         REQUIRE_CALL(replay, record(0u, 10*4u, 0u)).IN_SEQUENCE(seq);

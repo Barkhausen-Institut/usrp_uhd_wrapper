@@ -57,7 +57,7 @@ void Usrp::createRfNocBlocks() {
 }
 
 void Usrp::performUpload() {
-    fdGraph_->connectForUpload(rfConfig_->getNumTxAntennas());
+    fdGraph_->connectForUpload(rfConfig_->getNumTxStreams());
     for(const auto& config : txStreamingConfigs_) {
         const auto& txSignal = config.samples;
         const size_t numSamples = txSignal[0].size();
@@ -69,8 +69,8 @@ void Usrp::performUpload() {
 
 
 void Usrp::performStreaming(double baseTime) {
-    fdGraph_->connectForStreaming(rfConfig_->getNumTxAntennas(),
-                                  rfConfig_->getNumRxAntennas());
+    fdGraph_->connectForStreaming(rfConfig_->getNumTxStreams(),
+                                  rfConfig_->getNumRxStreams());
 
     // We need to make sure that the sample rate is set again, because when disconnecting
     // the DDC/DUC blocks it might happen that the rate is reset. Therefore, to be on the safe
@@ -129,7 +129,7 @@ void Usrp::performStreaming(double baseTime) {
 
 void Usrp::performDownload() {
     receivedSamples_.clear();
-    fdGraph_->connectForDownload(rfConfig_->getNumRxAntennas());
+    fdGraph_->connectForDownload(rfConfig_->getNumRxStreams());
 
     for(const auto& config: rxStreamingConfigs_) {
         replayConfig_->configDownload(config.wordAlignedNoSamples());
@@ -192,11 +192,11 @@ void Usrp::processTxStreamingConfig(const TxStreamingConfig &conf,
 void Usrp::setRfConfig(const RfConfig &conf) {
     streamMapper_->setRfConfig(conf);
     rfConfig_->setRfConfig(conf);
-    replayConfig_->setAntennaCount(conf.noTxAntennas, conf.noRxAntennas);
+    replayConfig_->setStreamCount(conf.noTxStreams, conf.noRxStreams);
 }
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
-    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxAntennas());
+    assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxStreams());
     if (txStreamingConfigs_.size() > 0)
         assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
                                      GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());

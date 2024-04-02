@@ -24,8 +24,8 @@ class RfConfig:
     rxGain: float = 0.0
     txCarrierFrequency: float = 0.0
     rxCarrierFrequency: float = 0.0
-    noTxAntennas: int = 1
-    noRxAntennas: int = 1
+    noTxStreams: int = 1
+    noRxStreams: int = 1
     txAntennaMapping: List[int] = field(default_factory=list)
     rxAntennaMapping: List[int] = field(default_factory=list)
 

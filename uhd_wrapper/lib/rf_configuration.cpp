@@ -14,17 +14,17 @@ RFConfiguration::RFConfiguration(const RfNocBlockConfig& blockNames,
 void RFConfiguration::setRfConfig(const RfConfig &conf) {
     assertValidRfConfig(conf);
 
-    numTxAntennas_ = conf.noTxAntennas;
-    numRxAntennas_ = conf.noRxAntennas;
+    numTxStreams_ = conf.noTxStreams;
+    numRxStreams_ = conf.noRxStreams;
 
-    for (int idxRxAntenna = 0; idxRxAntenna < numRxAntennas_; idxRxAntenna++)
+    for (int idxRxStream = 0; idxRxStream < numRxStreams_; idxRxStream++)
         setRfConfigForRxAntenna(conf,
-                                streamMapper_.mapRxStreamToAntenna(idxRxAntenna));
+                                streamMapper_.mapRxStreamToAntenna(idxRxStream));
     setRxSampleRate(conf.rxSamplingRate);
 
-    for (int idxTxAntenna = 0; idxTxAntenna < numTxAntennas_; idxTxAntenna++)
+    for (int idxTxStream = 0; idxTxStream < numTxStreams_; idxTxStream++)
         setRfConfigForTxAntenna(conf,
-                                streamMapper_.mapTxStreamToAntenna(idxTxAntenna));
+                                streamMapper_.mapTxStreamToAntenna(idxTxStream));
     setTxSampleRate(conf.txSamplingRate);
 
     rfConfig_ = readFromGraph();
@@ -48,15 +48,15 @@ void RFConfiguration::setRfConfigForRxAntenna(const RfConfig &conf,
 }
 
 void RFConfiguration::setRxSampleRate(double rate) {
-    if (numRxAntennas_ == 0)
+    if (numRxStreams_ == 0)
         throw UsrpException("Cannot set sample rate without knowning number of antennas");
     assertSamplingRate(rate, masterClockRate_, supportsDecimation());
 
     if (!supportsDecimation())
         return;
 
-    for(int ant = 0; ant < numRxAntennas_; ant++) {
-      auto [ddc, channel] = getDDCChannelPair(streamMapper_.mapRxStreamToAntenna(ant));
+    for(int stream = 0; stream < numRxStreams_; stream++) {
+      auto [ddc, channel] = getDDCChannelPair(streamMapper_.mapRxStreamToAntenna(stream));
       ddc->set_output_rate(rate, channel);
     }
 }
@@ -71,15 +71,15 @@ void RFConfiguration::setRfConfigForTxAntenna(const RfConfig &conf,
 }
 
 void RFConfiguration::setTxSampleRate(double rate) {
-    if (numTxAntennas_ == 0)
+    if (numTxStreams_ == 0)
         throw UsrpException("Cannot set sample rate without knowning number of antennas");
     assertSamplingRate(rate, masterClockRate_, supportsDecimation());
 
     if (!supportsDecimation())
         return;
 
-    for(int ant = 0; ant < numTxAntennas_; ant++) {
-      auto [duc, channel] = getDUCChannelPair(streamMapper_.mapTxStreamToAntenna(ant));
+    for(int stream = 0; stream < numTxStreams_; stream++) {
+      auto [duc, channel] = getDUCChannelPair(streamMapper_.mapTxStreamToAntenna(stream));
       duc->set_input_rate(rate, channel);
     }
 }
@@ -89,12 +89,12 @@ void RFConfiguration::renewSampleRateSettings() {
     setTxSampleRate(rfConfig_.txSamplingRate);
 }
 
-int RFConfiguration::getNumTxAntennas() const {
-    return rfConfig_.noTxAntennas;
+int RFConfiguration::getNumTxStreams() const {
+    return rfConfig_.noTxStreams;
 }
 
-int RFConfiguration::getNumRxAntennas() const {
-    return rfConfig_.noRxAntennas;
+int RFConfiguration::getNumRxStreams() const {
+    return rfConfig_.noRxStreams;
 }
 
 double RFConfiguration::getTxSamplingRate() const {
@@ -142,8 +142,8 @@ RfConfig RFConfiguration::readFromGraph() {
     conf.rxSamplingRate = readRxSampleRate();
 
     // TODO!
-    conf.noTxAntennas = numTxAntennas_;
-    conf.noRxAntennas = numRxAntennas_;
+    conf.noTxStreams = streamMapper_.getNumTxStreams();
+    conf.noRxStreams = streamMapper_.getNumRxStreams();
     //conf.noRxAntennas = usrpDevice_->get_rx_subdev_spec().size();
     //conf.noTxAntennas = usrpDevice_->get_tx_subdev_spec().size();
     return conf;

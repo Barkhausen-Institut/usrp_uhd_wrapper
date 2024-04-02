@@ -77,7 +77,7 @@ TEST_CASE("BlockOffsetTracker") {
         }
     }
 
-    SECTION("Single Antenna, single config") {
+    SECTION("Single stream, single config") {
         tracker.setStreamCount(1);
         tracker.recordNewBlock(15);
         REQUIRE(tracker.recordOffset(0) == 0);
@@ -86,7 +86,7 @@ TEST_CASE("BlockOffsetTracker") {
         REQUIRE(tracker.replayOffset(0) == 0);
     }
 
-    SECTION("Multiple antennas, single config") {
+    SECTION("Multiple streams, single config") {
         tracker.setStreamCount(2);
         tracker.recordNewBlock(15);
         REQUIRE(tracker.recordOffset(0) == 0);
@@ -97,7 +97,7 @@ TEST_CASE("BlockOffsetTracker") {
         REQUIRE(tracker.replayOffset(1) == 15*4);
     }
 
-    SECTION("Multiple antenna, multiple configs") {
+    SECTION("Multiple streams, multiple configs") {
         tracker.setStreamCount(2);
         tracker.recordNewBlock(15);
         REQUIRE(tracker.recordOffset(0) == 0);
@@ -141,7 +141,7 @@ TEST_CASE("Replay Block Config") {
     std::shared_ptr<bi::ReplayBlockInterface> ptrReplay(&replay, [](auto) {});
     bi::ReplayBlockConfig block(ptrReplay);
 
-    SECTION("Throws if antenna count is not set or too small") {
+    SECTION("Throws if streams count is not set or too small") {
         // cannot use require_throws_as due to https://github.com/catchorg/Catch2/issues/1292
         try {
             block.configUpload(5);
@@ -151,8 +151,8 @@ TEST_CASE("Replay Block Config") {
         }
     }
 
-    SECTION("Single Antenna") {
-        block.setAntennaCount(1, 1);
+    SECTION("Single stream") {
+        block.setStreamCount(1, 1);
 
         SECTION("Single upload with 10 samples") {
             REQUIRE_CALL(replay, record(0u, 10*4u, 0u));
@@ -171,8 +171,8 @@ TEST_CASE("Replay Block Config") {
         }
     }
 
-    SECTION("Two antennas, single config") {
-        block.setAntennaCount(2, 2);
+    SECTION("Two streams, single config") {
+        block.setStreamCount(2, 2);
 
         SECTION("Single upload") {
             REQUIRE_CALL(replay, record(0u, 10*4u, 0u));
@@ -195,8 +195,8 @@ TEST_CASE("Replay Block Config") {
         }
     }
 
-    SECTION("Single Antenna, multiple configs") {
-        block.setAntennaCount(1, 1);
+    SECTION("Single stream, multiple configs") {
+        block.setStreamCount(1, 1);
         trompeloeil::sequence seq;
 
         REQUIRE_CALL(replay, record(0u, 10*4u, 0u)).IN_SEQUENCE(seq);

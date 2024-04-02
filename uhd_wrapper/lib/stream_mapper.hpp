@@ -15,6 +15,8 @@ public:
     void applyDefaultMapping(int numStreams);
     uint mapTxStreamToAntenna(uint streamIdx) const;
     uint mapRxStreamToAntenna(uint streamIdx) const;
+    uint getNumRxStreams() const;
+    uint getNumTxStreams() const;
 
 private:
     typedef std::vector<int> Mapping;

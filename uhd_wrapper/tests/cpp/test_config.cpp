@@ -224,7 +224,7 @@ TEST_CASE("[ValidTxSignal]") {
                                               conf.samples.size()),
                           UsrpException);
     }
-    SECTION("NoTxSignalMismatchesNoTxAntennas") {
+    SECTION("NoTxSignalMismatchesNoTxStreams") {
         conf.samples = {samples_vec((size_t)100, sample(0, 0)),
                         samples_vec((size_t)200, sample(0.0))};
         REQUIRE_THROWS_AS(
@@ -249,21 +249,21 @@ TEST_CASE("[ValidTxSignal]") {
 
 TEST_CASE("[ValidRfConfig]") {
     RfConfig conf;
-    SECTION("NoTxAntennasTooLarge") {
-        conf.noTxAntennas = 5;
+    SECTION("NoTxStreamsTooLarge") {
+        conf.noTxStreams = 5;
         REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
     }
-    SECTION("NoRxAntennasTooLarge") {
-        conf.noRxAntennas = 5;
+    SECTION("NoRxStreamsTooLarge") {
+        conf.noRxStreams = 5;
         REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
     }
 
-    SECTION("NoTxAntennasZero") {
-        conf.noTxAntennas = 0;
+    SECTION("NoTxStreamsZero") {
+        conf.noTxStreams = 0;
         REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
     }
-    SECTION("NoRxAntennasZero") {
-        conf.noRxAntennas = 0;
+    SECTION("NoRxStreamsZero") {
+        conf.noRxStreams = 0;
         REQUIRE_THROWS_AS(assertValidRfConfig(conf), UsrpException);
     }
 }

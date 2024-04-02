@@ -14,7 +14,7 @@ struct RfConfig {
              const float _txCarrierFrequency, const float _rxCarrierFrequency,
              const float _txAnalogFilterBw, const float _rxAnalogFilterBw,
              const float _txSamplingRate, const float _rxSamplingRate,
-             const int _noTxAntennas, const int _noRxAntennas)
+             const int _noTxStreams, const int _noRxStreams)
         : txGain(_txGain),
           rxGain(_rxGain),
           txCarrierFrequency(_txCarrierFrequency),
@@ -23,13 +23,13 @@ struct RfConfig {
           rxAnalogFilterBw(_rxAnalogFilterBw),
           txSamplingRate(_txSamplingRate),
           rxSamplingRate(_rxSamplingRate),
-          noTxAntennas(_noTxAntennas),
-          noRxAntennas(_noRxAntennas) {}
+          noTxStreams(_noTxStreams),
+          noRxStreams(_noRxStreams) {}
     float txGain, rxGain;
     float txCarrierFrequency, rxCarrierFrequency;
     float txAnalogFilterBw, rxAnalogFilterBw;
     float txSamplingRate, rxSamplingRate;
-    int noTxAntennas, noRxAntennas;
+    int noTxStreams, noRxStreams;
     std::vector<int> txAntennaMapping;
     std::vector<int> rxAntennaMapping;
 };

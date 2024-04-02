@@ -40,8 +40,8 @@ def createSystem(
     rfConfig.txGain = txGain
     rfConfig.rxCarrierFrequency = fc
     rfConfig.txCarrierFrequency = fc
-    rfConfig.noRxAntennas = 4
-    rfConfig.noTxAntennas = 4
+    rfConfig.noRxStreams = 4
+    rfConfig.noTxStreams = 4
 
     # ceate system
     system = System()

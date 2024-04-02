@@ -88,7 +88,7 @@ class ReplayBlockConfig {
 public:
     ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl);
 
-    void setAntennaCount(size_t numTx, size_t numRx);
+    void setStreamCount(size_t numTx, size_t numRx);
     void reset();
     void configUpload(size_t numSamples);
     void configTransmit(size_t numSamples);
@@ -102,9 +102,8 @@ private:
     const size_t SAMPLE_SIZE = 4;  // 16bit IQ data
     const size_t MEM_SIZE;
 
-    size_t numTxAntennas_ = 0;;
-    size_t numRxAntennas_ = 0;;
-
+    size_t numTxStreams_ = 0;;
+    size_t numRxStreams_ = 0;;
     std::mutex replayMtx_;
 
     BlockOffsetTracker txBlocks_, rxBlocks_;

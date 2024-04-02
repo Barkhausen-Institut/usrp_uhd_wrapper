@@ -9,18 +9,18 @@ StreamMapperBase::StreamMapperBase() {
 
 void StreamMapperBase::setRfConfig(const RfConfig &config) {
     if (config.txAntennaMapping.size() > 0) {
-        checkMapping(config.txAntennaMapping, config.noTxAntennas);
+        checkMapping(config.txAntennaMapping, config.noTxStreams);
         txMapping_ = config.txAntennaMapping;
     }
     else
-        txMapping_ = defaultMapping(config.noTxAntennas);
+        txMapping_ = defaultMapping(config.noTxStreams);
 
     if (config.rxAntennaMapping.size() > 0) {
-        checkMapping(config.rxAntennaMapping, config.noRxAntennas);
+        checkMapping(config.rxAntennaMapping, config.noRxStreams);
         rxMapping_ = config.rxAntennaMapping;
     }
     else
-        rxMapping_ = defaultMapping(config.noRxAntennas);
+        rxMapping_ = defaultMapping(config.noRxStreams);
 }
 
 void StreamMapperBase::applyDefaultMapping(int numStreams) {
@@ -61,6 +61,14 @@ uint StreamMapperBase::mapStreamToAntenna(uint streamIdx,
     return mapping[streamIdx];
 }
 
+uint StreamMapperBase::getNumRxStreams() const {
+    return rxMapping_.size();
+}
+
+uint StreamMapperBase::getNumTxStreams() const {
+    return txMapping_.size();
+}
+
 
 StreamMapper::StreamMapper(const RfNocBlockConfig& blockNames,
                            uhd::rfnoc::rfnoc_graph::sptr graph)
@@ -75,8 +83,8 @@ void StreamMapper::configureRxAntenna(const RxStreamingConfig &rxConfig) {
     if (rxConfig.antennaPort != "")
         antennaPort = rxConfig.antennaPort;
     UHD_LOGGER_INFO("uhd_wrapper") << "Configuring RX Port " << antennaPort;
-    for(size_t ant = 0; ant < getNumAntennas(); ant++) {
-        auto [radio, channel] = getRadioChannelPair(ant);
+    for(size_t stream = 0; stream < getNumRxStreams(); stream++) {
+        auto [radio, channel] = getRadioChannelPair(mapRxStreamToAntenna(stream));
         radio->set_rx_antenna(antennaPort, channel);
     }
 }

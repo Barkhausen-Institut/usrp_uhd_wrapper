@@ -98,8 +98,8 @@ class HardwareSetup:
         txSampleRate: float = 1 / 4,
         txFc: float = 3.75e9,
         rxFc: float = 3.75e9,
-        noRxAntennas: int,
-        noTxAntennas: int,
+        noRxStreams: int,
+        noTxStreams: int,
     ) -> None:
         self.rfConfig = RfConfig()
         self.rfConfig.rxAnalogFilterBw = 400e6
@@ -110,8 +110,8 @@ class HardwareSetup:
         self.rfConfig.txGain = txGain
         self.rfConfig.rxCarrierFrequency = rxFc
         self.rfConfig.txCarrierFrequency = txFc
-        self.rfConfig.noRxAntennas = noRxAntennas
-        self.rfConfig.noTxAntennas = noTxAntennas
+        self.rfConfig.noRxStreams = noRxStreams
+        self.rfConfig.noTxStreams = noTxStreams
 
     def _adjustSamplingRates(self, masterClockRate: float) -> None:
         def adjust(samplingRate: float) -> float:
@@ -145,7 +145,7 @@ class P2pHardwareSetup(HardwareSetup):
         skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
                              [dev1, dev2])
         skipIfAntennaCountNotAvailable(
-            max(self.rfConfig.noRxAntennas, self.rfConfig.noTxAntennas),
+            max(self.rfConfig.noRxStreams, self.rfConfig.noTxStreams),
             [dev1, dev2])
 
         dev1.configureRfConfig(self.rfConfig)
@@ -164,7 +164,7 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
         skipIfFsNotSupported([self.rfConfig.rxSamplingRate, self.rfConfig.txSamplingRate],
                              device)
         skipIfAntennaCountNotAvailable(
-            max(self.rfConfig.noRxAntennas, self.rfConfig.noTxAntennas),
+            max(self.rfConfig.noRxStreams, self.rfConfig.noTxStreams),
             device)
 
         device.configureRfConfig(self.rfConfig)
@@ -194,7 +194,7 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
 @pytest.mark.basic_hardware
 class TestHardwareClocks(unittest.TestCase):
     def _createSystem(self, SetupClass: type) -> System:
-        setup = SetupClass(noRxAntennas=1, noTxAntennas=1,
+        setup = SetupClass(noRxStreams=1, noTxStreams=1,
                            txSampleRate=1, rxSampleRate=1)
 
         return setup.connectUsrps()
@@ -228,7 +228,7 @@ class TestSampleRateSettings(unittest.TestCase):
 
     def _transmitAndGetRxPeakFrequency(self, rxRate: float, txRate: float) -> float:
         setup = LocalTransmissionHardwareSetup(
-            noRxAntennas=1, noTxAntennas=1, txSampleRate=txRate, rxSampleRate=rxRate)
+            noRxStreams=1, noTxStreams=1, txSampleRate=txRate, rxSampleRate=rxRate)
 
         rxSamples = setup.propagateSignal([self.txSignal])[0]
 
@@ -265,7 +265,7 @@ class TestSingleDevice(unittest.TestCase):
         ) - (0.5 + 0.5j)
 
     def _getDevice(self, Fs: float) -> UsrpClient:
-        setup = HardwareSetup(noRxAntennas=1, noTxAntennas=1,
+        setup = HardwareSetup(noRxStreams=1, noTxStreams=1,
                               txSampleRate=Fs, rxSampleRate=Fs)
         dev = UsrpClient(ip=getIpUsrp1().ip, port=getIpUsrp1().port)
         setup._adjustSamplingRates(dev.getMasterClockRate())
@@ -345,7 +345,7 @@ class TestCarrierFrequencySettings(unittest.TestCase):
     def _transmitAndGetRxPeakFrequency(self, sampleRate: float, txCarrier: float,
                                        rxCarrier: float) -> Tuple[float, float]:
         setup = LocalTransmissionHardwareSetup(
-            noRxAntennas=1, noTxAntennas=1,
+            noRxStreams=1, noTxStreams=1,
             txFc=txCarrier, rxFc=rxCarrier,
             txSampleRate=sampleRate, rxSampleRate=sampleRate)
 
@@ -390,7 +390,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     @pytest.mark.basic_hardware
     def test_allow2timesExecuteWithoutCrashing(self) -> None:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1)
         system = setup.connectUsrps()
 
         # Make sure, that if calling code crashes between calls to execute and collect, that
@@ -400,7 +400,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     @pytest.mark.basic_hardware
     def test_doesNotCrashOnZeroLengthRxSignal(self) -> None:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1)
         system = setup.connectUsrps()
 
         system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
@@ -412,7 +412,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_2x2mimo_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(
-            noRxAntennas=2, noTxAntennas=2,
+            noRxStreams=2, noTxStreams=2,
             txSampleRate=1 / 2, rxSampleRate=1 / 2)
         system = setup.connectUsrps()
 
@@ -459,7 +459,7 @@ class TestHardwareSystemTests(unittest.TestCase):
     @pytest.mark.basic_hardware
     def test_offsetTxAndRxConfigs_localhost(self) -> None:
         Fs = 1/20
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1,
                                                txSampleRate=Fs, rxSampleRate=Fs)
         system = setup.connectUsrps()
 
@@ -485,7 +485,7 @@ class TestHardwareSystemTests(unittest.TestCase):
     @pytest.mark.basic_hardware
     def test_multipleTxAndRxConfigs_localhost(self) -> None:
         Fs = 1/20
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1,
                                                txSampleRate=Fs, rxSampleRate=Fs)
         system = setup.connectUsrps()
 
@@ -515,7 +515,7 @@ class TestHardwareSystemTests(unittest.TestCase):
                                50, delta=10)
 
     def test_reUseSystem_oneTxAntennaFourRxAntennas_localhost(self) -> None:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=4, noTxAntennas=1)
+        setup = LocalTransmissionHardwareSetup(noRxStreams=4, noTxStreams=1)
         system = setup.connectUsrps()
 
         for _ in range(3):
@@ -558,7 +558,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     @pytest.mark.basic_hardware
     def test_p2pTransmission(self) -> None:
-        setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup = P2pHardwareSetup(noRxStreams=1, noTxStreams=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -581,7 +581,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         self.assertGreater(min(peaks), 20)
 
     def test_p2pWithPrecreatedUsrps(self) -> None:
-        setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup = P2pHardwareSetup(noRxStreams=1, noTxStreams=1)
         dev1 = UsrpClient(*getIpUsrp1())
         dev2 = UsrpClient(*getIpUsrp2())
         setup._adjustSamplingRates(dev1.getMasterClockRate())
@@ -615,7 +615,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     @pytest.mark.basic_hardware
     def test_localTransmission(self) -> None:
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1)
         setup.rfConfig.rxSamplingRate = 1
         setup.rfConfig.txSamplingRate = 1
 
@@ -658,7 +658,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             for f in frequencies
         ])
 
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=1,
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1,
                                                txSampleRate=Fs, rxSampleRate=Fs)
         system = setup.connectUsrps()
         txStreamingConfig = TxStreamingConfig(sendTimeOffset=0.0,
@@ -683,7 +683,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         # plt.show()
 
     def test_jcas(self) -> None:
-        setup = P2pHardwareSetup(noRxAntennas=1, noTxAntennas=1)
+        setup = P2pHardwareSetup(noRxStreams=1, noTxStreams=1)
         system = setup.connectUsrps()
         txStreamingConfig1 = TxStreamingConfig(
             sendTimeOffset=0.1, samples=MimoSignal(signals=[self.randomSignal])
@@ -711,7 +711,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
     def test_reuseOfSystem_4tx1rx_localhost(self) -> None:
         # create setup
-        setup = LocalTransmissionHardwareSetup(noRxAntennas=1, noTxAntennas=4)
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=4)
         system = setup.connectUsrps()
 
         # create signal

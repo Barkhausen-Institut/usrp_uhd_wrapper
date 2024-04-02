@@ -102,9 +102,8 @@ private:
     const size_t SAMPLE_SIZE = 4;  // 16bit IQ data
     const size_t MEM_SIZE;
 
-    size_t numTxAntennas_ = 0;;
-    size_t numRxAntennas_ = 0;;
-
+    size_t numTxStreams_ = 0;;
+    size_t numRxStreams_ = 0;;
     std::mutex replayMtx_;
 
     BlockOffsetTracker txBlocks_, rxBlocks_;

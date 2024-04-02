@@ -86,8 +86,8 @@ void ReplayBlockConfig::setStreamCount(size_t numTx, size_t numRx) {
     txBlocks_.setStreamCount(numTx);
     rxBlocks_.setStreamCount(numRx);
 
-    numTxAntennas_ = numTx;
-    numRxAntennas_ = numRx;
+    numTxStreams_ = numTx;
+    numRxStreams_ = numRx;
 }
 
 void ReplayBlockConfig::reset() {
@@ -99,7 +99,7 @@ void ReplayBlockConfig::configUpload(size_t numSamples) {
     txBlocks_.recordNewBlock(numSamples);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
-    for(size_t tx = 0; tx < numTxAntennas_; tx++)
+    for(size_t tx = 0; tx < numTxStreams_; tx++)
         replayBlock_->record(txBlocks_.recordOffset(tx), numBytes, tx);
     clearRecordingBuffer();
 }
@@ -108,7 +108,7 @@ void ReplayBlockConfig::configTransmit(size_t numSamples) {
     txBlocks_.replayNextBlock(numSamples);
     std::lock_guard<std::mutex> lock(replayMtx_);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
-    for(size_t tx = 0; tx < numTxAntennas_; tx++)
+    for(size_t tx = 0; tx < numTxStreams_; tx++)
         replayBlock_->config_play(txBlocks_.replayOffset(tx), numBytes, tx);
 }
 
@@ -116,7 +116,7 @@ void ReplayBlockConfig::configReceive(size_t numSamples) {
     rxBlocks_.recordNewBlock(numSamples);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
-    for(size_t rx = 0; rx < numRxAntennas_; rx++)
+    for(size_t rx = 0; rx < numRxStreams_; rx++)
         replayBlock_->record(MEM_SIZE/2+rxBlocks_.recordOffset(rx), numBytes, rx);
     clearRecordingBuffer();
 }
@@ -125,7 +125,7 @@ void ReplayBlockConfig::configDownload(size_t numSamples) {
     rxBlocks_.replayNextBlock(numSamples);
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
-    for(size_t rx = 0; rx < numRxAntennas_; rx++)
+    for(size_t rx = 0; rx < numRxStreams_; rx++)
         replayBlock_->config_play(MEM_SIZE/2+rxBlocks_.replayOffset(rx), numBytes, rx);
 }
 

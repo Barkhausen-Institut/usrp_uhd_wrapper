@@ -8,27 +8,30 @@ import uhd_wrapper.usrp_pybinding as binding
 class TestTxStreamingConfig(unittest.TestCase):
     def test_canConstruct(self) -> None:
         binding.TxStreamingConfig()
-        binding.TxStreamingConfig([np.array([5])], 8)
+        binding.TxStreamingConfig([np.array([5])], 8, 15)
 
     def test_holdsCorrectValuesAfterConstruction(self) -> None:
-        dut = binding.TxStreamingConfig([np.array([5, 9])], 8)
+        dut = binding.TxStreamingConfig([np.array([5, 9])], 8, 15)
         nt.assert_array_equal(dut.samples, [np.array([5, 9])])
         self.assertIs(type(dut.samples), list)
         self.assertEqual(dut.sendTimeOffset, 8)
+        self.assertEqual(dut.repetitions, 15)
 
     def test_canSetFieldsAfterConstruction(self) -> None:
         signals = [np.array([8, 3]), np.array([9, 7])]
         dut = binding.TxStreamingConfig()
         dut.samples = signals
         dut.sendTimeOffset = 42
+        dut.repetitions = 16
 
         self.assertEqual(dut.sendTimeOffset, 42)
         nt.assert_array_equal(dut.samples, signals)
+        self.assertEqual(dut.repetitions, 16)
 
     def test_inCppConstructedVersionMatchesLocallyConstructedVersion(self) -> None:
         signals = [np.array([8, 3]), np.array([9, 7])]
-        dut = binding.TxStreamingConfig(signals, 5)
-        self.assertEqual(dut, binding._createTxConfig(signals, 5))
+        dut = binding.TxStreamingConfig(signals, 5, 18)
+        self.assertEqual(dut, binding._createTxConfig(signals, 5, 16))
 
 
 class TestRxStreamingConfig(unittest.TestCase):

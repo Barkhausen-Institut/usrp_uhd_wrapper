@@ -146,8 +146,8 @@ PYBIND11_MODULE(usrp_pybinding, m) {
     // takes a MimoSignal as the parameter from Python and creates a
     // streaming config with it. Used only for testing
     m.def("_createTxConfig",
-          [](const bi::MimoSignal& signal, float sendTimeOffset) {
-              return bi::TxStreamingConfig(signal, sendTimeOffset, 1);
+          [](const bi::MimoSignal& signal, float sendTimeOffset, int repetitions) {
+              return bi::TxStreamingConfig(signal, sendTimeOffset, repetitions);
           });
 
     // return hard-coded vector of MimoSignal, to test if the to-python

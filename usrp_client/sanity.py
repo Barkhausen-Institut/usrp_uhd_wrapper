@@ -102,7 +102,8 @@ def checkSingle(ip: str) -> bool:
         client.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                              samples=MimoSignal(signals=[signal])))
         client.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
-                                             noSamples=2*len(signal)))
+                                             noSamples=2*len(signal),
+                                             antennaPort=cmdlineArgs.rx_antenna))
 
         client.executeImmediately()
         rxSig = client.collect()
@@ -205,6 +206,8 @@ def parseArgs() -> argparse.Namespace:
                        help="TX antenna port", type=int)
     group.add_argument("--rx-port", required=False, default=0,
                        help="RX antenna port", type=int)
+    group.add_argument("--rx-antenna", required=False, default="RX1",
+                       help="RX antenna name (TX/RX, RX1, ...)", type=str)
 
     return parser.parse_args()
 

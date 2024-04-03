@@ -57,24 +57,31 @@ For a quick check if the USRP's RPC Server is running correctly and the connecti
 
 ``` console
 $ python -m usrp_client.sanity --help
-usage: sanity.py [-h] [--sync] [--trx] [--single] [--all] --ips ip [ip ...] [--fc FC] [--tx-gain TX_GAIN] [--rx-gain RX_GAIN]
+usage: sanity.py [-h] [--sync] [--trx] [--single] [--all] [--plot] --ips ip [ip ...] [--fc FC] [--tx-gain TX_GAIN]
+                 [--rx-gain RX_GAIN] [--fs FS] [--tx-port TX_PORT] [--rx-port RX_PORT] [--rx-antenna RX_ANTENNA]
 
 Run several sanity tests against USRPs
 
 optional arguments:
-  -h, --help         show this help message and exit
+  -h, --help            show this help message and exit
 
 Test selection:
-  --sync             Run the synchronization test against all USRPs (default: False)
-  --trx              Run a transmission from first to second USRP in <ips> (default: False)
-  --single           Run a transmission on a single USRP (default: False)
-  --all              Run all sanity tests (default: False)
+  --sync                Run the synchronization test against all USRPs (default: False)
+  --trx                 Run a transmission from first to second USRP in <ips> (default: False)
+  --single              Run a transmission on a single USRP (default: False)
+  --all                 Run all sanity tests (default: False)
+  --plot                Plot received signals (default: False)
 
 USRP configuration:
-  --ips ip [ip ...]  List of IPs to check
-  --fc FC            Carrier frequency in Hz (default: 3700000000.0)
-  --tx-gain TX_GAIN  TX gain in dB (default: 20)
-  --rx-gain RX_GAIN  RX gain in dB (default: 20)
+  --ips ip [ip ...]     List of IPs to check
+  --fc FC               Carrier frequency in Hz (default: 3700000000.0)
+  --tx-gain TX_GAIN     TX gain in dB (default: 20)
+  --rx-gain RX_GAIN     RX gain in dB (default: 20)
+  --fs FS               Sampling rate in Hz (default: 245760000.0)
+  --tx-port TX_PORT     TX antenna port (default: 0)
+  --rx-port RX_PORT     RX antenna port (default: 0)
+  --rx-antenna RX_ANTENNA
+                        RX antenna name (TX/RX, RX1, ...) (default: RX1)
 ```
 
 ## Integration Tests

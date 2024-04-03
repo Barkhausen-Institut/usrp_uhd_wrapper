@@ -77,7 +77,7 @@ void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate,
                         bool supportsDecimation);
 
-void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
                                   const TxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
 

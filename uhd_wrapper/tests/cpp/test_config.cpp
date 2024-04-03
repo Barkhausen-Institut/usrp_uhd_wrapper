@@ -50,21 +50,24 @@ TEST_CASE("[ValidTxStreamingConfig]") {
     double guardOffset = 1.0;
     double fs = 20000.0;
     TxStreamingConfig prevConfig;
+    // 2000 samples equals 0.1 seconds
     prevConfig.samples = {{bi::samples_vec(2000, bi::sample(1.0, 1.0))}};
+    prevConfig.repetitions = 1;
 
     TxStreamingConfig newConfig;
     newConfig.samples = {{}};
+    newConfig.repetitions = 1;
     SECTION("NewOffsetIsValid") {
         prevConfig.sendTimeOffset = 0.0;
         newConfig.sendTimeOffset = prevConfig.sendTimeOffset + guardOffset +
                                    prevConfig.samples[0].size() / fs;
-        REQUIRE_NOTHROW(assertValidTxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_NOTHROW(assertValidTxStreamingConfig(&prevConfig, newConfig,
                                                      guardOffset, fs));
     }
     SECTION("NewOffsetSmallerThanPrevious") {
         prevConfig.sendTimeOffset = 1.0;
         newConfig.sendTimeOffset = 0.0;
-        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }
@@ -74,7 +77,7 @@ TEST_CASE("[ValidTxStreamingConfig]") {
         prevConfig.samples = {{}};
         prevConfig.sendTimeOffset = 1.0;
         newConfig.sendTimeOffset = 1.0 + guardOffset / 2;
-        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }
@@ -82,7 +85,27 @@ TEST_CASE("[ValidTxStreamingConfig]") {
     SECTION("NewOffsetSmallerThanDurationOfPreviousSignal") {
         prevConfig.sendTimeOffset = 1.0;
         newConfig.sendTimeOffset = 1.0 + guardOffset;
-        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(&prevConfig, newConfig,
+                                                       guardOffset, fs),
+                          UsrpException);
+    }
+
+    SECTION("NewOffsetSmallerThanDurationOfPreviousSignalWithRepetition") {
+        prevConfig.sendTimeOffset = 1.0;
+        prevConfig.repetitions = 10;
+        newConfig.sendTimeOffset = 1.5 + guardOffset;
+        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(&prevConfig, newConfig,
+                                                       guardOffset, fs),
+                          UsrpException);
+
+    }
+
+    SECTION("WhenUsingRepetitionsSignalLengthMustBeWordAligned") {
+        newConfig.samples = {{bi::samples_vec(2001, bi::sample(1.0, 1.0))}};
+        prevConfig.sendTimeOffset = 0.0;
+        newConfig.sendTimeOffset = 2.0;
+        newConfig.repetitions = 2;
+        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(nullptr, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }

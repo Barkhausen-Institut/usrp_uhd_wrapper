@@ -81,15 +81,23 @@ void assertSamplingRate(const double actualSamplingRate,
                         std::to_string(masterClockRate));
 }
 
-void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
                                   const TxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs) {
-    double minimumRequiredOffset = prevConfig.sendTimeOffset + guardOffset +
-                                   prevConfig.samples[0].size() / fs;
+    double minimumRequiredOffset = newConfig.sendTimeOffset;
+    if (prevConfig) {
+        minimumRequiredOffset = prevConfig->sendTimeOffset + guardOffset +
+            prevConfig->samples[0].size() / fs * prevConfig->repetitions;
+    }
     if (newConfig.sendTimeOffset < minimumRequiredOffset)
         throw UsrpException(
             "Invalid TX streaming config: the offset of the new config is too "
             "small.");
+    if (newConfig.repetitions != 1) {
+        size_t L = newConfig.samples[0].size();
+        if (nextMultipleOfWordSize(L) != L)
+            throw UsrpException("When using repetitions, the length of the TX signal must be word-aligned!");
+    }
 }
 void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
                                   const RxStreamingConfig& newConfig,
@@ -109,7 +117,7 @@ void assertValidTxSignal(const MimoSignal& streamSamples, const size_t maxSample
     size_t lengthSignal = streamSamples[0].size();
     if (streamSamples.size() != noTxStreams)
         throw UsrpException(
-            "The number of signals must match the number of tx antennas.");
+            "The number of signals must match the number of tx streams.");
     for (const auto& antSignal : streamSamples) {
         if (antSignal.size() > maxSamples)
             throw UsrpException(

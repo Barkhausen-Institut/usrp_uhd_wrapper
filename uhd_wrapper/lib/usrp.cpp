@@ -203,9 +203,12 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
     assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxStreams());
-    if (txStreamingConfigs_.size() > 0)
-        assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
+    TxStreamingConfig* prev = nullptr;
+    if (txStreamingConfigs_.size())
+        prev = &txStreamingConfigs_.back();
+    assertValidTxStreamingConfig(prev, conf,
+                                 GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
+
     txStreamingConfigs_.push_back(conf);
     txStreamingConfigs_.back().alignToWordSize();
 }

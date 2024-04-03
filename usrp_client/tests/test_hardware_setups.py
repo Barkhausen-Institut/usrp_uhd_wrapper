@@ -11,6 +11,7 @@ LOGGER = logging.getLogger(__name__)
 import matplotlib.pyplot as plt  # noqa
 
 import numpy as np
+import numpy.testing as nt
 
 from uhd_wrapper.utils.config import (
     RfConfig,
@@ -82,10 +83,15 @@ def padSignal(noZeroPads: int, signal: np.ndarray) -> np.ndarray:
     return np.hstack([np.zeros(noZeroPads), signal])
 
 
-def findSignalStartsInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
+def findMultipleSignalStartsInFrame(frame: np.ndarray,
+                                    txSignal: np.ndarray, numPeaks: int = 1) -> np.ndarray:
     import scipy.signal as S  # type: ignore
     correlation = abs(S.correlate(frame, txSignal, mode='valid'))
-    return np.argmax(correlation).item()
+    return np.argsort(correlation)[-numPeaks:]
+
+
+def findSignalStartInFrame(frame: np.ndarray, txSignal: np.ndarray) -> int:
+    return findMultipleSignalStartsInFrame(frame, txSignal, numPeaks=1)[0]
 
 
 class HardwareSetup:
@@ -289,7 +295,7 @@ class TestSingleDevice(unittest.TestCase):
         rxSignal = [self._executeNow(dev, self.randomSignal, 30000)
                     for i in range(3)]
 
-        peaks = [findSignalStartsInFrame(rx, self.randomSignal)
+        peaks = [findSignalStartInFrame(rx, self.randomSignal)
                  for rx in rxSignal]
         self.assertLessEqual(max(peaks) - min(peaks), 2,
                              msg=f"Peaks {peaks} too far apart")
@@ -300,8 +306,8 @@ class TestSingleDevice(unittest.TestCase):
         rxSignal = [self._executeNow(dev, signal, 30001) for _ in range(2)]
 
         self.assertEqual(len(rxSignal[0]), 30001)
-        self.assertAlmostEqual(findSignalStartsInFrame(rxSignal[0], signal),
-                               findSignalStartsInFrame(rxSignal[1], signal),
+        self.assertAlmostEqual(findSignalStartInFrame(rxSignal[0], signal),
+                               findSignalStartInFrame(rxSignal[1], signal),
                                delta=2)
 
     @pytest.mark.FS_400MHz
@@ -328,7 +334,7 @@ class TestSingleDevice(unittest.TestCase):
 
         for rx in range(4):
             for tx in range(4):
-                peak = findSignalStartsInFrame(rxSignal[rx], signals[tx])
+                peak = findSignalStartInFrame(rxSignal[rx], signals[tx])
                 self.assertAlmostEqual(peak, 346 + OFF * tx, delta=5)
 
 
@@ -442,18 +448,18 @@ class TestHardwareSystemTests(unittest.TestCase):
         # plt.show()
 
         self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rx1, self.randomSignal),
-            second=findSignalStartsInFrame(rx2, self.randomSignal),
+            first=findSignalStartInFrame(rx1, self.randomSignal),
+            second=findSignalStartInFrame(rx2, self.randomSignal),
             delta=1
         )
         self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rx1, self.randomSignal2),
-            second=findSignalStartsInFrame(rx2, self.randomSignal2),
+            first=findSignalStartInFrame(rx1, self.randomSignal2),
+            second=findSignalStartInFrame(rx2, self.randomSignal2),
             delta=1
         )
 
-        txDist = (findSignalStartsInFrame(rx1, self.randomSignal2) -
-                  findSignalStartsInFrame(rx1, self.randomSignal))
+        txDist = (findSignalStartInFrame(rx1, self.randomSignal2) -
+                  findSignalStartInFrame(rx1, self.randomSignal))
         self.assertAlmostEqual(txDist, self.noSamples + 2000, delta=1)
 
     @pytest.mark.basic_hardware
@@ -479,8 +485,30 @@ class TestHardwareSystemTests(unittest.TestCase):
         # plt.plot(abs(rxSignal))
         # plt.show()
 
-        peak = findSignalStartsInFrame(rxSignal, self.randomSignal)
+        peak = findSignalStartInFrame(rxSignal, self.randomSignal)
         self.assertAlmostEqual(peak, samplesOffset + 50, delta=10)
+
+    @pytest.mark.basic_hardware
+    def test_repeatTxSignals_localhost(self) -> None:
+        Fs = 1
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1,
+                                               txSampleRate=Fs, rxSampleRate=Fs)
+
+        system = setup.connectUsrps()
+        txSamples = np.zeros(int(2**(np.ceil(np.log2(self.noSamples)))), dtype=complex)
+        txSamples[:self.noSamples] = self.randomSignal
+
+        txSignal = MimoSignal(signals=[txSamples])
+        system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
+            samples=txSignal, sendTimeOffset=0.0, repetitions=4))
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+            receiveTimeOffset=0.0, noSamples=4*len(txSamples)))
+        system.execute()
+        rxSignal = system.collect()["usrp1"][0].signals[0]
+
+        peaks = sorted(findMultipleSignalStartsInFrame(
+            rxSignal, self.randomSignal, numPeaks=4))
+        nt.assert_array_equal(np.diff(peaks), len(txSamples)*np.ones(3))
 
     @pytest.mark.basic_hardware
     def test_multipleTxAndRxConfigs_localhost(self) -> None:
@@ -509,10 +537,11 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSignal1 = rx[0].signals[0]
         rxSignal2 = rx[1].signals[0]
 
-        self.assertAlmostEqual(findSignalStartsInFrame(rxSignal1, self.randomSignal),
-                               samplesOffset + 50, delta=10)
-        self.assertAlmostEqual(findSignalStartsInFrame(rxSignal2, self.randomSignal),
-                               50, delta=10)
+        delay = 50
+        self.assertAlmostEqual(findSignalStartInFrame(rxSignal1, self.randomSignal),
+                               samplesOffset + delay, delta=10)
+        self.assertAlmostEqual(findSignalStartInFrame(rxSignal2, self.randomSignal),
+                               delay, delta=10)
 
     def test_reUseSystem_oneTxAntennaFourRxAntennas_localhost(self) -> None:
         setup = LocalTransmissionHardwareSetup(noRxStreams=4, noTxStreams=1)
@@ -541,16 +570,16 @@ class TestHardwareSystemTests(unittest.TestCase):
             # plt.show()
 
             self.assertEqual(
-                first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
-                second=findSignalStartsInFrame(rxSamplesUsrpAnt2, self.randomSignal),
+                first=findSignalStartInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+                second=findSignalStartInFrame(rxSamplesUsrpAnt2, self.randomSignal),
             )
             self.assertEqual(
-                first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
-                second=findSignalStartsInFrame(rxSamplesUsrpAnt3, self.randomSignal),
+                first=findSignalStartInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+                second=findSignalStartInFrame(rxSamplesUsrpAnt3, self.randomSignal),
             )
             self.assertEqual(
-                first=findSignalStartsInFrame(rxSamplesUsrpAnt1, self.randomSignal),
-                second=findSignalStartsInFrame(rxSamplesUsrpAnt4, self.randomSignal),
+                first=findSignalStartInFrame(rxSamplesUsrpAnt1, self.randomSignal),
+                second=findSignalStartInFrame(rxSamplesUsrpAnt4, self.randomSignal),
             )
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt2)), 1)
             self.assertGreater(np.sum(np.abs(rxSamplesUsrpAnt1 - rxSamplesUsrpAnt3)), 1)
@@ -575,7 +604,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
             samplesSystems = system.collect()
             rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
-            peaks.append(findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal))
+            peaks.append(findSignalStartInFrame(rxSamplesUsrp2, self.randomSignal))
 
         self.assertLess(max(peaks) - min(peaks), 4, msg=f"Peaks {peaks} are not equal")
         self.assertGreater(min(peaks), 20)
@@ -608,7 +637,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             system.execute()
             samplesSystems = system.collect()
             rxSamplesUsrp2 = samplesSystems["usrp2"][0].signals[0]
-            peaks.append(findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal))
+            peaks.append(findSignalStartInFrame(rxSamplesUsrp2, self.randomSignal))
 
         self.assertLess(max(peaks) - min(peaks), 4, msg=f"Peaks {peaks} are not equal")
         self.assertGreater(min(peaks), 20)
@@ -640,8 +669,8 @@ class TestHardwareSystemTests(unittest.TestCase):
         # plt.show()
 
         self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rxSamples[0], self.randomSignal),
-            second=findSignalStartsInFrame(rxSamples[1], self.randomSignal),
+            first=findSignalStartInFrame(rxSamples[0], self.randomSignal),
+            second=findSignalStartInFrame(rxSamples[1], self.randomSignal),
             delta=2,
         )
 
@@ -705,8 +734,8 @@ class TestHardwareSystemTests(unittest.TestCase):
         rxSamplesUsrp2 = samplesSystem["usrp2"][0].signals[0]
 
         self.assertAlmostEqual(
-            first=findSignalStartsInFrame(rxSamplesUsrp1, self.randomSignal),
-            second=findSignalStartsInFrame(rxSamplesUsrp2, self.randomSignal),
+            first=findSignalStartInFrame(rxSamplesUsrp1, self.randomSignal),
+            second=findSignalStartInFrame(rxSamplesUsrp2, self.randomSignal),
             delta=2)
 
     def test_reuseOfSystem_4tx1rx_localhost(self) -> None:
@@ -753,10 +782,10 @@ class TestHardwareSystemTests(unittest.TestCase):
             rxSamplesUsrpAnt1 /= np.sqrt(mvAvgFilter)
 
             signalStartsInFrame = [
-                findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[0]),
-                findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[1]),
-                findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
-                findSignalStartsInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
+                findSignalStartInFrame(rxSamplesUsrpAnt1, antTxSignals[0]),
+                findSignalStartInFrame(rxSamplesUsrpAnt1, antTxSignals[1]),
+                findSignalStartInFrame(rxSamplesUsrpAnt1, antTxSignals[2]),
+                findSignalStartInFrame(rxSamplesUsrpAnt1, antTxSignals[3]),
             ]
 
             for antIdx in range(1, 4):

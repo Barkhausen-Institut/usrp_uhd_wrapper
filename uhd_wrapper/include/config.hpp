@@ -36,10 +36,13 @@ struct RfConfig {
 
 struct TxStreamingConfig {
     TxStreamingConfig() {}
-    TxStreamingConfig(const MimoSignal& _samples, const double _sendTimeOffset)
-        : samples(_samples), sendTimeOffset(_sendTimeOffset) {}
+    TxStreamingConfig(const MimoSignal& _samples,
+                      const double _sendTimeOffset,
+                      const int _repetitions)
+        : samples(_samples), sendTimeOffset(_sendTimeOffset), repetitions(_repetitions) {}
     MimoSignal samples;
     double sendTimeOffset;
+    int repetitions;
 
     void alignToWordSize();
 };
@@ -74,11 +77,11 @@ void assertSamplingRate(const double actualSamplingRate,
                         const double masterClockRate,
                         bool supportsDecimation);
 
-void assertValidTxStreamingConfig(const TxStreamingConfig& prevConfig,
+void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
                                   const TxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
 
-void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+void assertValidRxStreamingConfig(const RxStreamingConfig* prevConfig,
                                   const RxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
 

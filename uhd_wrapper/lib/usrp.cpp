@@ -93,8 +93,11 @@ void Usrp::performStreaming(double baseTime) {
             for(const auto& config : txStreamingConfigs_) {
                 double streamTime = config.sendTimeOffset + baseTime;
                 size_t numTxSamples = config.samples[0].size();
+                // Configure the replay block for replay of the entire Tx samples
                 replayConfig_->configTransmit(numTxSamples);
-                fdGraph_->transmit(streamTime, numTxSamples);
+                // Configure the radio to transmit these samples with N repetitions.
+                // The replay block will wrap around
+                fdGraph_->transmit(streamTime, numTxSamples * config.repetitions);
             }
         }
         catch(std::exception& e) {
@@ -202,17 +205,21 @@ void Usrp::setRfConfig(const RfConfig &conf) {
 
 void Usrp::setTxConfig(const TxStreamingConfig &conf) {
     assertValidTxSignal(conf.samples, MAX_SAMPLES_TX_SIGNAL, rfConfig_->getNumTxStreams());
-    if (txStreamingConfigs_.size() > 0)
-        assertValidTxStreamingConfig(txStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
+    TxStreamingConfig* prev = nullptr;
+    if (txStreamingConfigs_.size())
+        prev = &txStreamingConfigs_.back();
+    assertValidTxStreamingConfig(prev, conf,
+                                 GUARD_OFFSET_S_, rfConfig_->getTxSamplingRate());
+
     txStreamingConfigs_.push_back(conf);
     txStreamingConfigs_.back().alignToWordSize();
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {
+    const RxStreamingConfig* prev = nullptr;
     if (rxStreamingConfigs_.size() > 0)
-        assertValidRxStreamingConfig(rxStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_->getRxSamplingRate());
+        prev = &rxStreamingConfigs_.back();
+    assertValidRxStreamingConfig(prev, conf, GUARD_OFFSET_S_, rfConfig_->getRxSamplingRate());
     rxStreamingConfigs_.push_back(conf);
 }
 

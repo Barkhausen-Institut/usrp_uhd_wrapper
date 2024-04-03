@@ -120,9 +120,11 @@ class TestUsrpServer(unittest.TestCase):
         self.usrpServer.configureTx(
             TIME_OFFSET,
             signal.serialize(),
+            18
         )
         self.usrpMock.setTxConfig.assert_called_once_with(
-            TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=signal.signals)
+            TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=signal.signals,
+                              repetitions=18)
         )
 
     def test_configureRxCalledWithCorrectArguments(self) -> None:

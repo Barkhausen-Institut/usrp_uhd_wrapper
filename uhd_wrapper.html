@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>uhd_wrapper package &mdash; USRP UHD API  documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/js/versions.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -85,9 +86,9 @@
            <div itemprop="articleBody">
              
   <section id="uhd-wrapper-package">
-<h1>uhd_wrapper package<a class="headerlink" href="#uhd-wrapper-package" title="Permalink to this headline">¶</a></h1>
+<h1>uhd_wrapper package<a class="headerlink" href="#uhd-wrapper-package" title="Permalink to this heading">¶</a></h1>
 <section id="subpackages">
-<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="uhd_wrapper.rpc_server.html">uhd_wrapper.rpc_server package</a><ul>
@@ -108,23 +109,23 @@
 </div>
 </section>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-uhd_wrapper.versioning">
-<span id="uhd-wrapper-versioning-module"></span><h2>uhd_wrapper.versioning module<a class="headerlink" href="#module-uhd_wrapper.versioning" title="Permalink to this headline">¶</a></h2>
+<span id="uhd-wrapper-versioning-module"></span><h2>uhd_wrapper.versioning module<a class="headerlink" href="#module-uhd_wrapper.versioning" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="uhd_wrapper.versioning.versionFromFile">
 <span class="sig-prename descclassname"><span class="pre">uhd_wrapper.versioning.</span></span><span class="sig-name descname"><span class="pre">versionFromFile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fileName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pattern</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#uhd_wrapper.versioning.versionFromFile" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract the version from a file.</p>
 <p>Searches for pattern, extracts the version string from the first line matching the pattern</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>fileName</strong> – file to open</p></li>
 <li><p><strong>pattern</strong> – pattern to look for, e.g. “VERSION =”</p></li>
 </ul>
 </dd>
-<dt class="field-even">Raises</dt>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
 <dd class="field-even"><ul class="simple">
 <li><p><strong>FileNotFoundError if the file cannot be opened</strong> – </p></li>
 <li><p><strong>ValueError</strong> – If the line with the pattern is not found or has wrong format.</p></li>
@@ -138,13 +139,13 @@
 <span class="sig-prename descclassname"><span class="pre">uhd_wrapper.versioning.</span></span><span class="sig-name descname"><span class="pre">versionFromPackage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">packageName</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#uhd_wrapper.versioning.versionFromPackage" title="Permalink to this definition">¶</a></dt>
 <dd><p>Extract version from the pkg_resources</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>packageName</strong> – package to look for within pkg_resources.get_distribution</p>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>version of that package. Otherwise “unknown”</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>If package is found</p>
 </dd>
 </dl>
@@ -152,7 +153,7 @@
 
 </section>
 <section id="module-uhd_wrapper">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-uhd_wrapper" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-uhd_wrapper" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 

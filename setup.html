@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Physical &amp; Network Setup &mdash; USRP UHD API  documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/js/versions.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -73,10 +74,10 @@
            <div itemprop="articleBody">
              
   <section id="physical-network-setup">
-<h1>Physical &amp; Network Setup<a class="headerlink" href="#physical-network-setup" title="Permalink to this headline">¶</a></h1>
+<h1>Physical &amp; Network Setup<a class="headerlink" href="#physical-network-setup" title="Permalink to this heading">¶</a></h1>
 <p>There are important preliminary steps to get the USRPs running, involving a physical and a network setup.</p>
 <section id="network-setup">
-<h2>Network Setup<a class="headerlink" href="#network-setup" title="Permalink to this headline">¶</a></h2>
+<h2>Network Setup<a class="headerlink" href="#network-setup" title="Permalink to this heading">¶</a></h2>
 <p>Ensure that the USRPs are in the same network. It is advised to change their hostname. This can be done as follows:</p>
 <div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>$<span class="w"> </span>ssh<span class="w"> </span>&lt;usrp-ip&gt;
 $<span class="w"> </span>vi<span class="w"> </span>/data/network/hostname
@@ -87,7 +88,7 @@ $<span class="w"> </span>vi<span class="w"> </span>/data/network/hostname
 for TCP packets.</p>
 </section>
 <section id="physical-setup">
-<h2>Physical Setup<a class="headerlink" href="#physical-setup" title="Permalink to this headline">¶</a></h2>
+<h2>Physical Setup<a class="headerlink" href="#physical-setup" title="Permalink to this heading">¶</a></h2>
 <dl>
 <dt>Synchronization</dt><dd><blockquote>
 <div><p>The USRPs are synchronized via PPS signals and a 10 MHz reference radio signal.

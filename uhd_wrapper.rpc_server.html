@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>uhd_wrapper.rpc_server package &mdash; USRP UHD API  documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/js/versions.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -86,53 +87,58 @@
            <div itemprop="articleBody">
              
   <section id="uhd-wrapper-rpc-server-package">
-<h1>uhd_wrapper.rpc_server package<a class="headerlink" href="#uhd-wrapper-rpc-server-package" title="Permalink to this headline">¶</a></h1>
+<h1>uhd_wrapper.rpc_server package<a class="headerlink" href="#uhd-wrapper-rpc-server-package" title="Permalink to this heading">¶</a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
 </section>
 <section id="module-uhd_wrapper.rpc_server.reconfigurable_usrp">
-<span id="uhd-wrapper-rpc-server-reconfigurable-usrp-module"></span><h2>uhd_wrapper.rpc_server.reconfigurable_usrp module<a class="headerlink" href="#module-uhd_wrapper.rpc_server.reconfigurable_usrp" title="Permalink to this headline">¶</a></h2>
+<span id="uhd-wrapper-rpc-server-reconfigurable-usrp-module"></span><h2>uhd_wrapper.rpc_server.reconfigurable_usrp module<a class="headerlink" href="#module-uhd_wrapper.rpc_server.reconfigurable_usrp" title="Permalink to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">uhd_wrapper.rpc_server.reconfigurable_usrp.</span></span><span class="sig-name descname"><span class="pre">RestartingUsrp</span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">uhd_wrapper.usrp_pybinding.Usrp</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Usrp</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp.create">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desiredDeviceType</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'x410'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp" title="uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp"><span class="pre">uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp</span></a></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp.create" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ip</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masterClockRate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desiredDeviceType</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'x410'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp" title="uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp"><span class="pre">RestartingUsrp</span></a></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.reconfigurable_usrp.RestartingUsrp.create" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 </section>
 <section id="module-uhd_wrapper.rpc_server.rpc_server">
-<span id="uhd-wrapper-rpc-server-rpc-server-module"></span><h2>uhd_wrapper.rpc_server.rpc_server module<a class="headerlink" href="#module-uhd_wrapper.rpc_server.rpc_server" title="Permalink to this headline">¶</a></h2>
+<span id="uhd-wrapper-rpc-server-rpc-server-module"></span><h2>uhd_wrapper.rpc_server.rpc_server module<a class="headerlink" href="#module-uhd_wrapper.rpc_server.rpc_server" title="Permalink to this heading">¶</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.RfConfigFromBinding">
-<span class="sig-prename descclassname"><span class="pre">uhd_wrapper.rpc_server.rpc_server.</span></span><span class="sig-name descname"><span class="pre">RfConfigFromBinding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rfConfigBinding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uhd_wrapper.usrp_pybinding.RfConfig</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">uhd_wrapper.utils.config.RfConfig</span></a></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.RfConfigFromBinding" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">uhd_wrapper.rpc_server.rpc_server.</span></span><span class="sig-name descname"><span class="pre">RfConfigFromBinding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rfConfigBinding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">RfConfig</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">RfConfig</span></a></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.RfConfigFromBinding" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.RfConfigToBinding">
-<span class="sig-prename descclassname"><span class="pre">uhd_wrapper.rpc_server.rpc_server.</span></span><span class="sig-name descname"><span class="pre">RfConfigToBinding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rfConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">uhd_wrapper.utils.config.RfConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">uhd_wrapper.usrp_pybinding.RfConfig</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.RfConfigToBinding" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">uhd_wrapper.rpc_server.rpc_server.</span></span><span class="sig-name descname"><span class="pre">RfConfigToBinding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rfConfig</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig" title="uhd_wrapper.utils.config.RfConfig"><span class="pre">RfConfig</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">RfConfig</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.RfConfigToBinding" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">uhd_wrapper.rpc_server.rpc_server.</span></span><span class="sig-name descname"><span class="pre">UsrpServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usrp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uhd_wrapper.usrp_pybinding.Usrp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">uhd_wrapper.rpc_server.rpc_server.</span></span><span class="sig-name descname"><span class="pre">UsrpServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usrp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Usrp</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usrp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">uhd_wrapper.usrp_pybinding.Usrp</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.__init__" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">usrp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Usrp</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.__init__" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.getVersion">
+<span class="sig-name descname"><span class="pre">getVersion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getVersion" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.configureTx">
-<span class="sig-name descname"><span class="pre">configureTx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sendTimeOffset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.configureTx" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">configureTx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sendTimeOffset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">samples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">repetitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.configureTx" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.configureRx">
-<span class="sig-name descname"><span class="pre">configureRx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receiveTimeOffset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noSamples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.configureRx" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">configureRx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">receiveTimeOffset</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">noSamples</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">antennaPort</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.configureRx" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -141,28 +147,8 @@
 <dd></dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">baseTime</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.execute" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.setTimeToZeroNextPps">
-<span class="sig-name descname"><span class="pre">setTimeToZeroNextPps</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.setTimeToZeroNextPps" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.collect">
 <span class="sig-name descname"><span class="pre">collect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">List</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">List</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.collect" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.getCurrentFpgaTime">
-<span class="sig-name descname"><span class="pre">getCurrentFpgaTime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getCurrentFpgaTime" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.getCurrentSystemTime">
-<span class="sig-name descname"><span class="pre">getCurrentSystemTime</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getCurrentSystemTime" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -170,41 +156,11 @@
 <span class="sig-name descname"><span class="pre">getRfConfig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getRfConfig" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.getMasterClockRate">
-<span class="sig-name descname"><span class="pre">getMasterClockRate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getMasterClockRate" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.resetStreamingConfigs">
-<span class="sig-name descname"><span class="pre">resetStreamingConfigs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.resetStreamingConfigs" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.getSupportedSampleRates">
-<span class="sig-name descname"><span class="pre">getSupportedSampleRates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">float</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getSupportedSampleRates" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.getNumAntennas">
-<span class="sig-name descname"><span class="pre">getNumAntennas</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getNumAntennas" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.setSyncSource">
-<span class="sig-name descname"><span class="pre">setSyncSource</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">syncType</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.setSyncSource" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="uhd_wrapper.rpc_server.rpc_server.UsrpServer.getVersion">
-<span class="sig-name descname"><span class="pre">getVersion</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#uhd_wrapper.rpc_server.rpc_server.UsrpServer.getVersion" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
 </dd></dl>
 
 </section>
 <section id="module-uhd_wrapper.rpc_server">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-uhd_wrapper.rpc_server" title="Permalink to this headline">¶</a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-uhd_wrapper.rpc_server" title="Permalink to this heading">¶</a></h2>
 </section>
 </section>
 

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" >
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Synchronisation &amp; Communication Patterns &mdash; USRP UHD API  documentation</title>
@@ -14,6 +14,7 @@
         <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
         <script src="_static/jquery.js"></script>
         <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
         <script src="_static/doctools.js"></script>
         <script src="_static/js/versions.js"></script>
     <script src="_static/js/theme.js"></script>
@@ -73,7 +74,7 @@
            <div itemprop="articleBody">
              
   <section id="synchronisation-communication-patterns">
-<h1>Synchronisation &amp; Communication Patterns<a class="headerlink" href="#synchronisation-communication-patterns" title="Permalink to this headline">¶</a></h1>
+<h1>Synchronisation &amp; Communication Patterns<a class="headerlink" href="#synchronisation-communication-patterns" title="Permalink to this heading">¶</a></h1>
 <p>If a <a class="reference internal" href="usrp_client.html#usrp_client.system.System" title="usrp_client.system.System"><code class="xref py py-class docutils literal notranslate"><span class="pre">usrp_client.system.System</span></code></a> consists of multiple USRPs, their clocks and their carrier frequencies
 need to be synchronized. We assume that the USRPs have a <cite>PPS in</cite> port that accepts Pulse Per Second (PPS) signals.
 This signal is provided by an external device.</p>
@@ -100,7 +101,7 @@ in green in the image) are with respect to the <code class="docutils literal not
 a implementation-defined constant time offset <code class="docutils literal notranslate"><span class="pre">t0</span></code> is added.</p>
 <p>As depicted, the system can be reused if multiple packages need to be transmitted.</p>
 <section id="communication-patterns">
-<h2>Communication Patterns<a class="headerlink" href="#communication-patterns" title="Permalink to this headline">¶</a></h2>
+<h2>Communication Patterns<a class="headerlink" href="#communication-patterns" title="Permalink to this heading">¶</a></h2>
 <p>Based on these offsets, you can define
 your own communication patterns. The following illustrates a Request-Reply-Pattern:</p>
 <img alt="_images/request_reply_pattern.png" src="_images/request_reply_pattern.png" />

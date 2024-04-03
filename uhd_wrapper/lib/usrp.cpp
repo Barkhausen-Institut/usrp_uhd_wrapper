@@ -214,9 +214,10 @@ void Usrp::setTxConfig(const TxStreamingConfig &conf) {
 }
 
 void Usrp::setRxConfig(const RxStreamingConfig &conf) {
+    const RxStreamingConfig* prev = nullptr;
     if (rxStreamingConfigs_.size() > 0)
-        assertValidRxStreamingConfig(rxStreamingConfigs_.back(), conf,
-                                     GUARD_OFFSET_S_, rfConfig_->getRxSamplingRate());
+        prev = &rxStreamingConfigs_.back();
+    assertValidRxStreamingConfig(prev, conf, GUARD_OFFSET_S_, rfConfig_->getRxSamplingRate());
     rxStreamingConfigs_.push_back(conf);
 }
 

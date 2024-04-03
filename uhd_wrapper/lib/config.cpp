@@ -99,11 +99,13 @@ void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
             throw UsrpException("When using repetitions, the length of the TX signal must be word-aligned!");
     }
 }
-void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+void assertValidRxStreamingConfig(const RxStreamingConfig* prevConfig,
                                   const RxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs) {
-    double minimumRequiredOffset =
-        prevConfig.receiveTimeOffset + guardOffset + prevConfig.noSamples / fs;
+    double minimumRequiredOffset = newConfig.receiveTimeOffset;
+    if (prevConfig)
+        minimumRequiredOffset =
+            prevConfig->receiveTimeOffset + guardOffset + prevConfig->noSamples / fs;
     if (newConfig.receiveTimeOffset < minimumRequiredOffset)
         throw UsrpException(
             "Invalid RX streaming config: the offset of the new config is too "

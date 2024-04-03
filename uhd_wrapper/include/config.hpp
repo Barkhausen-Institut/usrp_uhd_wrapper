@@ -81,7 +81,7 @@ void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
                                   const TxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
 
-void assertValidRxStreamingConfig(const RxStreamingConfig& prevConfig,
+void assertValidRxStreamingConfig(const RxStreamingConfig* prevConfig,
                                   const RxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs);
 

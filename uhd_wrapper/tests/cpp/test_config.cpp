@@ -172,13 +172,13 @@ TEST_CASE("[ValidRxStreamingConfig]") {
         prevConfig.receiveTimeOffset = 0.0;
         newConfig.receiveTimeOffset = prevConfig.receiveTimeOffset +
                                       guardOffset + prevConfig.noSamples / fs;
-        REQUIRE_NOTHROW(assertValidRxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_NOTHROW(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                      guardOffset, fs));
     }
     SECTION("NewOffsetSmallerThanPrevious") {
         prevConfig.receiveTimeOffset = 1.0;
         newConfig.receiveTimeOffset = 0.0;
-        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }
@@ -187,7 +187,7 @@ TEST_CASE("[ValidRxStreamingConfig]") {
         prevConfig.noSamples = 0;
         prevConfig.receiveTimeOffset = 1.0;
         newConfig.receiveTimeOffset = 1.0 + guardOffset / 2;
-        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }
@@ -195,13 +195,13 @@ TEST_CASE("[ValidRxStreamingConfig]") {
     SECTION("NewOffsetSmallerThanDurationOfPreviousSignal") {
         prevConfig.receiveTimeOffset = 1.0;
         newConfig.receiveTimeOffset = 1.0 + guardOffset;
-        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }
     SECTION("UneventAmountOfSamples") {
         newConfig.noSamples = 199;
-        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(prevConfig, newConfig,
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }

@@ -102,6 +102,17 @@ def txContainsClippedValue(mimoSignal: MimoSignal) -> bool:
 @dataclass
 class TxStreamingConfig:
     sendTimeOffset: float = 0.0
+    """
+    Offset in seconds from the basetime `System.execute()`.
+    """
+
+
     samples: MimoSignal = field(  # type: ignore
         default_factory=lambda: [MimoSignal(signals=[])]
     )
+
+    repetitions: int = 1
+    """
+    Determines how often the signal should be repeated before exiting. If not equal 1, the signal length
+    must be aligned to the word size. Otherwise an error is raised.
+    """

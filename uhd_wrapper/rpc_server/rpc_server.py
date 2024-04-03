@@ -47,13 +47,15 @@ class UsrpServer:
         return uhd_wrapper.__version__
 
     def configureTx(
-        self, sendTimeOffset: float, samples: List[SerializedComplexArray]
+            self, sendTimeOffset: float, samples: List[SerializedComplexArray],
+            repetitions: int
     ) -> None:
         mimoSignal = MimoSignal.deserialize(samples)
         self.__usrp.setTxConfig(
             TxStreamingConfig(
                 samples=mimoSignal.signals,
                 sendTimeOffset=sendTimeOffset,
+                repetitions=repetitions
             )
         )
 

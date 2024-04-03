@@ -62,6 +62,7 @@ class _RpcClient:
         self.__rpcClient.configureTx(
             txConfig.sendTimeOffset,
             txConfig.samples.serialize(),
+            txConfig.repetitions
         )
 
     def execute(self, baseTime: float) -> None:

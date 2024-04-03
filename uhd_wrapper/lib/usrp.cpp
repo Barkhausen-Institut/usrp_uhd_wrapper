@@ -91,6 +91,7 @@ void Usrp::performStreaming(double baseTime) {
         transmitThreadException_ = nullptr;
         try {
             for(const auto& config : txStreamingConfigs_) {
+                std::cout << "Tx streaming config repetitions: " << config.repetitions << std::endl;
                 double streamTime = config.sendTimeOffset + baseTime;
                 size_t numTxSamples = config.samples[0].size();
                 replayConfig_->configTransmit(numTxSamples);

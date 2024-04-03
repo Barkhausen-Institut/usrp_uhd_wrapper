@@ -117,10 +117,11 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
-        .def(py::init<const bi::MimoSignal&, const double>(),
-             py::arg("samples"), py::arg("sendTimeOffset"))
+        .def(py::init<const bi::MimoSignal&, const double, const int>(),
+             py::arg("samples"), py::arg("sendTimeOffset"), py::arg("repetitions"))
         .def_readwrite("samples", &bi::TxStreamingConfig::samples)
         .def_readwrite("sendTimeOffset", &bi::TxStreamingConfig::sendTimeOffset)
+        .def_readwrite("repetitions", &bi::TxStreamingConfig::repetitions)
         .def(py::self == py::self);
 
     py::class_<bi::UsrpInterface>(m, "Usrp")
@@ -146,7 +147,7 @@ PYBIND11_MODULE(usrp_pybinding, m) {
     // streaming config with it. Used only for testing
     m.def("_createTxConfig",
           [](const bi::MimoSignal& signal, float sendTimeOffset) {
-              return bi::TxStreamingConfig(signal, sendTimeOffset);
+              return bi::TxStreamingConfig(signal, sendTimeOffset, 1);
           });
 
     // return hard-coded vector of MimoSignal, to test if the to-python

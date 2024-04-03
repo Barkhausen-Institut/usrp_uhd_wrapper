@@ -97,6 +97,13 @@ TEST_CASE("[ValidTxStreamingConfig]") {
         REQUIRE_THROWS_AS(assertValidTxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
+    }
+
+    SECTION("RepetitionsMustBeLargerThanZero") {
+        newConfig.repetitions = 0;
+        REQUIRE_THROWS_AS(assertValidTxStreamingConfig(nullptr, newConfig,
+                                                       guardOffset, fs),
+                          UsrpException);
 
     }
 

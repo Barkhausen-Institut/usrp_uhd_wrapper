@@ -93,6 +93,9 @@ void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
         throw UsrpException(
             "Invalid TX streaming config: the offset of the new config is too "
             "small.");
+    if (newConfig.repetitions <= 0)
+        throw UsrpException("Number of repetitions must be > 0");
+
     if (newConfig.repetitions != 1) {
         size_t L = newConfig.samples[0].size();
         if (nextMultipleOfWordSize(L) != L)

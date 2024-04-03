@@ -91,11 +91,13 @@ void Usrp::performStreaming(double baseTime) {
         transmitThreadException_ = nullptr;
         try {
             for(const auto& config : txStreamingConfigs_) {
-                std::cout << "Tx streaming config repetitions: " << config.repetitions << std::endl;
                 double streamTime = config.sendTimeOffset + baseTime;
                 size_t numTxSamples = config.samples[0].size();
+                // Configure the replay block for replay of the entire Tx samples
                 replayConfig_->configTransmit(numTxSamples);
-                fdGraph_->transmit(streamTime, numTxSamples);
+                // Configure the radio to transmit these samples with N repetitions.
+                // The replay block will wrap around
+                fdGraph_->transmit(streamTime, numTxSamples * config.repetitions);
             }
         }
         catch(std::exception& e) {

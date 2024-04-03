@@ -34,10 +34,10 @@ class TestRpcClient(unittest.TestCase):
 
     def test_configureTxSerializesCorrectly(self) -> None:
         signal = MimoSignal(signals=[np.arange(20)])
-        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal)
+        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal, repetitions=19)
         self.usrpClient.configureTx(txConfig=txConfig)
         self.mockRpcClient.configureTx.assert_called_with(
-            txConfig.sendTimeOffset, signal.serialize()
+            txConfig.sendTimeOffset, signal.serialize(), 19
         )
 
     def test_collectReturnsDeserializedSamples(self) -> None:

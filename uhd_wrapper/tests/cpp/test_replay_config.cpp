@@ -112,6 +112,19 @@ TEST_CASE("BlockOffsetTracker") {
         REQUIRE(tracker.replayOffset(1) == 15*4*2+20*4);
     }
 
+    SECTION("Singe Stream, single config with repetitions") {
+        tracker.setStreamCount(1);
+        const size_t REP = 5;
+        const size_t PERIOD = 100;
+        const size_t SAMPLES = 10;
+        tracker.recordNewBlock(SAMPLES, REP, PERIOD);
+        for (size_t i = 0; i < REP; i++) {
+            tracker.replayNextBlock(SAMPLES);
+            REQUIRE(tracker.replayOffset(0) == PERIOD * i);
+        }
+
+    }
+
     SECTION("Can Reset block") {
         tracker.setStreamCount(2);
         tracker.recordNewBlock(15);

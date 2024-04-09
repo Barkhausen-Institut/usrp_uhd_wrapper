@@ -63,7 +63,7 @@ public:
     void setStreamCount(size_t streamCount);
     void reset();
 
-    void recordNewBlock(size_t numSamples);
+    void recordNewBlock(size_t numSamples, size_t numRepetitions=1, size_t repetitionPeriod=0);
     size_t recordOffset(size_t streamIdx) const;
 
     void replayNextBlock(size_t numSamples);

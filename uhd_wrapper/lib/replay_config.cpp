@@ -27,9 +27,13 @@ void BlockOffsetTracker::checkStreamCount() const {
         throw UsrpException("Stream count not set!");
 }
 
-void BlockOffsetTracker::recordNewBlock(size_t numSamples) {
+void BlockOffsetTracker::recordNewBlock(size_t numSamples,
+                                        size_t numRepetitions,
+                                        size_t repetitionPeriod) {
     checkStreamCount();
     size_t bytesBefore = samplesUntilBlockNr(samplesPerBlock_.size()) * SAMPLE_SIZE * numStreams_;
+    if (repetitionPeriod == 0)
+        repetitionPeriod = numSamples;
     size_t bytesNow = numSamples * SAMPLE_SIZE * numStreams_;
     if (bytesBefore + bytesNow >= MEM_SIZE)
         throw UsrpException("Attempting to store too many samples in buffer!");

@@ -145,7 +145,8 @@ def checkTrx(ips: List[str]) -> bool:
         system.configureTx("usrp0", TxStreamingConfig(sendTimeOffset=0.0,
                                                       samples=MimoSignal(signals=[signal])))
         system.configureRx("usrp1", RxStreamingConfig(receiveTimeOffset=0.0,
-                                                      noSamples=2*len(signal)))
+                                                      noSamples=2*len(signal),
+                                                      antennaPort=cmdlineArgs.rx_antenna))
 
         system.execute()
         rxSig = system.collect()

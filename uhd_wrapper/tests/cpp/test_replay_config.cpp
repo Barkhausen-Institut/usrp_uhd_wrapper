@@ -100,6 +100,7 @@ TEST_CASE("BlockOffsetTracker") {
         const size_t PERIOD = 30;
         const size_t SAMPLES = 10;
         tracker.recordNewBlock(SAMPLES, REP, PERIOD);
+        REQUIRE(tracker.recordOffset(0) == 0);
         for (size_t i = 0; i < REP; i++) {
             tracker.replayNextBlock(SAMPLES);
             REQUIRE(tracker.replayOffset(0) == PERIOD * i * 4);
@@ -109,7 +110,10 @@ TEST_CASE("BlockOffsetTracker") {
     SECTION("Single stream, multiple configs with repetitions") {
         tracker.setStreamCount(1);
         tracker.recordNewBlock(10, 5, 30);
+        REQUIRE(tracker.recordOffset(0) == 0);
         tracker.recordNewBlock(45);
+        REQUIRE(tracker.recordOffset(0) == 30*5*4);
+
         for(int i = 0; i < 5; i++) tracker.replayNextBlock(10);
         tracker.replayNextBlock(45);
         REQUIRE(tracker.replayOffset(0) == 5*30*4);

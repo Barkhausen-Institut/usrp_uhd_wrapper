@@ -71,15 +71,22 @@ public:
 
 private:
     struct ReplayBlock {
-        size_t recordLength;
-        size_t replayLength;
+        size_t numSamples;
+        size_t repetitions;
+        size_t repetitionPeriod;
 
-        ReplayBlock(size_t recordLength_, size_t replayLength_)
-            : recordLength(recordLength_), replayLength(replayLength_) {}
+        ReplayBlock(size_t numSamples_, size_t repetitions_, size_t repetitionPeriod_)
+            : numSamples(numSamples_),
+              repetitions(repetitions_),
+              repetitionPeriod(repetitionPeriod_)
+        {}
+
+        size_t totalSamples() const { return repetitionPeriod * repetitions; }
     };
 
     void checkStreamCount() const;
-    size_t samplesUntilBlockNr(size_t blockIdx) const;
+    size_t samplesUntilBlockNr(size_t blockIdx, size_t repetitionIdx) const;
+    size_t currentBlockStart() const;
     size_t samplesInCurrentBlock() const;
     size_t samplesBeforeCurrentBlock() const;
 
@@ -87,7 +94,8 @@ private:
     const size_t MEM_SIZE;
     const size_t SAMPLE_SIZE;
     std::vector<ReplayBlock> samplesPerBlock_;
-    int replayIdx_ = -1;
+    int replayIdx_ = 0;
+    size_t currentRepetition_ = 0;
 
 };
 

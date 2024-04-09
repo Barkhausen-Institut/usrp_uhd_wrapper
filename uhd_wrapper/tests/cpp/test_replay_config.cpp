@@ -35,46 +35,28 @@ TEST_CASE("BlockOffsetTracker") {
     SECTION("Error checking") {
         tracker.setStreamCount(1);
         SECTION("Throws if recording not started") {
-            try {
-                tracker.recordOffset(0);
-                FAIL("No Exception thrown!");
-            }
-            catch(bi::UsrpException& e) {
-                // done
-            }
+            REQUIRE_THROWS_AS(tracker.recordOffset(0), bi::UsrpException);
         }
         SECTION("Throws if replay not started") {
-            try {
-                tracker.replayOffset(0);
-                FAIL("No Exception thrown!");
-            }
-            catch(bi::UsrpException& e) {
-                // done
-            }
+            REQUIRE_THROWS_AS(tracker.replayOffset(0), bi::UsrpException);
         }
 
         SECTION("Throws if more replay than records") {
-           try {
-               tracker.recordNewBlock(5);
-               tracker.replayNextBlock(5);
-               tracker.replayNextBlock(5);
-               FAIL("No exception thrown!");
-           }
-           catch(bi::UsrpException& e) {
-               // done
-           }
+            tracker.recordNewBlock(5);
+            tracker.replayNextBlock(5);
+            REQUIRE_THROWS_AS(tracker.replayNextBlock(5), bi::UsrpException);
         }
 
         SECTION("Throws if too much memory would be used") {
             tracker.recordNewBlock(5);
-            try {
-                tracker.recordNewBlock(MEM_SIZE / 4);
-                FAIL("No exception thrown!");
-            }
-            catch(bi::UsrpException& e) {
-
-            }
+            REQUIRE_THROWS_AS(tracker.recordNewBlock(MEM_SIZE/4), bi::UsrpException);
+            REQUIRE_THROWS_AS(tracker.recordNewBlock(10, 5, 100), bi::UsrpException);
         }
+
+        SECTION("RepetitionPeriod must be larger than numSamples") {
+            REQUIRE_THROWS_AS(tracker.recordNewBlock(10, 1, 9), bi::UsrpException);
+        }
+
     }
 
     SECTION("Single stream, single config") {
@@ -112,17 +94,25 @@ TEST_CASE("BlockOffsetTracker") {
         REQUIRE(tracker.replayOffset(1) == 15*4*2+20*4);
     }
 
-    SECTION("Singe Stream, single config with repetitions") {
+    SECTION("Single stream, single config with repetitions") {
         tracker.setStreamCount(1);
         const size_t REP = 5;
-        const size_t PERIOD = 100;
+        const size_t PERIOD = 30;
         const size_t SAMPLES = 10;
         tracker.recordNewBlock(SAMPLES, REP, PERIOD);
         for (size_t i = 0; i < REP; i++) {
             tracker.replayNextBlock(SAMPLES);
-            REQUIRE(tracker.replayOffset(0) == PERIOD * i);
+            REQUIRE(tracker.replayOffset(0) == PERIOD * i * 4);
         }
+    }
 
+    SECTION("Single stream, multiple configs with repetitions") {
+        tracker.setStreamCount(1);
+        tracker.recordNewBlock(10, 5, 30);
+        tracker.recordNewBlock(45);
+        for(int i = 0; i < 5; i++) tracker.replayNextBlock(10);
+        tracker.replayNextBlock(45);
+        REQUIRE(tracker.replayOffset(0) == 5*30*4);
     }
 
     SECTION("Can Reset block") {

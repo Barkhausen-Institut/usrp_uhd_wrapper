@@ -70,6 +70,14 @@ public:
     size_t replayOffset(size_t streamIdx) const;
 
 private:
+    struct ReplayBlock {
+        size_t recordLength;
+        size_t replayLength;
+
+        ReplayBlock(size_t recordLength_, size_t replayLength_)
+            : recordLength(recordLength_), replayLength(replayLength_) {}
+    };
+
     void checkStreamCount() const;
     size_t samplesUntilBlockNr(size_t blockIdx) const;
     size_t samplesInCurrentBlock() const;
@@ -78,7 +86,7 @@ private:
     size_t numStreams_;
     const size_t MEM_SIZE;
     const size_t SAMPLE_SIZE;
-    std::vector<size_t> samplesPerBlock_;
+    std::vector<ReplayBlock> samplesPerBlock_;
     int replayIdx_ = -1;
 
 };

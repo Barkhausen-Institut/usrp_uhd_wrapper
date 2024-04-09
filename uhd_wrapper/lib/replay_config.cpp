@@ -34,10 +34,13 @@ void BlockOffsetTracker::recordNewBlock(size_t numSamples,
     size_t bytesBefore = samplesUntilBlockNr(samplesPerBlock_.size()) * SAMPLE_SIZE * numStreams_;
     if (repetitionPeriod == 0)
         repetitionPeriod = numSamples;
-    size_t bytesNow = numSamples * SAMPLE_SIZE * numStreams_;
+    if (repetitionPeriod < numSamples)
+        throw UsrpException("RepetitionPeriod must be >= numSamples");
+    size_t bytesNow = numRepetitions * repetitionPeriod * SAMPLE_SIZE * numStreams_;
     if (bytesBefore + bytesNow >= MEM_SIZE)
         throw UsrpException("Attempting to store too many samples in buffer!");
-    samplesPerBlock_.push_back(numSamples);
+    for (size_t r = 0; r < numRepetitions; r++)
+        samplesPerBlock_.push_back(ReplayBlock(repetitionPeriod, numSamples));
 }
 
 void BlockOffsetTracker::replayNextBlock(size_t numSamples) {
@@ -45,14 +48,15 @@ void BlockOffsetTracker::replayNextBlock(size_t numSamples) {
     replayIdx_++;
     if (replayIdx_ >= (int)samplesPerBlock_.size())
         throw UsrpException("Too many replay requests");
-    if (samplesPerBlock_[replayIdx_] != numSamples)
+    if (samplesPerBlock_[replayIdx_].replayLength != numSamples)
         throw UsrpException("Incorrect size of replay block");
 }
 
 size_t BlockOffsetTracker::samplesUntilBlockNr(size_t blockIdx) const {
-    return std::accumulate(samplesPerBlock_.begin(),
-                           samplesPerBlock_.begin() + blockIdx,
-                           0);
+    size_t result = 0;
+    for(size_t b = 0; b < blockIdx; b++)
+        result += samplesPerBlock_[b].recordLength;
+    return result;
 }
 
 size_t BlockOffsetTracker::samplesBeforeCurrentBlock() const {
@@ -62,7 +66,7 @@ size_t BlockOffsetTracker::samplesBeforeCurrentBlock() const {
 
 size_t BlockOffsetTracker::samplesInCurrentBlock() const {
     assert(samplesPerBlock_.size() > 0);
-    return samplesPerBlock_[samplesPerBlock_.size() - 1];
+    return samplesPerBlock_[samplesPerBlock_.size() - 1].recordLength;
 }
 
 size_t BlockOffsetTracker::recordOffset(size_t streamIdx) const {
@@ -77,7 +81,7 @@ size_t BlockOffsetTracker::replayOffset(size_t streamIdx) const {
     if (replayIdx_ < 0)
         throw UsrpException("No replaying started!");
     size_t samplesBefore = samplesUntilBlockNr(replayIdx_);
-    size_t numSamples = samplesPerBlock_[replayIdx_];
+    size_t numSamples = samplesPerBlock_[replayIdx_].recordLength;
     return SAMPLE_SIZE * (samplesBefore * numStreams_ + numSamples * streamIdx);
 }
 

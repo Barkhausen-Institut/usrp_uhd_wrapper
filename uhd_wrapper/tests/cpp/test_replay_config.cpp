@@ -115,6 +115,12 @@ TEST_CASE("BlockOffsetTracker") {
         REQUIRE(tracker.replayOffset(0) == 5*30*4);
     }
 
+    SECTION("Multiple Streams, single config with repetition") {
+        // multiple streams with repetitions is not implemented
+        tracker.setStreamCount(2);
+        REQUIRE_THROWS_AS(tracker.recordNewBlock(5, 2, 10), bi::UsrpException);
+    }
+
     SECTION("Can Reset block") {
         tracker.setStreamCount(2);
         tracker.recordNewBlock(15);
@@ -221,7 +227,5 @@ TEST_CASE("Replay Block Config") {
         REQUIRE_CALL(replay, config_play(HALF_MEM+11*4u, 16*4u, 0u)).IN_SEQUENCE(seq);
         block.configDownload(11);
         block.configDownload(16);
-
     }
-
 }

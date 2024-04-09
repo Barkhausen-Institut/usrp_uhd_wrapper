@@ -36,6 +36,8 @@ void BlockOffsetTracker::recordNewBlock(size_t numSamples,
         repetitionPeriod = numSamples;
     if (repetitionPeriod < numSamples)
         throw UsrpException("RepetitionPeriod must be >= numSamples");
+    if (numRepetitions > 1 && numStreams_ > 1)
+        throw UsrpException("Multi-Stream with Repetitions not implemented!");
     size_t bytesNow = numRepetitions * repetitionPeriod * SAMPLE_SIZE * numStreams_;
     if (bytesBefore + bytesNow >= MEM_SIZE)
         throw UsrpException("Attempting to store too many samples in buffer!");

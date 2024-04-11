@@ -84,19 +84,20 @@ private:
         size_t totalSamples() const { return repetitionPeriod * repetitions; }
     };
 
+    size_t byteOffset(size_t sampleOffset) const;
+
     void checkStreamCount() const;
-    size_t samplesUntilBlockNr(size_t blockIdx, size_t repetitionIdx) const;
-    size_t currentBlockStart() const;
-    size_t samplesInCurrentBlock() const;
-    size_t samplesBeforeCurrentBlock() const;
 
     size_t numStreams_;
     const size_t MEM_SIZE;
     const size_t SAMPLE_SIZE;
-    std::vector<ReplayBlock> samplesPerBlock_;
-    int replayIdx_ = 0;
-    size_t currentRepetition_ = 0;
+    std::vector<ReplayBlock> replayBlocks_;
 
+    size_t currentRecordBlockStart() const;
+    size_t currentRecordBlockLength() const;
+
+    int currentRepetition_ = -1;
+    int currentReplay_ = -1;
 };
 
 

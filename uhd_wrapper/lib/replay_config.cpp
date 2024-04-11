@@ -14,9 +14,9 @@ BlockOffsetTracker::BlockOffsetTracker(size_t memSize, size_t sampleSize)
 }
 
 void BlockOffsetTracker::reset() {
-    replayIdx_ = 0;
-    currentRepetition_ = 0;
-    samplesPerBlock_.clear();
+    replayBlocks_.clear();
+    currentRepetition_ = -1;
+    currentReplay_ = -1;
 }
 
 void BlockOffsetTracker::setStreamCount(size_t streamCount) {
@@ -32,74 +32,71 @@ void BlockOffsetTracker::recordNewBlock(size_t numSamples,
                                         size_t numRepetitions,
                                         size_t repetitionPeriod) {
     checkStreamCount();
-    size_t bytesBefore = samplesUntilBlockNr(samplesPerBlock_.size()) * SAMPLE_SIZE * numStreams_;
     if (repetitionPeriod == 0)
         repetitionPeriod = numSamples;
     if (repetitionPeriod < numSamples)
         throw UsrpException("RepetitionPeriod must be >= numSamples");
     if (numRepetitions > 1 && numStreams_ > 1)
         throw UsrpException("Multi-Stream with Repetitions not implemented!");
-    size_t bytesNow = numRepetitions * repetitionPeriod * SAMPLE_SIZE * numStreams_;
-    if (bytesBefore + bytesNow >= MEM_SIZE)
+
+    size_t endAddress = currentRecordBlockStart() + numStreams_ * currentRecordBlockLength();
+    endAddress += numRepetitions * numStreams_ * repetitionPeriod;
+    if (byteOffset(endAddress) >= MEM_SIZE)
         throw UsrpException("Attempting to store too many samples in buffer!");
-    samplesPerBlock_.push_back(ReplayBlock(numSamples, numRepetitions, repetitionPeriod));
+
+    replayBlocks_.push_back(ReplayBlock(numSamples, numRepetitions, repetitionPeriod));
 }
 
 void BlockOffsetTracker::replayNextBlock(size_t numSamples) {
     checkStreamCount();
-    if (currentRepetition_ < samplesPerBlock_.back().repetitions)
-        currentRepetition_++;
-    else {
-        replayIdx_++;
+
+    currentRepetition_++;
+    int repsInCurrentBlock = 0;
+    if (currentReplay_ >= 0)
+        repsInCurrentBlock = replayBlocks_[currentReplay_].repetitions;
+    if (currentRepetition_ >= repsInCurrentBlock) {
+        currentReplay_++;
         currentRepetition_ = 0;
     }
-    if (replayIdx_ >= (int)samplesPerBlock_.size())
-        throw UsrpException("Too many replay requests");
-    if (samplesPerBlock_[replayIdx_].numSamples != numSamples)
-        throw UsrpException("Incorrect size of replay block");
+    if (currentReplay_ >= (int)replayBlocks_.size())
+        throw UsrpException("Too many replay requests!");
 }
 
-size_t BlockOffsetTracker::samplesUntilBlockNr(size_t blockIdx, size_t repetitionIdx) const {
-    size_t result = 0;
-    for(size_t b = 0; b < blockIdx; b++)
-        result += samplesPerBlock_[b].totalSamples();
-    const auto& current = samplesPerBlock_[blockIdx];
-    result += current.repetitionPeriod * repetitionIdx;
-    return result;
-}
-
-size_t BlockOffsetTracker::samplesBeforeCurrentBlock() const {
-    assert(samplesPerBlock_.size() > 0);
-    return samplesUntilBlockNr(samplesPerBlock_.size() - 1, 0);
-}
-
-size_t BlockOffsetTracker::currentBlockStart() const {
-    size_t start = 0;
-    for (const auto& b : samplesPerBlock_) {
-        start += b.totalSamples() * numStreams_;
-    }
-    return start;
-}
-
-size_t BlockOffsetTracker::samplesInCurrentBlock() const {
-    assert(samplesPerBlock_.size() > 0);
-    return samplesPerBlock_[samplesPerBlock_.size() - 1].totalSamples();
+size_t BlockOffsetTracker::byteOffset(size_t samplesOffset) const {
+    return samplesOffset * SAMPLE_SIZE;
 }
 
 size_t BlockOffsetTracker::recordOffset(size_t streamIdx) const {
-    if (samplesPerBlock_.size() == 0)
-        throw UsrpException("No recording started!");
-    size_t samplesBefore = currentBlockStart();
-    size_t numSamples = samplesInCurrentBlock();
-    return SAMPLE_SIZE * (samplesBefore * numStreams_ + numSamples * streamIdx);
+    if (replayBlocks_.size() == 0)
+        throw UsrpException("Recording not started!");
+    return byteOffset(currentRecordBlockStart() + currentRecordBlockLength() * streamIdx);
+}
+
+size_t BlockOffsetTracker::currentRecordBlockStart() const {
+    if (replayBlocks_.size() == 0)
+        return 0;
+    size_t off = 0;
+    for(size_t i = 1; i < replayBlocks_.size(); i++)
+        off += replayBlocks_[i-1].totalSamples() * numStreams_;
+    return off;
+}
+
+size_t BlockOffsetTracker::currentRecordBlockLength() const {
+    if (replayBlocks_.size() == 0)
+        return 0;
+    return replayBlocks_.back().totalSamples();
 }
 
 size_t BlockOffsetTracker::replayOffset(size_t streamIdx) const {
-    if (replayIdx_ == 0 && currentRepetition_ == 0)
-        throw UsrpException("No replaying started!");
-    size_t samplesBefore = samplesUntilBlockNr(replayIdx_, currentRepetition_);
-    size_t numSamples = samplesPerBlock_[replayIdx_].totalSamples();
-    return SAMPLE_SIZE * (samplesBefore * numStreams_ + numSamples * streamIdx);
+    if (currentRepetition_ == -1)
+        throw UsrpException("Replaying not started!");
+
+    size_t offsetBefore = 0;
+    for (int i = 0; i < currentReplay_; i++)
+        offsetBefore += replayBlocks_[i].totalSamples() * numStreams_;
+    offsetBefore += currentRepetition_ * replayBlocks_[currentReplay_].repetitionPeriod;
+
+    return byteOffset(offsetBefore + replayBlocks_[currentReplay_].totalSamples() * streamIdx);
 }
 
 ReplayBlockConfig::ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl)

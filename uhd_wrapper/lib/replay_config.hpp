@@ -95,7 +95,7 @@ private:
 
     size_t currentRecordBlockStart() const;
     size_t currentRecordBlockLength() const;
-
+    size_t currentRecordBlockEnd() const;
     int currentRepetition_ = -1;
     int currentReplay_ = -1;
 };

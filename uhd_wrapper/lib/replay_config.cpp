@@ -39,12 +39,11 @@ void BlockOffsetTracker::recordNewBlock(size_t numSamples,
     if (numRepetitions > 1 && numStreams_ > 1)
         throw UsrpException("Multi-Stream with Repetitions not implemented!");
 
-    size_t endAddress = currentRecordBlockStart() + numStreams_ * currentRecordBlockLength();
-    endAddress += numRepetitions * numStreams_ * repetitionPeriod;
-    if (byteOffset(endAddress) >= MEM_SIZE)
+    ReplayBlock block(numSamples, numRepetitions, repetitionPeriod);
+    if (byteOffset(currentRecordBlockEnd() + block.totalSamples() * numStreams_) >= MEM_SIZE)
         throw UsrpException("Attempting to store too many samples in buffer!");
 
-    replayBlocks_.push_back(ReplayBlock(numSamples, numRepetitions, repetitionPeriod));
+    replayBlocks_.push_back(block);
 }
 
 void BlockOffsetTracker::replayNextBlock(size_t numSamples) {
@@ -75,10 +74,15 @@ size_t BlockOffsetTracker::recordOffset(size_t streamIdx) const {
 size_t BlockOffsetTracker::currentRecordBlockStart() const {
     if (replayBlocks_.size() == 0)
         return 0;
+
     size_t off = 0;
-    for(size_t i = 1; i < replayBlocks_.size(); i++)
-        off += replayBlocks_[i-1].totalSamples() * numStreams_;
+    for(size_t i = 0; i < replayBlocks_.size() - 1; i++)
+        off += replayBlocks_[i].totalSamples() * numStreams_;
     return off;
+}
+
+size_t BlockOffsetTracker::currentRecordBlockEnd() const {
+    return currentRecordBlockStart() + numStreams_ * currentRecordBlockLength();
 }
 
 size_t BlockOffsetTracker::currentRecordBlockLength() const {
@@ -94,9 +98,10 @@ size_t BlockOffsetTracker::replayOffset(size_t streamIdx) const {
     size_t offsetBefore = 0;
     for (int i = 0; i < currentReplay_; i++)
         offsetBefore += replayBlocks_[i].totalSamples() * numStreams_;
-    offsetBefore += currentRepetition_ * replayBlocks_[currentReplay_].repetitionPeriod;
+    const ReplayBlock& currentBlock = replayBlocks_[currentReplay_];
+    offsetBefore += currentRepetition_ * currentBlock.repetitionPeriod;
 
-    return byteOffset(offsetBefore + replayBlocks_[currentReplay_].totalSamples() * streamIdx);
+    return byteOffset(offsetBefore + currentBlock.totalSamples() * streamIdx);
 }
 
 ReplayBlockConfig::ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl)

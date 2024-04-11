@@ -232,4 +232,17 @@ TEST_CASE("Replay Block Config") {
         block.configDownload(11);
         block.configDownload(16);
     }
+
+    SECTION("Single stream, repetitions") {
+        block.setStreamCount(1, 1);
+        trompeloeil::sequence seq;
+
+        REQUIRE_CALL(replay, record(HALF_MEM, 2*50*4u, 0u));
+        block.configReceive(20, 2, 50);
+
+        REQUIRE_CALL(replay, config_play(HALF_MEM+0*50*4u, 20 * 4u, 0u));
+        REQUIRE_CALL(replay, config_play(HALF_MEM+1*50*4u, 20 * 4u, 0u));
+        block.configDownload(20);
+        block.configDownload(20);
+    }
 }

@@ -139,9 +139,11 @@ void ReplayBlockConfig::configTransmit(size_t numSamples) {
         replayBlock_->config_play(txBlocks_.replayOffset(tx), numBytes, tx);
 }
 
-void ReplayBlockConfig::configReceive(size_t numSamples) {
-    rxBlocks_.recordNewBlock(numSamples);
-    const size_t numBytes = numSamples * SAMPLE_SIZE;
+void ReplayBlockConfig::configReceive(size_t numSamples, size_t numRepetitions, size_t repetitionPeriod) {
+    if (repetitionPeriod == 0)
+        repetitionPeriod = numSamples;
+    rxBlocks_.recordNewBlock(numSamples, numRepetitions, repetitionPeriod);
+    const size_t numBytes = numRepetitions * repetitionPeriod * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t rx = 0; rx < numRxStreams_; rx++)
         replayBlock_->record(MEM_SIZE/2+rxBlocks_.recordOffset(rx), numBytes, rx);

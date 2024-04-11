@@ -109,7 +109,7 @@ public:
     void reset();
     void configUpload(size_t numSamples);
     void configTransmit(size_t numSamples);
-    void configReceive(size_t numSamples);
+    void configReceive(size_t numSamples, size_t numRepetition = 1, size_t repetitionPeriod = 0);
     void configDownload(size_t numSamples);
 
 private:

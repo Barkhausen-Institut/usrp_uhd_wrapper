@@ -106,7 +106,21 @@ size_t BlockOffsetTracker::replayOffset(size_t streamIdx) const {
 
 ReplayBlockConfig::ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl)
     : replayBlock_(replayCtrl), MEM_SIZE(replayCtrl->get_mem_size()),
-      txBlocks_(MEM_SIZE/2, SAMPLE_SIZE), rxBlocks_(MEM_SIZE/2, SAMPLE_SIZE) {
+      txBlocks_(getTxBufferSize(), SAMPLE_SIZE),
+      rxBlocks_(getRxBufferSize(), SAMPLE_SIZE) {
+    std::cout << "Initialized Replay block with " << MEM_SIZE << " bytes memory." << std::endl;
+}
+
+size_t ReplayBlockConfig::getTxBufferSize() const {
+    return MEM_SIZE / 4;
+}
+
+size_t ReplayBlockConfig::getRxBufferSize() const {
+    return MEM_SIZE / 4 * 3;
+}
+
+size_t ReplayBlockConfig::getRxBufferOffset() const {
+    return getTxBufferSize(); // RX buffer starts where TX buffer ends
 }
 
 void ReplayBlockConfig::setStreamCount(size_t numTx, size_t numRx) {
@@ -146,7 +160,7 @@ void ReplayBlockConfig::configReceive(size_t numSamples, size_t numRepetitions, 
     const size_t numBytes = numRepetitions * repetitionPeriod * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t rx = 0; rx < numRxStreams_; rx++)
-        replayBlock_->record(MEM_SIZE/2+rxBlocks_.recordOffset(rx), numBytes, rx);
+        replayBlock_->record(getRxBufferOffset()+rxBlocks_.recordOffset(rx), numBytes, rx);
     clearRecordingBuffer();
 }
 
@@ -155,7 +169,7 @@ void ReplayBlockConfig::configDownload(size_t numSamples) {
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t rx = 0; rx < numRxStreams_; rx++)
-        replayBlock_->config_play(MEM_SIZE/2+rxBlocks_.replayOffset(rx), numBytes, rx);
+        replayBlock_->config_play(getRxBufferOffset()+rxBlocks_.replayOffset(rx), numBytes, rx);
 }
 
 void ReplayBlockConfig::clearRecordingBuffer() {

@@ -112,6 +112,10 @@ public:
     void configReceive(size_t numSamples, size_t numRepetition = 1, size_t repetitionPeriod = 0);
     void configDownload(size_t numSamples);
 
+    size_t getTxBufferSize() const;
+    size_t getRxBufferOffset() const;
+    size_t getRxBufferSize() const;
+
 private:
     void clearRecordingBuffer();
 

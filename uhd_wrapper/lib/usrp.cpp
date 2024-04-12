@@ -97,7 +97,7 @@ void Usrp::performStreaming(double baseTime) {
                 replayConfig_->configTransmit(numTxSamples);
                 // Configure the radio to transmit these samples with N repetitions.
                 // The replay block will wrap around
-                fdGraph_->transmit(streamTime, numTxSamples * config.repetitions);
+                fdGraph_->transmit(streamTime, numTxSamples * config.numRepetitions);
             }
         }
         catch(std::exception& e) {
@@ -145,7 +145,7 @@ void Usrp::performDownload() {
         for (size_t r = 0; r < config.numRepetitions; r++) {
             replayConfig_->configDownload(config.wordAlignedNoSamples());
             receivedSamples_.push_back(fdGraph_->download(config.wordAlignedNoSamples()));
-            shortenSignal(receivedSamples_.back(), config.noSamples);
+            shortenSignal(receivedSamples_.back(), config.numSamples);
         }
     }
 }

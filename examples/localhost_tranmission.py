@@ -78,10 +78,10 @@ def createStreamingConfigs(
         sendTimeOffset=streamingOffset, samples=MimoSignal(signals=[txSignal])
     )
     rxStreamingConfig1 = RxStreamingConfig(
-        receiveTimeOffset=streamingOffset, noSamples=int(noRxSamples)
+        receiveTimeOffset=streamingOffset, numSamples=int(noRxSamples)
     )
     rxStreamingConfig2 = RxStreamingConfig(
-        receiveTimeOffset=streamingOffset, noSamples=int(noRxSamples)
+        receiveTimeOffset=streamingOffset, numSamples=int(noRxSamples)
     )
     return txStreamingConfig1, rxStreamingConfig1, rxStreamingConfig2
 
@@ -95,7 +95,7 @@ def main() -> None:
         rxGain=25,
         ipUsrp1=args.usrp1_ip,
     )
-    txSignal = createRandom(noSamples=int(20e3))
+    txSignal = createRandom(numSamples=int(20e3))
 
     txStreamingConfig1, rxStreamingConfig1, rxStreamingConfig2 = createStreamingConfigs(
         streamingOffset=0.0,

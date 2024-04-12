@@ -26,16 +26,16 @@ class TestRpcClient(unittest.TestCase):
         self.assertEqual(self.usrpClient.port, 1234)
 
     def test_configureRxSerializesCorrectly(self) -> None:
-        rxConfig = RxStreamingConfig(receiveTimeOffset=1.0, noSamples=int(1e3))
+        rxConfig = RxStreamingConfig(receiveTimeOffset=1.0, numSamples=int(1e3))
         self.usrpClient.configureRx(rxConfig=rxConfig)
         self.mockRpcClient.configureRx.assert_called_with(
-            rxConfig.receiveTimeOffset, rxConfig.noSamples, '',
+            rxConfig.receiveTimeOffset, rxConfig.numSamples, '',
             rxConfig.numRepetitions, rxConfig.repetitionPeriod
         )
 
     def test_configureTxSerializesCorrectly(self) -> None:
         signal = MimoSignal(signals=[np.arange(20)])
-        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal, repetitions=19)
+        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal, numRepetitions=19)
         self.usrpClient.configureTx(txConfig=txConfig)
         self.mockRpcClient.configureTx.assert_called_with(
             txConfig.sendTimeOffset, signal.serialize(), 19

@@ -160,7 +160,7 @@ class TestStreamingConfiguration(unittest.TestCase):
 
     def test_configureRxCallsFunctionInRpcClient(self) -> None:
         rxStreamingConfig = RxStreamingConfig(
-            receiveTimeOffset=2.0, noSamples=int(60e3)
+            receiveTimeOffset=2.0, numSamples=int(60e3)
         )
         self.system.configureRx(usrpName="usrp2", rxStreamingConfig=rxStreamingConfig)
         self.system.mockUsrps[0].configureRx.assert_not_called()

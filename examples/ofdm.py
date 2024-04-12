@@ -69,7 +69,7 @@ system.configureTx(usrpName="usrp1",
                    txStreamingConfig=TxStreamingConfig(samples=MimoSignal(signals=[txSig]),
                                                        sendTimeOffset=0.0))
 system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
-    noSamples=len(txSig), receiveTimeOffset=0.0))
+    numSamples=len(txSig), receiveTimeOffset=0.0))
 
 system.execute()
 samples = system.collect()

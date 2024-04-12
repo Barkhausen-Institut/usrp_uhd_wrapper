@@ -46,11 +46,11 @@ TEST_CASE("[ValidTxStreamingConfig]") {
     TxStreamingConfig prevConfig;
     // 2000 samples equals 0.1 seconds
     prevConfig.samples = {{bi::samples_vec(2000, bi::sample(1.0, 1.0))}};
-    prevConfig.repetitions = 1;
+    prevConfig.numRepetitions = 1;
 
     TxStreamingConfig newConfig;
     newConfig.samples = {{}};
-    newConfig.repetitions = 1;
+    newConfig.numRepetitions = 1;
     SECTION("NewOffsetIsValid") {
         prevConfig.sendTimeOffset = 0.0;
         newConfig.sendTimeOffset = prevConfig.sendTimeOffset + guardOffset +
@@ -86,7 +86,7 @@ TEST_CASE("[ValidTxStreamingConfig]") {
 
     SECTION("NewOffsetSmallerThanDurationOfPreviousSignalWithRepetition") {
         prevConfig.sendTimeOffset = 1.0;
-        prevConfig.repetitions = 10;
+        prevConfig.numRepetitions = 10;
         newConfig.sendTimeOffset = 1.5 + guardOffset;
         REQUIRE_THROWS_AS(assertValidTxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
@@ -94,7 +94,7 @@ TEST_CASE("[ValidTxStreamingConfig]") {
     }
 
     SECTION("RepetitionsMustBeLargerThanZero") {
-        newConfig.repetitions = 0;
+        newConfig.numRepetitions = 0;
         REQUIRE_THROWS_AS(assertValidTxStreamingConfig(nullptr, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
@@ -105,7 +105,7 @@ TEST_CASE("[ValidTxStreamingConfig]") {
         newConfig.samples = {{bi::samples_vec(2001, bi::sample(1.0, 1.0))}};
         prevConfig.sendTimeOffset = 0.0;
         newConfig.sendTimeOffset = 2.0;
-        newConfig.repetitions = 2;
+        newConfig.numRepetitions = 2;
         REQUIRE_THROWS_AS(assertValidTxStreamingConfig(nullptr, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
@@ -165,14 +165,14 @@ TEST_CASE("[ValidRxStreamingConfig]") {
     double guardOffset = 1.0;
     double fs = 20e6;
     RxStreamingConfig prevConfig;
-    prevConfig.noSamples = 20e3;
+    prevConfig.numSamples = 20e3;
 
     RxStreamingConfig newConfig;
-    newConfig.noSamples = 20e3;
+    newConfig.numSamples = 20e3;
     SECTION("NewOffsetIsValid") {
         prevConfig.receiveTimeOffset = 0.0;
         newConfig.receiveTimeOffset = prevConfig.receiveTimeOffset +
-                                      guardOffset + prevConfig.noSamples / fs;
+                                      guardOffset + prevConfig.numSamples / fs;
         REQUIRE_NOTHROW(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                      guardOffset, fs));
     }
@@ -185,7 +185,7 @@ TEST_CASE("[ValidRxStreamingConfig]") {
     }
 
     SECTION("NewOffsetSmallerThanGuardOffset") {
-        prevConfig.noSamples = 0;
+        prevConfig.numSamples = 0;
         prevConfig.receiveTimeOffset = 1.0;
         newConfig.receiveTimeOffset = 1.0 + guardOffset / 2;
         REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig,
@@ -201,14 +201,14 @@ TEST_CASE("[ValidRxStreamingConfig]") {
                           UsrpException);
     }
     SECTION("UneventAmountOfSamples") {
-        newConfig.noSamples = 199;
+        newConfig.numSamples = 199;
         REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
                           UsrpException);
     }
 
     SECTION("RepPeriod must be bigger than noSamples") {
-        newConfig.noSamples = 100;
+        newConfig.numSamples = 100;
         newConfig.repetitionPeriod = 50;
         newConfig.numRepetitions = 5;
         REQUIRE_THROWS_AS(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs),
@@ -216,7 +216,7 @@ TEST_CASE("[ValidRxStreamingConfig]") {
     }
 
     SECTION("Time offset calculated correctly when using repetitions") {
-        prevConfig.noSamples = 100;
+        prevConfig.numSamples = 100;
         prevConfig.repetitionPeriod = 1000;
         prevConfig.numRepetitions = 10;
         prevConfig.receiveTimeOffset = 1.0;
@@ -228,14 +228,14 @@ TEST_CASE("[ValidRxStreamingConfig]") {
     }
 
     SECTION("When using repetitions, numSamples must be word-aligned") {
-        newConfig.noSamples = 127;
+        newConfig.numSamples = 127;
         newConfig.numRepetitions = 2;
         newConfig.repetitionPeriod = 0;
 
         REQUIRE_THROWS_AS(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs),
                           UsrpException);
 
-        newConfig.noSamples = 127;
+        newConfig.numSamples = 127;
         newConfig.repetitionPeriod = 128;
         REQUIRE_NOTHROW(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs));
 

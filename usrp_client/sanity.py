@@ -102,7 +102,7 @@ def checkSingle(ip: str) -> bool:
         client.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                              samples=MimoSignal(signals=[signal])))
         client.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
-                                             noSamples=2*len(signal),
+                                             numSamples=2*len(signal),
                                              antennaPort=cmdlineArgs.rx_antenna))
 
         client.executeImmediately()
@@ -145,7 +145,7 @@ def checkTrx(ips: List[str]) -> bool:
         system.configureTx("usrp0", TxStreamingConfig(sendTimeOffset=0.0,
                                                       samples=MimoSignal(signals=[signal])))
         system.configureRx("usrp1", RxStreamingConfig(receiveTimeOffset=0.0,
-                                                      noSamples=2*len(signal)))
+                                                      numSamples=2*len(signal)))
 
         system.execute()
         rxSig = system.collect()

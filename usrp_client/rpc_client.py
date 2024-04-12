@@ -54,7 +54,7 @@ class _RpcClient:
             rxConfig (RxStreamingConfig): Streaming config.
         """
         self.__rpcClient.configureRx(rxConfig.receiveTimeOffset,
-                                     rxConfig.noSamples,
+                                     rxConfig.numSamples,
                                      rxConfig.antennaPort,
                                      rxConfig.numRepetitions,
                                      rxConfig.repetitionPeriod)
@@ -64,7 +64,7 @@ class _RpcClient:
         self.__rpcClient.configureTx(
             txConfig.sendTimeOffset,
             txConfig.samples.serialize(),
-            txConfig.repetitions
+            txConfig.numRepetitions
         )
 
     def execute(self, baseTime: float) -> None:

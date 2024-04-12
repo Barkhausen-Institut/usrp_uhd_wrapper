@@ -48,21 +48,21 @@ class UsrpServer:
 
     def configureTx(
             self, sendTimeOffset: float, samples: List[SerializedComplexArray],
-            repetitions: int
+            numRepetitions: int
     ) -> None:
         mimoSignal = MimoSignal.deserialize(samples)
         self.__usrp.setTxConfig(
             TxStreamingConfig(
                 samples=mimoSignal.signals,
                 sendTimeOffset=sendTimeOffset,
-                repetitions=repetitions
+                numRepetitions=numRepetitions
             )
         )
 
-    def configureRx(self, receiveTimeOffset: float, noSamples: int, antennaPort: str,
+    def configureRx(self, receiveTimeOffset: float, numSamples: int, antennaPort: str,
                     numRepetitions: int, repetitionPeriod: int) -> None:
         self.__usrp.setRxConfig(
-            RxStreamingConfig(noSamples=noSamples,
+            RxStreamingConfig(numSamples=numSamples,
                               receiveTimeOffset=receiveTimeOffset,
                               antennaPort=antennaPort,
                               numRepetitions=numRepetitions,

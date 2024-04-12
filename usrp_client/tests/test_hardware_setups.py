@@ -73,9 +73,9 @@ def skipIfAntennaCountNotAvailable(requiredAntennaCount: int,
             pytest.skip(f"{requiredAntennaCount} antennas needed, {avail} available.")
 
 
-def createRandom(noSamples: int) -> np.ndarray:
+def createRandom(numSamples: int) -> np.ndarray:
     return 2 * (
-        np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,))
+        np.random.sample((numSamples,)) + 1j * np.random.sample((numSamples,))
     ) - (1 + 1j)
 
 
@@ -185,7 +185,7 @@ class LocalTransmissionHardwareSetup(HardwareSetup):
             sendTimeOffset=0.0, samples=MimoSignal(signals=txSignals)
         )
         rxStreamingConfig1 = RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=int(60e3)
+            receiveTimeOffset=0.0, numSamples=int(60e3)
         )
 
         system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
@@ -264,10 +264,10 @@ class TestSampleRateSettings(unittest.TestCase):
 @pytest.mark.basic_hardware
 class TestSingleDevice(unittest.TestCase):
     def setUp(self) -> None:
-        self.noSamples = 20000
+        self.numSamples = 20000
         self.randomSignal = (
-            np.random.sample((self.noSamples,))
-            + 1j * np.random.sample((self.noSamples,))
+            np.random.sample((self.numSamples,))
+            + 1j * np.random.sample((self.numSamples,))
         ) - (0.5 + 0.5j)
 
     def _getDevice(self, Fs: float) -> UsrpClient:
@@ -286,7 +286,7 @@ class TestSingleDevice(unittest.TestCase):
         dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                           samples=MimoSignal(signals=[txSamples])))
         dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
-                                          noSamples=noRxSamples))
+                                          numSamples=noRxSamples))
         dev.executeImmediately()
         return dev.collect()[0].signals[0]
 
@@ -327,7 +327,7 @@ class TestSingleDevice(unittest.TestCase):
         dev.configureTx(TxStreamingConfig(sendTimeOffset=0.0,
                                           samples=MimoSignal(signals=padded)))
         dev.configureRx(RxStreamingConfig(receiveTimeOffset=0.0,
-                                          noSamples=L))
+                                          numSamples=L))
 
         dev.executeImmediately()
         rxSignal = dev.collect()[0].signals
@@ -379,19 +379,19 @@ class TestCarrierFrequencySettings(unittest.TestCase):
 @pytest.mark.hardware
 class TestHardwareSystemTests(unittest.TestCase):
     def setUp(self) -> None:
-        self.noSamples = int(20e3)
+        self.numSamples = int(20e3)
         self.randomSignal = (
-            np.random.sample((self.noSamples,))
-            + 1j * np.random.sample((self.noSamples,))
+            np.random.sample((self.numSamples,))
+            + 1j * np.random.sample((self.numSamples,))
         ) - (0.5 + 0.5j)
 
         self.randomSignal2 = (
-            np.random.sample((self.noSamples,))
-            + 1j * np.random.sample((self.noSamples,))
+            np.random.sample((self.numSamples,))
+            + 1j * np.random.sample((self.numSamples,))
         ) - (0.5 + 0.5j)
 
-        # self.randomSignal *= np.linspace(0, 1, self.noSamples)
-        # self.randomSignal2 *= np.linspace(1, 0, self.noSamples)
+        # self.randomSignal *= np.linspace(0, 1, self.numSamples)
+        # self.randomSignal2 *= np.linspace(1, 0, self.numSamples)
         #
 
     @pytest.mark.basic_hardware
@@ -410,7 +410,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         system = setup.connectUsrps()
 
         system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
-            0.0, noSamples=0))
+            0.0, numSamples=0))
 
         system.execute()
         result = system.collect()
@@ -422,9 +422,9 @@ class TestHardwareSystemTests(unittest.TestCase):
             txSampleRate=1 / 2, rxSampleRate=1 / 2)
         system = setup.connectUsrps()
 
-        tx = np.zeros((2, 2*self.noSamples+2000), dtype=complex)
-        tx[0, :self.noSamples] = self.randomSignal
-        tx[1, self.noSamples+2000:] = self.randomSignal2
+        tx = np.zeros((2, 2*self.numSamples+2000), dtype=complex)
+        tx[0, :self.numSamples] = self.randomSignal
+        tx[1, self.numSamples+2000:] = self.randomSignal2
 
         txSignal = MimoSignal(signals=[tx[0, :], tx[1, :]])
         system.configureTx(
@@ -435,7 +435,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         )
         system.configureRx(
             usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
-                receiveTimeOffset=0.0, noSamples=int(3*self.noSamples)
+                receiveTimeOffset=0.0, numSamples=int(3*self.numSamples)
             )
         )
         system.execute()
@@ -460,7 +460,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         txDist = (findSignalStartInFrame(rx1, self.randomSignal2) -
                   findSignalStartInFrame(rx1, self.randomSignal))
-        self.assertAlmostEqual(txDist, self.noSamples + 2000, delta=1)
+        self.assertAlmostEqual(txDist, self.numSamples + 2000, delta=1)
 
     @pytest.mark.basic_hardware
     def test_offsetTxAndRxConfigs_localhost(self) -> None:
@@ -477,7 +477,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
             samples=txSignal, sendTimeOffset=timeOffset))
         system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=int(60e3)))
+            receiveTimeOffset=0.0, numSamples=int(60e3)))
 
         system.execute()
         rxSignal = system.collect()["usrp1"][0].signals[0]
@@ -495,14 +495,14 @@ class TestHardwareSystemTests(unittest.TestCase):
                                                txSampleRate=Fs, rxSampleRate=Fs)
 
         system = setup.connectUsrps()
-        txSamples = np.zeros(int(2**(np.ceil(np.log2(self.noSamples)))), dtype=complex)
-        txSamples[:self.noSamples] = self.randomSignal
+        txSamples = np.zeros(int(2**(np.ceil(np.log2(self.numSamples)))), dtype=complex)
+        txSamples[:self.numSamples] = self.randomSignal
 
         txSignal = MimoSignal(signals=[txSamples])
         system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
-            samples=txSignal, sendTimeOffset=0.0, repetitions=4))
+            samples=txSignal, sendTimeOffset=0.0, numRepetitions=4))
         system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=4*len(txSamples)))
+            receiveTimeOffset=0.0, numSamples=4*len(txSamples)))
         system.execute()
         rxSignal = system.collect()["usrp1"][0].signals[0]
 
@@ -525,12 +525,12 @@ class TestHardwareSystemTests(unittest.TestCase):
         system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
             samples=txSignal, sendTimeOffset=timeOffset))
         system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=int(60e3)))
+            receiveTimeOffset=0.0, numSamples=int(60e3)))
 
         system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
             samples=txSignal, sendTimeOffset=0.3))
         system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
-            receiveTimeOffset=0.3, noSamples=int(60e3)))
+            receiveTimeOffset=0.3, numSamples=int(60e3)))
 
         system.execute()
         rx = system.collect()["usrp1"]
@@ -549,7 +549,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
         for _ in range(3):
             rxStreamingConfig1 = RxStreamingConfig(
-                receiveTimeOffset=0.0, noSamples=int(60e3)
+                receiveTimeOffset=0.0, numSamples=int(60e3)
             )
             txStreamingConfig1 = TxStreamingConfig(
                 sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
@@ -593,7 +593,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
         )
         rxStreamingConfig2 = RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=int(60e3)
+            receiveTimeOffset=0.0, numSamples=int(60e3)
         )
 
         peaks = []
@@ -628,7 +628,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
         )
         rxStreamingConfig2 = RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=int(60e3)
+            receiveTimeOffset=0.0, numSamples=int(60e3)
         )
         peaks = []
         for _ in range(3):
@@ -653,7 +653,7 @@ class TestHardwareSystemTests(unittest.TestCase):
             sendTimeOffset=0.0, samples=MimoSignal(signals=[self.randomSignal])
         )
         rxStreamingConfig1 = RxStreamingConfig(
-            receiveTimeOffset=0.0, noSamples=int(60e3)
+            receiveTimeOffset=0.0, numSamples=int(60e3)
         )
 
         rxSamples = []
@@ -693,7 +693,7 @@ class TestHardwareSystemTests(unittest.TestCase):
         txStreamingConfig = TxStreamingConfig(sendTimeOffset=0.0,
                                               samples=MimoSignal(signals=[txSig]))
         rxStreamingConfig = RxStreamingConfig(receiveTimeOffset=0.0,
-                                              noSamples=numSamples+20000)
+                                              numSamples=numSamples+20000)
 
         system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig)
         system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig)
@@ -718,10 +718,10 @@ class TestHardwareSystemTests(unittest.TestCase):
             sendTimeOffset=0.1, samples=MimoSignal(signals=[self.randomSignal])
         )
         rxStreamingConfig1 = RxStreamingConfig(
-            receiveTimeOffset=0.1, noSamples=int(60e3)
+            receiveTimeOffset=0.1, numSamples=int(60e3)
         )
         rxStreamingConfig2 = RxStreamingConfig(
-            receiveTimeOffset=0.1, noSamples=int(60e3)
+            receiveTimeOffset=0.1, numSamples=int(60e3)
         )
         system.configureTx(usrpName="usrp1", txStreamingConfig=txStreamingConfig1)
         system.configureRx(usrpName="usrp1", rxStreamingConfig=rxStreamingConfig1)
@@ -761,7 +761,7 @@ class TestHardwareSystemTests(unittest.TestCase):
 
             # create setup
             rxStreamingConfig1 = RxStreamingConfig(
-                receiveTimeOffset=0.1, noSamples=int(60e3)
+                receiveTimeOffset=0.1, numSamples=int(60e3)
             )
             txStreamingConfig1 = TxStreamingConfig(
                 sendTimeOffset=0.1,

@@ -39,10 +39,10 @@ struct TxStreamingConfig {
     TxStreamingConfig(const MimoSignal& _samples,
                       const double _sendTimeOffset,
                       const int _repetitions)
-        : samples(_samples), sendTimeOffset(_sendTimeOffset), repetitions(_repetitions) {}
+        : samples(_samples), sendTimeOffset(_sendTimeOffset), numRepetitions(_repetitions) {}
     MimoSignal samples;
     double sendTimeOffset;
-    int repetitions;
+    int numRepetitions;
 
     void alignToWordSize();
 };
@@ -54,12 +54,12 @@ struct RxStreamingConfig {
                       const std::string& _antennaPort = "",
                       const unsigned int _numRepetitions = 1,
                       const unsigned int _repetitionPeriod = 0)
-        : noSamples(_noSamples),
+        : numSamples(_noSamples),
           receiveTimeOffset(_receiveTimeOffset),
           numRepetitions(_numRepetitions),
           repetitionPeriod(_repetitionPeriod),
           antennaPort(_antennaPort) {}
-    unsigned int noSamples;
+    unsigned int numSamples;
     double receiveTimeOffset;
     unsigned int numRepetitions = 1;
     unsigned int repetitionPeriod = 0;

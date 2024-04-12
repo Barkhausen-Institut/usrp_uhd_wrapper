@@ -60,7 +60,7 @@ class RfConfig:
 @dataclass
 class RxStreamingConfig:
     receiveTimeOffset: float = 0.0
-    noSamples: int = 0
+    numSamples: int = 0
     numRepetitions: int = 1
     repetitionPeriod: int = 0
     antennaPort: str = ""
@@ -112,7 +112,7 @@ class TxStreamingConfig:
         default_factory=lambda: [MimoSignal(signals=[])]
     )
 
-    repetitions: int = 1
+    numRepetitions: int = 1
     """
     Determines how often the signal should be repeated before exiting. If
     not equal 1, the signal length must be aligned to the word size. Otherwise

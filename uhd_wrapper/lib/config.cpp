@@ -26,7 +26,7 @@ bool operator!=(const RfConfig& a, const RfConfig& b) { return !(a == b); }
 
 bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b) {
     bool equal = true;
-    equal &= a.noSamples == b.noSamples;
+    equal &= a.numSamples == b.numSamples;
     equal &= a.receiveTimeOffset == b.receiveTimeOffset;
     equal &= a.antennaPort == b.antennaPort;
     equal &= a.numRepetitions == b.numRepetitions;
@@ -90,16 +90,16 @@ void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
     double minimumRequiredOffset = newConfig.sendTimeOffset;
     if (prevConfig) {
         minimumRequiredOffset = prevConfig->sendTimeOffset + guardOffset +
-            prevConfig->samples[0].size() / fs * prevConfig->repetitions;
+            prevConfig->samples[0].size() / fs * prevConfig->numRepetitions;
     }
     if (newConfig.sendTimeOffset < minimumRequiredOffset)
         throw UsrpException(
             "Invalid TX streaming config: the offset of the new config is too "
             "small.");
-    if (newConfig.repetitions <= 0)
+    if (newConfig.numRepetitions <= 0)
         throw UsrpException("Number of repetitions must be > 0");
 
-    if (newConfig.repetitions != 1) {
+    if (newConfig.numRepetitions != 1) {
         size_t L = newConfig.samples[0].size();
         if (nextMultipleOfWordSize(L) != L)
             throw UsrpException("When using repetitions, the length of the TX signal must be word-aligned!");
@@ -110,7 +110,7 @@ void assertValidRxStreamingConfig(const RxStreamingConfig* prevConfig,
                                   const double guardOffset, const double fs) {
     if (newConfig.numRepetitions < 1)
         throw UsrpException("Num Repetitions needs to be at least 1!");
-    if (newConfig.repetitionPeriod != 0 && newConfig.repetitionPeriod < newConfig.noSamples)
+    if (newConfig.repetitionPeriod != 0 && newConfig.repetitionPeriod < newConfig.numSamples)
         throw UsrpException("Repetition Period is smaller than record length!");
     if (newConfig.numRepetitions > 1) {
         if (newConfig.repetitionPeriod > 0) {
@@ -118,7 +118,7 @@ void assertValidRxStreamingConfig(const RxStreamingConfig* prevConfig,
                 throw UsrpException("When using repetitions, repPeriod must be word-aligned (8)");
         }
         else {
-            if (newConfig.wordAlignedNoSamples() != newConfig.noSamples)
+            if (newConfig.wordAlignedNoSamples() != newConfig.numSamples)
                 throw UsrpException("When using repetitions, numSamples must be word-aligned (8)");
         }
     }
@@ -201,7 +201,7 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
 
 std::ostream& operator<<(std::ostream& os, const RxStreamingConfig& conf) {
     os << "RxConfig (" << conf.receiveTimeOffset << "@" << conf.antennaPort << ") ";
-    os << conf.noSamples << " " << conf.numRepetitions << " " << conf.repetitionPeriod << std::endl;
+    os << conf.numSamples << " " << conf.numRepetitions << " " << conf.repetitionPeriod << std::endl;
 
     return os;
 }
@@ -227,7 +227,7 @@ void TxStreamingConfig::alignToWordSize() {
 }
 
 size_t RxStreamingConfig::wordAlignedNoSamples() const {
-    return nextMultipleOfWordSize(noSamples);
+    return nextMultipleOfWordSize(numSamples);
 }
 
 size_t RxStreamingConfig::totalWordAlignedSamples() const {
@@ -244,7 +244,7 @@ size_t RxStreamingConfig::totalWordAlignedSamples() const {
 
 size_t RxStreamingConfig::totalSamples() const {
     if (repetitionPeriod == 0)
-        return noSamples * numRepetitions;
+        return numSamples * numRepetitions;
     else
         return repetitionPeriod * numRepetitions;
 }

@@ -224,6 +224,7 @@ void Usrp::setRxConfig(const RxStreamingConfig &conf) {
     if (rxStreamingConfigs_.size() > 0)
         prev = &rxStreamingConfigs_.back();
     assertValidRxStreamingConfig(prev, conf, GUARD_OFFSET_S_, rfConfig_->getRxSamplingRate());
+    std::cout << "new RX config " << conf << std::endl;
     rxStreamingConfigs_.push_back(conf);
 }
 

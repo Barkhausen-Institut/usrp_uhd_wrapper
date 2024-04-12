@@ -196,6 +196,13 @@ std::ostream& operator<<(std::ostream& os, const RfConfig& conf) {
     return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const RxStreamingConfig& conf) {
+    os << "RxConfig (" << conf.receiveTimeOffset << "@" << conf.antennaPort << ") ";
+    os << conf.noSamples << " " << conf.numRepetitions << " " << conf.repetitionPeriod << std::endl;
+
+    return os;
+}
+
 void _resizeSignal(MimoSignal& samples, size_t length) {
     for (auto& s : samples) {
         s.resize(length);

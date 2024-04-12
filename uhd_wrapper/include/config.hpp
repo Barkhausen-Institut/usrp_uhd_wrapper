@@ -99,4 +99,5 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
 void assertValidRfConfig(const RfConfig& conf);
 
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf);
+std::ostream& operator<<(std::ostream& os, const RxStreamingConfig& conf);
 }  // namespace bi

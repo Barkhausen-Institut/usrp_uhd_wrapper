@@ -66,6 +66,7 @@ struct RxStreamingConfig {
     std::string antennaPort;
 
     size_t wordAlignedNoSamples() const;
+    size_t totalWordAlignedSamples() const;
     size_t totalSamples() const;
 };
 

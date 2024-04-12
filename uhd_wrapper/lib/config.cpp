@@ -110,12 +110,13 @@ void assertValidRxStreamingConfig(const RxStreamingConfig* prevConfig,
     if (newConfig.repetitionPeriod != 0 && newConfig.repetitionPeriod < newConfig.noSamples)
         throw UsrpException("Repetition Period is smaller than record length!");
     if (newConfig.numRepetitions > 1) {
-        if (newConfig.wordAlignedNoSamples() != newConfig.noSamples) {
-            throw UsrpException("When using repetitions, numSamples must be word-aligned (8)");
+        if (newConfig.repetitionPeriod > 0) {
+            if (newConfig.repetitionPeriod != nextMultipleOfWordSize(newConfig.repetitionPeriod))
+                throw UsrpException("When using repetitions, repPeriod must be word-aligned (8)");
         }
-        if (newConfig.repetitionPeriod > 0 &&
-            newConfig.repetitionPeriod != nextMultipleOfWordSize(newConfig.repetitionPeriod)) {
-            throw UsrpException("When using repetitions, repPeriod must be word-aligned (8)");
+        else {
+            if (newConfig.wordAlignedNoSamples() != newConfig.noSamples)
+                throw UsrpException("When using repetitions, numSamples must be word-aligned (8)");
         }
     }
 
@@ -217,6 +218,18 @@ void TxStreamingConfig::alignToWordSize() {
 
 size_t RxStreamingConfig::wordAlignedNoSamples() const {
     return nextMultipleOfWordSize(noSamples);
+}
+
+size_t RxStreamingConfig::totalWordAlignedSamples() const {
+    if (repetitionPeriod == 0)
+        return wordAlignedNoSamples() * numRepetitions;
+    else {
+        if (repetitionPeriod != nextMultipleOfWordSize(repetitionPeriod)) {
+            throw UsrpException("Cannot use repetions with not word-aligned period");
+        }
+        return repetitionPeriod * numRepetitions;
+    }
+
 }
 
 size_t RxStreamingConfig::totalSamples() const {

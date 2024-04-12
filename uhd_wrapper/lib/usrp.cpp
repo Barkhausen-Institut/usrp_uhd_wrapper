@@ -110,8 +110,9 @@ void Usrp::performStreaming(double baseTime) {
         try {
             for(const auto& config: rxStreamingConfigs_) {
                 double streamTime = config.receiveTimeOffset + baseTime;
-                size_t numRxSamples = config.wordAlignedNoSamples();
-                replayConfig_->configReceive(numRxSamples);
+                replayConfig_->configReceive(config.wordAlignedNoSamples(),
+                                             config.numRepetitions,
+                                             config.repetitionPeriod);
 
                 streamMapper_->configureRxAntenna(config);
 
@@ -123,7 +124,8 @@ void Usrp::performStreaming(double baseTime) {
                 // replay block to create a given amount of samples, which is
                 // equal to the amount of baseband samples. Hence, no scaling is
                 // needed.
-                fdGraph_->receive(streamTime, numRxSamples*rxDecimFactor);
+                size_t totalRxSamples = config.totalWordAlignedSamples();
+                fdGraph_->receive(streamTime, totalRxSamples*rxDecimFactor);
             }
         }
         catch(std::exception& e) {
@@ -140,9 +142,11 @@ void Usrp::performDownload() {
     fdGraph_->connectForDownload(rfConfig_->getNumRxStreams());
 
     for(const auto& config: rxStreamingConfigs_) {
-        replayConfig_->configDownload(config.wordAlignedNoSamples());
-        receivedSamples_.push_back(fdGraph_->download(config.wordAlignedNoSamples()));
-        shortenSignal(receivedSamples_.back(), config.noSamples);
+        for (size_t r = 0; r < config.numRepetitions; r++) {
+            replayConfig_->configDownload(config.wordAlignedNoSamples());
+            receivedSamples_.push_back(fdGraph_->download(config.wordAlignedNoSamples()));
+            shortenSignal(receivedSamples_.back(), config.noSamples);
+        }
     }
 }
 

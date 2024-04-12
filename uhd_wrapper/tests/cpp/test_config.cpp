@@ -235,7 +235,8 @@ TEST_CASE("[ValidRxStreamingConfig]") {
         REQUIRE_THROWS_AS(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs),
                           UsrpException);
 
-        newConfig.noSamples = 128;
+        newConfig.noSamples = 127;
+        newConfig.repetitionPeriod = 128;
         REQUIRE_NOTHROW(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs));
 
         newConfig.repetitionPeriod = 201;

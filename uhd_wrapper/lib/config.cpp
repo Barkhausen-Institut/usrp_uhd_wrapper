@@ -28,6 +28,9 @@ bool operator==(const RxStreamingConfig& a, const RxStreamingConfig& b) {
     bool equal = true;
     equal &= a.noSamples == b.noSamples;
     equal &= a.receiveTimeOffset == b.receiveTimeOffset;
+    equal &= a.antennaPort == b.antennaPort;
+    equal &= a.numRepetitions == b.numRepetitions;
+    equal &= a.repetitionPeriod == b.repetitionPeriod;
     return equal;
 }
 

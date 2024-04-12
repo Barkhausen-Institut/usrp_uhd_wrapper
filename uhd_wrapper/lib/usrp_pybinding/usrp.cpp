@@ -114,11 +114,14 @@ PYBIND11_MODULE(usrp_pybinding, m) {
              py::arg("numRepetitions") = 1,
              py::arg("repetitionPeriod") = 0)
         .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
+        .def_readwrite("antennaPort", &bi::RxStreamingConfig::antennaPort)
         .def_readwrite("numRepetitions", &bi::RxStreamingConfig::numRepetitions)
         .def_readwrite("repetitionPeriod", &bi::RxStreamingConfig::repetitionPeriod)
         .def_readwrite("receiveTimeOffset",
                        &bi::RxStreamingConfig::receiveTimeOffset)
-        .def(py::self == py::self);
+        .def(py::self == py::self)
+        ;
+
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())

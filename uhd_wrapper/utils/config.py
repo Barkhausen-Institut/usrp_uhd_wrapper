@@ -57,6 +57,7 @@ class RfConfig:
         return RfConfig.from_json(value)  # type: ignore
 
 
+@dataclass_json
 @dataclass
 class RxStreamingConfig:
     receiveTimeOffset: float = 0.0

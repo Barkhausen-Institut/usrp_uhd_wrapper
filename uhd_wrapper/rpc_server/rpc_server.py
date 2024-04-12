@@ -52,21 +52,26 @@ class UsrpServer:
     ) -> None:
         mimoSignal = MimoSignal.deserialize(samples)
         self.__usrp.setTxConfig(
-            TxStreamingConfig(
+
+        TxStreamingConfig(
                 samples=mimoSignal.signals,
                 sendTimeOffset=sendTimeOffset,
                 numRepetitions=numRepetitions
             )
         )
 
-    def configureRx(self, receiveTimeOffset: float, numSamples: int, antennaPort: str,
-                    numRepetitions: int, repetitionPeriod: int) -> None:
+    # def configureRx(self, receiveTimeOffset: float, numSamples: int, antennaPort: str,
+    #                 numRepetitions: int, repetitionPeriod: int) -> None:
+    def configureRx(self, jsonStr: str) -> None:
+        import json
+        L = json.loads(jsonStr)
         self.__usrp.setRxConfig(
-            RxStreamingConfig(numSamples=numSamples,
-                              receiveTimeOffset=receiveTimeOffset,
-                              antennaPort=antennaPort,
-                              numRepetitions=numRepetitions,
-                              repetitionPeriod=repetitionPeriod)
+            RxStreamingConfig(**L))
+            # RxStreamingConfig(numSamples=numSamples,
+            #                   receiveTimeOffset=receiveTimeOffset,
+            #                   antennaPort=antennaPort,
+            #                   numRepetitions=numRepetitions,
+            #                   repetitionPeriod=repetitionPeriod)
         )
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:

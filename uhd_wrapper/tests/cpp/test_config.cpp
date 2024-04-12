@@ -1,9 +1,3 @@
-/** @file
- *
- * This file serves to
- * 1. demonstrate how the catch file is to be included (without #define !) and
- * 2. to provide a test skeleton using catch2.
- **/
 
 #include "catch/catch.hpp"
 #include "config.hpp"
@@ -210,6 +204,42 @@ TEST_CASE("[ValidRxStreamingConfig]") {
         newConfig.noSamples = 199;
         REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig,
                                                        guardOffset, fs),
+                          UsrpException);
+    }
+
+    SECTION("RepPeriod must be bigger than noSamples") {
+        newConfig.noSamples = 100;
+        newConfig.repetitionPeriod = 50;
+        newConfig.numRepetitions = 5;
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs),
+                          UsrpException);
+    }
+
+    SECTION("Time offset calculated correctly when using repetitions") {
+        prevConfig.noSamples = 100;
+        prevConfig.repetitionPeriod = 1000;
+        prevConfig.numRepetitions = 10;
+        prevConfig.receiveTimeOffset = 1.0;
+        newConfig.receiveTimeOffset = 1.0 + guardOffset + 100/fs;
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(&prevConfig, newConfig, guardOffset, fs),
+                          UsrpException);
+        newConfig.receiveTimeOffset = 1.0 + guardOffset + 10*1000/fs;
+        REQUIRE_NOTHROW(assertValidRxStreamingConfig(&prevConfig, newConfig, guardOffset, fs));
+    }
+
+    SECTION("When using repetitions, numSamples must be word-aligned") {
+        newConfig.noSamples = 127;
+        newConfig.numRepetitions = 2;
+        newConfig.repetitionPeriod = 0;
+
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs),
+                          UsrpException);
+
+        newConfig.noSamples = 128;
+        REQUIRE_NOTHROW(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs));
+
+        newConfig.repetitionPeriod = 201;
+        REQUIRE_THROWS_AS(assertValidRxStreamingConfig(nullptr, newConfig, guardOffset, fs),
                           UsrpException);
     }
 }

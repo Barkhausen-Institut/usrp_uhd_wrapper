@@ -51,15 +51,22 @@ struct RxStreamingConfig {
     RxStreamingConfig() {}
     RxStreamingConfig(const unsigned int _noSamples,
                       const double _receiveTimeOffset,
-                      const std::string& _antennaPort = "")
+                      const std::string& _antennaPort = "",
+                      const unsigned int _numRepetitions = 1,
+                      const unsigned int _repetitionPeriod = 0)
         : noSamples(_noSamples),
           receiveTimeOffset(_receiveTimeOffset),
+          numRepetitions(_numRepetitions),
+          repetitionPeriod(_repetitionPeriod),
           antennaPort(_antennaPort) {}
     unsigned int noSamples;
     double receiveTimeOffset;
+    unsigned int numRepetitions = 1;
+    unsigned int repetitionPeriod = 0;
     std::string antennaPort;
 
     size_t wordAlignedNoSamples() const;
+    size_t totalSamples() const;
 };
 
 size_t nextMultipleOfWordSize(size_t count);

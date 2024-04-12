@@ -105,14 +105,29 @@ void assertValidTxStreamingConfig(const TxStreamingConfig* prevConfig,
 void assertValidRxStreamingConfig(const RxStreamingConfig* prevConfig,
                                   const RxStreamingConfig& newConfig,
                                   const double guardOffset, const double fs) {
+    if (newConfig.numRepetitions < 1)
+        throw UsrpException("Num Repetitions needs to be at least 1!");
+    if (newConfig.repetitionPeriod != 0 && newConfig.repetitionPeriod < newConfig.noSamples)
+        throw UsrpException("Repetition Period is smaller than record length!");
+    if (newConfig.numRepetitions > 1) {
+        if (newConfig.wordAlignedNoSamples() != newConfig.noSamples) {
+            throw UsrpException("When using repetitions, numSamples must be word-aligned (8)");
+        }
+        if (newConfig.repetitionPeriod > 0 &&
+            newConfig.repetitionPeriod != nextMultipleOfWordSize(newConfig.repetitionPeriod)) {
+            throw UsrpException("When using repetitions, repPeriod must be word-aligned (8)");
+        }
+    }
+
     double minimumRequiredOffset = newConfig.receiveTimeOffset;
     if (prevConfig)
         minimumRequiredOffset =
-            prevConfig->receiveTimeOffset + guardOffset + prevConfig->noSamples / fs;
-    if (newConfig.receiveTimeOffset < minimumRequiredOffset)
+            prevConfig->receiveTimeOffset + guardOffset + prevConfig->totalSamples() / fs;
+    if (newConfig.receiveTimeOffset < minimumRequiredOffset) {
         throw UsrpException(
             "Invalid RX streaming config: the offset of the new config is too "
             "small.");
+    }
 }
 
 void assertValidTxSignal(const MimoSignal& streamSamples, const size_t maxSamples,
@@ -202,6 +217,13 @@ void TxStreamingConfig::alignToWordSize() {
 
 size_t RxStreamingConfig::wordAlignedNoSamples() const {
     return nextMultipleOfWordSize(noSamples);
+}
+
+size_t RxStreamingConfig::totalSamples() const {
+    if (repetitionPeriod == 0)
+        return noSamples * numRepetitions;
+    else
+        return repetitionPeriod * numRepetitions;
 }
 
 }  // namespace bi

@@ -131,12 +131,16 @@ class TestUsrpServer(unittest.TestCase):
         NO_SAMPLES = int(1e3)
         TIME_OFFSET = 2.0
         ANT = "A"
+        REPs = 5
+        PERIOD = 20000
 
-        self.usrpServer.configureRx(TIME_OFFSET, NO_SAMPLES, ANT)
+        self.usrpServer.configureRx(TIME_OFFSET, NO_SAMPLES, ANT, REPs, PERIOD)
         self.usrpMock.setRxConfig.assert_called_once_with(
             RxStreamingConfig(receiveTimeOffset=TIME_OFFSET,
                               noSamples=NO_SAMPLES,
-                              antennaPort=ANT)
+                              antennaPort=ANT,
+                              numRepetitions=REPs,
+                              repetitionPeriod=PERIOD)
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:

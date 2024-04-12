@@ -48,9 +48,15 @@ class TestRxStreamingConfig(unittest.TestCase):
         dut = binding.RxStreamingConfig()
         dut.receiveTimeOffset = 5
         dut.noSamples = 42
+        dut.antennaPort = "RX2"
+        dut.repetitionPeriod = 7
+        dut.numRepetitions = 18
 
         self.assertEqual(dut.receiveTimeOffset, 5)
         self.assertEqual(dut.noSamples, 42)
+        self.assertEqual(dut.repetitionPeriod, 7)
+        self.assertEqual(dut.numRepetitions, 18)
+        self.assertEqual(dut.antennaPort, "RX2")
 
 
 class TestMimoSignal(unittest.TestCase):

@@ -1,5 +1,6 @@
 from dataclasses import fields
 from typing import List
+import json
 
 from uhd_wrapper.utils.serialization import (
     SerializedComplexArray,
@@ -60,19 +61,8 @@ class UsrpServer:
             )
         )
 
-    # def configureRx(self, receiveTimeOffset: float, numSamples: int, antennaPort: str,
-    #                 numRepetitions: int, repetitionPeriod: int) -> None:
     def configureRx(self, jsonStr: str) -> None:
-        import json
-        L = json.loads(jsonStr)
-        self.__usrp.setRxConfig(
-            RxStreamingConfig(**L))
-            # RxStreamingConfig(numSamples=numSamples,
-            #                   receiveTimeOffset=receiveTimeOffset,
-            #                   antennaPort=antennaPort,
-            #                   numRepetitions=numRepetitions,
-            #                   repetitionPeriod=repetitionPeriod)
-        )
+        self.__usrp.setRxConfig(RxStreamingConfig(**json.loads(jsonStr)))
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
         self.__usrp.setRfConfig(

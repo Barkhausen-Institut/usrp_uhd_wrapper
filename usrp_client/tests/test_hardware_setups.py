@@ -380,19 +380,14 @@ class TestCarrierFrequencySettings(unittest.TestCase):
 class TestHardwareSystemTests(unittest.TestCase):
     def setUp(self) -> None:
         self.numSamples = int(20e3)
-        self.randomSignal = (
-            np.random.sample((self.numSamples,))
-            + 1j * np.random.sample((self.numSamples,))
-        ) - (0.5 + 0.5j)
+        self.randomSignal = self.createRandom(self.numSamples)
+        self.randomSignal2 = self.createRandom(self.numSamples)
 
-        self.randomSignal2 = (
-            np.random.sample((self.numSamples,))
-            + 1j * np.random.sample((self.numSamples,))
-        ) - (0.5 + 0.5j)
+    def createRandom(self, numSamples: int) -> np.ndarray:
 
-        # self.randomSignal *= np.linspace(0, 1, self.numSamples)
-        # self.randomSignal2 *= np.linspace(1, 0, self.numSamples)
-        #
+        real = np.random.random(size=(numSamples,)) - 0.5
+        imag = np.random.random(size=(numSamples,)) - 0.5
+        return real + 1j*imag
 
     @pytest.mark.basic_hardware
     def test_allow2timesExecuteWithoutCrashing(self) -> None:
@@ -509,6 +504,36 @@ class TestHardwareSystemTests(unittest.TestCase):
         peaks = sorted(findMultipleSignalStartsInFrame(
             rxSignal, self.randomSignal, numPeaks=4))
         nt.assert_array_equal(np.diff(peaks), len(txSamples)*np.ones(3))
+
+    @pytest.mark.basic_hardware
+    def test_repeatRxBlocks_localhost(self) -> None:
+        Fs = 1
+        setup = LocalTransmissionHardwareSetup(noRxStreams=1, noTxStreams=1,
+                                               txSampleRate=Fs, rxSampleRate=Fs)
+
+        #  setup.rfConfig.txAntennaMapping=[2]
+        # setup.rfConfig.rxAntennaMapping=[3]
+        system = setup.connectUsrps()
+        r1 = self.createRandom(2000)
+        r2 = self.createRandom(2000)
+        r3 = self.createRandom(2000)
+        txSamples = np.zeros(3*4000, dtype=complex)
+        txSamples[1000:3000] = r1
+        txSamples[5000:7000] = r2
+        txSamples[9000:11000] = r3
+
+        system.configureTx(usrpName="usrp1", txStreamingConfig=TxStreamingConfig(
+            samples=MimoSignal(signals=[txSamples]), sendTimeOffset=0.0))
+        system.configureRx(usrpName="usrp1", rxStreamingConfig=RxStreamingConfig(
+            receiveTimeOffset=0.0, numSamples=4000, numRepetitions=3, repetitionPeriod=4000,
+            antennaPort="TX/RX"))
+        system.execute()
+        rxSignal = system.collect()["usrp1"]
+
+        peaks = []
+        for sig, ran in zip(rxSignal, [r1, r2, r3]):
+            peaks.append(findSignalStartInFrame(sig.signals[0], ran))
+        self.assertEqual(min(peaks), max(peaks))
 
     @pytest.mark.basic_hardware
     def test_multipleTxAndRxConfigs_localhost(self) -> None:

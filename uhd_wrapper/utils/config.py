@@ -2,7 +2,7 @@
 
 from typing import List
 from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json, DataClassJsonMixin
+from dataclasses_json import DataClassJsonMixin
 
 import numpy as np
 

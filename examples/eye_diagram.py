@@ -88,7 +88,7 @@ def main() -> None:
         system.configureRx(
             usrpName="usrp1",
             rxStreamingConfig=RxStreamingConfig(
-                noSamples=len(txSignal)+1000, receiveTimeOffset=0.0))
+                numSamples=len(txSignal)+1000, receiveTimeOffset=0.0))
 
         system.execute()
         samples = system.collect()

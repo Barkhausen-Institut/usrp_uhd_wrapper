@@ -57,7 +57,7 @@ def createStreamingConfigs(
     txStreamingConfig1 = TxStreamingConfig(sendTimeOffset=0.0, samples=txSignal)
 
     rxStreamingConfig2 = RxStreamingConfig(
-        receiveTimeOffset=0.0, noSamples=int(noRxSamples)
+        receiveTimeOffset=0.0, numSamples=int(noRxSamples)
     )
     return txStreamingConfig1, rxStreamingConfig2
 

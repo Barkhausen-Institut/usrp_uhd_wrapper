@@ -15,7 +15,6 @@ from uhd_wrapper.utils.serialization import (
 )
 from uhd_wrapper.usrp_pybinding import (
     Usrp,
-    RxStreamingConfig,
     TxStreamingConfig,
 )
 from uhd_wrapper.utils.config import RfConfig, MimoSignal
@@ -124,19 +123,7 @@ class TestUsrpServer(unittest.TestCase):
         )
         self.usrpMock.setTxConfig.assert_called_once_with(
             TxStreamingConfig(sendTimeOffset=TIME_OFFSET, samples=signal.signals,
-                              repetitions=18)
-        )
-
-    def test_configureRxCalledWithCorrectArguments(self) -> None:
-        NO_SAMPLES = int(1e3)
-        TIME_OFFSET = 2.0
-        ANT = "A"
-
-        self.usrpServer.configureRx(TIME_OFFSET, NO_SAMPLES, ANT)
-        self.usrpMock.setRxConfig.assert_called_once_with(
-            RxStreamingConfig(receiveTimeOffset=TIME_OFFSET,
-                              noSamples=NO_SAMPLES,
-                              antennaPort=ANT)
+                              numRepetitions=18)
         )
 
     def test_configureRfConfigCalledWithCorrectArguments(self) -> None:

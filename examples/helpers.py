@@ -26,11 +26,11 @@ def readArgs() -> Any:
     return args
 
 
-def createRandom(noSamples: int, zeropad: int = 0) -> np.ndarray:
+def createRandom(numSamples: int, zeropad: int = 0) -> np.ndarray:
     return np.hstack(
         [
             np.zeros(zeropad, dtype=complex),
-            2 * (np.random.sample((noSamples,)) + 1j * np.random.sample((noSamples,)))
+            2 * (np.random.sample((numSamples,)) + 1j * np.random.sample((numSamples,)))
             - (1 + 1j),
         ]
     )

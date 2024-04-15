@@ -63,24 +63,41 @@ public:
     void setStreamCount(size_t streamCount);
     void reset();
 
-    void recordNewBlock(size_t numSamples);
+    void recordNewBlock(size_t numSamples, size_t numRepetitions=1, size_t repetitionPeriod=0);
     size_t recordOffset(size_t streamIdx) const;
 
     void replayNextBlock(size_t numSamples);
     size_t replayOffset(size_t streamIdx) const;
 
 private:
+    struct ReplayBlock {
+        size_t numSamples;
+        size_t repetitions;
+        size_t repetitionPeriod;
+
+        ReplayBlock(size_t numSamples_, size_t repetitions_, size_t repetitionPeriod_)
+            : numSamples(numSamples_),
+              repetitions(repetitions_),
+              repetitionPeriod(repetitionPeriod_)
+        {}
+
+        size_t totalSamples() const { return repetitionPeriod * repetitions; }
+    };
+
+    size_t byteOffset(size_t sampleOffset) const;
+
     void checkStreamCount() const;
-    size_t samplesUntilBlockNr(size_t blockIdx) const;
-    size_t samplesInCurrentBlock() const;
-    size_t samplesBeforeCurrentBlock() const;
 
     size_t numStreams_;
     const size_t MEM_SIZE;
     const size_t SAMPLE_SIZE;
-    std::vector<size_t> samplesPerBlock_;
-    int replayIdx_ = -1;
+    std::vector<ReplayBlock> replayBlocks_;
 
+    size_t currentRecordBlockStart() const;
+    size_t currentRecordBlockLength() const;
+    size_t currentRecordBlockEnd() const;
+    int currentRepetition_ = -1;
+    int currentReplay_ = -1;
 };
 
 
@@ -92,8 +109,12 @@ public:
     void reset();
     void configUpload(size_t numSamples);
     void configTransmit(size_t numSamples);
-    void configReceive(size_t numSamples);
+    void configReceive(size_t numSamples, size_t numRepetition = 1, size_t repetitionPeriod = 0);
     void configDownload(size_t numSamples);
+
+    size_t getTxBufferSize() const;
+    size_t getRxBufferOffset() const;
+    size_t getRxBufferSize() const;
 
 private:
     void clearRecordingBuffer();

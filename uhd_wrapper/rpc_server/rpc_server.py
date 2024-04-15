@@ -54,7 +54,7 @@ class UsrpServer:
         mimoSignal = MimoSignal.deserialize(samples)
         self.__usrp.setTxConfig(
 
-        TxStreamingConfig(
+            TxStreamingConfig(
                 samples=mimoSignal.signals,
                 sendTimeOffset=sendTimeOffset,
                 numRepetitions=numRepetitions

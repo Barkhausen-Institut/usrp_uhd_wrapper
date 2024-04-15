@@ -2,7 +2,7 @@
 
 from typing import List
 from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json
+from dataclasses_json import DataClassJsonMixin
 
 import numpy as np
 
@@ -13,9 +13,8 @@ from .serialization import (
 )
 
 
-@dataclass_json
 @dataclass
-class RfConfig:
+class RfConfig(DataClassJsonMixin):
     """Describes the RF configuration of the USRP. In particular, carrier
     frequency, sampling rate, TX/RX gains are contained in this structure.
     Moreover, the stream to antenna mapping is described in the elements
@@ -58,7 +57,7 @@ class RfConfig:
 
 
 @dataclass
-class RxStreamingConfig:
+class RxStreamingConfig(DataClassJsonMixin):
     receiveTimeOffset: float = 0.0
     numSamples: int = 0
     numRepetitions: int = 1

@@ -53,11 +53,7 @@ class _RpcClient:
         Args:
             rxConfig (RxStreamingConfig): Streaming config.
         """
-        self.__rpcClient.configureRx(rxConfig.receiveTimeOffset,
-                                     rxConfig.numSamples,
-                                     rxConfig.antennaPort,
-                                     rxConfig.numRepetitions,
-                                     rxConfig.repetitionPeriod)
+        self.__rpcClient.configureRx(rxConfig.to_json())
 
     def configureTx(self, txConfig: TxStreamingConfig) -> None:
         """Call `configureTx` on server and serialize `txConfig`."""

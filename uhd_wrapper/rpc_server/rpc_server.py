@@ -1,5 +1,6 @@
 from dataclasses import fields
 from typing import List
+import json
 
 from uhd_wrapper.utils.serialization import (
     SerializedComplexArray,
@@ -52,6 +53,7 @@ class UsrpServer:
     ) -> None:
         mimoSignal = MimoSignal.deserialize(samples)
         self.__usrp.setTxConfig(
+
             TxStreamingConfig(
                 samples=mimoSignal.signals,
                 sendTimeOffset=sendTimeOffset,
@@ -59,15 +61,8 @@ class UsrpServer:
             )
         )
 
-    def configureRx(self, receiveTimeOffset: float, numSamples: int, antennaPort: str,
-                    numRepetitions: int, repetitionPeriod: int) -> None:
-        self.__usrp.setRxConfig(
-            RxStreamingConfig(numSamples=numSamples,
-                              receiveTimeOffset=receiveTimeOffset,
-                              antennaPort=antennaPort,
-                              numRepetitions=numRepetitions,
-                              repetitionPeriod=repetitionPeriod)
-        )
+    def configureRx(self, jsonStr: str) -> None:
+        self.__usrp.setRxConfig(RxStreamingConfig(**json.loads(jsonStr)))
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
         self.__usrp.setRfConfig(

@@ -62,7 +62,7 @@ class UsrpServer:
         )
 
     def configureRx(self, jsonStr: str) -> None:
-        self.__usrp.setRxConfig(RxStreamingConfig.schema().loads(jsonStr))
+        self.__usrp.setRxConfig(RxStreamingConfig(**json.loads(jsonStr)))
 
     def configureRfConfig(self, serializedRfConfig: str) -> None:
         self.__usrp.setRfConfig(

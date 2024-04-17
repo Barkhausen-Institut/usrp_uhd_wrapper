@@ -14,8 +14,9 @@ BlockOffsetTracker::BlockOffsetTracker(size_t memSize, size_t sampleSize)
 }
 
 void BlockOffsetTracker::reset() {
-    replayIdx_ = -1;
-    samplesPerBlock_.clear();
+    replayBlocks_.clear();
+    currentRepetition_ = -1;
+    currentReplay_ = -1;
 }
 
 void BlockOffsetTracker::setStreamCount(size_t streamCount) {
@@ -27,59 +28,99 @@ void BlockOffsetTracker::checkStreamCount() const {
         throw UsrpException("Stream count not set!");
 }
 
-void BlockOffsetTracker::recordNewBlock(size_t numSamples) {
+void BlockOffsetTracker::recordNewBlock(size_t numSamples,
+                                        size_t numRepetitions,
+                                        size_t repetitionPeriod) {
     checkStreamCount();
-    size_t bytesBefore = samplesUntilBlockNr(samplesPerBlock_.size()) * SAMPLE_SIZE * numStreams_;
-    size_t bytesNow = numSamples * SAMPLE_SIZE * numStreams_;
-    if (bytesBefore + bytesNow >= MEM_SIZE)
+    if (repetitionPeriod == 0)
+        repetitionPeriod = numSamples;
+    if (repetitionPeriod < numSamples)
+        throw UsrpException("RepetitionPeriod must be >= numSamples");
+    if (numRepetitions > 1 && numStreams_ > 1)
+        throw UsrpException("Multi-Stream with Repetitions not implemented!");
+
+    ReplayBlock block(numSamples, numRepetitions, repetitionPeriod);
+    if (byteOffset(currentRecordBlockEnd() + block.totalSamples() * numStreams_) >= MEM_SIZE)
         throw UsrpException("Attempting to store too many samples in buffer!");
-    samplesPerBlock_.push_back(numSamples);
+
+    replayBlocks_.push_back(block);
 }
 
 void BlockOffsetTracker::replayNextBlock(size_t numSamples) {
     checkStreamCount();
-    replayIdx_++;
-    if (replayIdx_ >= (int)samplesPerBlock_.size())
-        throw UsrpException("Too many replay requests");
-    if (samplesPerBlock_[replayIdx_] != numSamples)
-        throw UsrpException("Incorrect size of replay block");
+
+    currentRepetition_++;
+    int repsInCurrentBlock = 0;
+    if (currentReplay_ >= 0)
+        repsInCurrentBlock = replayBlocks_[currentReplay_].repetitions;
+    if (currentRepetition_ >= repsInCurrentBlock) {
+        currentReplay_++;
+        currentRepetition_ = 0;
+    }
+    if (currentReplay_ >= (int)replayBlocks_.size())
+        throw UsrpException("Too many replay requests!");
 }
 
-size_t BlockOffsetTracker::samplesUntilBlockNr(size_t blockIdx) const {
-    return std::accumulate(samplesPerBlock_.begin(),
-                           samplesPerBlock_.begin() + blockIdx,
-                           0);
-}
-
-size_t BlockOffsetTracker::samplesBeforeCurrentBlock() const {
-    assert(samplesPerBlock_.size() > 0);
-    return samplesUntilBlockNr(samplesPerBlock_.size() - 1);
-}
-
-size_t BlockOffsetTracker::samplesInCurrentBlock() const {
-    assert(samplesPerBlock_.size() > 0);
-    return samplesPerBlock_[samplesPerBlock_.size() - 1];
+size_t BlockOffsetTracker::byteOffset(size_t samplesOffset) const {
+    return samplesOffset * SAMPLE_SIZE;
 }
 
 size_t BlockOffsetTracker::recordOffset(size_t streamIdx) const {
-    if (samplesPerBlock_.size() == 0)
-        throw UsrpException("No recording started!");
-    size_t samplesBefore = samplesBeforeCurrentBlock();
-    size_t numSamples = samplesInCurrentBlock();
-    return SAMPLE_SIZE * (samplesBefore * numStreams_ + numSamples * streamIdx);
+    if (replayBlocks_.size() == 0)
+        throw UsrpException("Recording not started!");
+    return byteOffset(currentRecordBlockStart() + currentRecordBlockLength() * streamIdx);
+}
+
+size_t BlockOffsetTracker::currentRecordBlockStart() const {
+    if (replayBlocks_.size() == 0)
+        return 0;
+
+    size_t off = 0;
+    for(size_t i = 0; i < replayBlocks_.size() - 1; i++)
+        off += replayBlocks_[i].totalSamples() * numStreams_;
+    return off;
+}
+
+size_t BlockOffsetTracker::currentRecordBlockEnd() const {
+    return currentRecordBlockStart() + numStreams_ * currentRecordBlockLength();
+}
+
+size_t BlockOffsetTracker::currentRecordBlockLength() const {
+    if (replayBlocks_.size() == 0)
+        return 0;
+    return replayBlocks_.back().totalSamples();
 }
 
 size_t BlockOffsetTracker::replayOffset(size_t streamIdx) const {
-    if (replayIdx_ < 0)
-        throw UsrpException("No replaying started!");
-    size_t samplesBefore = samplesUntilBlockNr(replayIdx_);
-    size_t numSamples = samplesPerBlock_[replayIdx_];
-    return SAMPLE_SIZE * (samplesBefore * numStreams_ + numSamples * streamIdx);
+    if (currentRepetition_ == -1)
+        throw UsrpException("Replaying not started!");
+
+    size_t offsetBefore = 0;
+    for (int i = 0; i < currentReplay_; i++)
+        offsetBefore += replayBlocks_[i].totalSamples() * numStreams_;
+    const ReplayBlock& currentBlock = replayBlocks_[currentReplay_];
+    offsetBefore += currentRepetition_ * currentBlock.repetitionPeriod;
+
+    return byteOffset(offsetBefore + currentBlock.totalSamples() * streamIdx);
 }
 
 ReplayBlockConfig::ReplayBlockConfig(std::shared_ptr<ReplayBlockInterface> replayCtrl)
     : replayBlock_(replayCtrl), MEM_SIZE(replayCtrl->get_mem_size()),
-      txBlocks_(MEM_SIZE/2, SAMPLE_SIZE), rxBlocks_(MEM_SIZE/2, SAMPLE_SIZE) {
+      txBlocks_(getTxBufferSize(), SAMPLE_SIZE),
+      rxBlocks_(getRxBufferSize(), SAMPLE_SIZE) {
+    std::cout << "Initialized Replay block with " << MEM_SIZE << " bytes memory." << std::endl;
+}
+
+size_t ReplayBlockConfig::getTxBufferSize() const {
+    return MEM_SIZE / 4;
+}
+
+size_t ReplayBlockConfig::getRxBufferSize() const {
+    return MEM_SIZE / 4 * 3;
+}
+
+size_t ReplayBlockConfig::getRxBufferOffset() const {
+    return getTxBufferSize(); // RX buffer starts where TX buffer ends
 }
 
 void ReplayBlockConfig::setStreamCount(size_t numTx, size_t numRx) {
@@ -112,12 +153,14 @@ void ReplayBlockConfig::configTransmit(size_t numSamples) {
         replayBlock_->config_play(txBlocks_.replayOffset(tx), numBytes, tx);
 }
 
-void ReplayBlockConfig::configReceive(size_t numSamples) {
-    rxBlocks_.recordNewBlock(numSamples);
-    const size_t numBytes = numSamples * SAMPLE_SIZE;
+void ReplayBlockConfig::configReceive(size_t numSamples, size_t numRepetitions, size_t repetitionPeriod) {
+    if (repetitionPeriod == 0)
+        repetitionPeriod = numSamples;
+    rxBlocks_.recordNewBlock(numSamples, numRepetitions, repetitionPeriod);
+    const size_t numBytes = numRepetitions * repetitionPeriod * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t rx = 0; rx < numRxStreams_; rx++)
-        replayBlock_->record(MEM_SIZE/2+rxBlocks_.recordOffset(rx), numBytes, rx);
+        replayBlock_->record(getRxBufferOffset()+rxBlocks_.recordOffset(rx), numBytes, rx);
     clearRecordingBuffer();
 }
 
@@ -126,7 +169,7 @@ void ReplayBlockConfig::configDownload(size_t numSamples) {
     const size_t numBytes = numSamples * SAMPLE_SIZE;
     std::lock_guard<std::mutex> lock(replayMtx_);
     for(size_t rx = 0; rx < numRxStreams_; rx++)
-        replayBlock_->config_play(MEM_SIZE/2+rxBlocks_.replayOffset(rx), numBytes, rx);
+        replayBlock_->config_play(getRxBufferOffset()+rxBlocks_.replayOffset(rx), numBytes, rx);
 }
 
 void ReplayBlockConfig::clearRecordingBuffer() {

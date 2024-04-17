@@ -68,7 +68,7 @@ def _transmit() -> None:
                                                       samples=MimoSignal(signals=[txSignal])))
 
     usrpSystem.configureRx("usrp1", RxStreamingConfig(receiveTimeOffset=0,
-                                                      noSamples=len(t)))
+                                                      numSamples=len(t)))
     usrpSystem.execute()
     rx = usrpSystem.collect()
 

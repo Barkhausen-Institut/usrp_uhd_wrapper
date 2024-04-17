@@ -39,10 +39,10 @@ struct TxStreamingConfig {
     TxStreamingConfig(const MimoSignal& _samples,
                       const double _sendTimeOffset,
                       const int _repetitions)
-        : samples(_samples), sendTimeOffset(_sendTimeOffset), repetitions(_repetitions) {}
+        : samples(_samples), sendTimeOffset(_sendTimeOffset), numRepetitions(_repetitions) {}
     MimoSignal samples;
     double sendTimeOffset;
-    int repetitions;
+    int numRepetitions;
 
     void alignToWordSize();
 };
@@ -51,15 +51,23 @@ struct RxStreamingConfig {
     RxStreamingConfig() {}
     RxStreamingConfig(const unsigned int _noSamples,
                       const double _receiveTimeOffset,
-                      const std::string& _antennaPort = "")
-        : noSamples(_noSamples),
+                      const std::string& _antennaPort = "",
+                      const unsigned int _numRepetitions = 1,
+                      const unsigned int _repetitionPeriod = 0)
+        : numSamples(_noSamples),
           receiveTimeOffset(_receiveTimeOffset),
+          numRepetitions(_numRepetitions),
+          repetitionPeriod(_repetitionPeriod),
           antennaPort(_antennaPort) {}
-    unsigned int noSamples;
+    unsigned int numSamples;
     double receiveTimeOffset;
+    unsigned int numRepetitions = 1;
+    unsigned int repetitionPeriod = 0;
     std::string antennaPort;
 
     size_t wordAlignedNoSamples() const;
+    size_t totalWordAlignedSamples() const;
+    size_t totalSamples() const;
 };
 
 size_t nextMultipleOfWordSize(size_t count);
@@ -91,4 +99,5 @@ void assertValidTxSignal(const MimoSignal& antSamples, const size_t maxSamples,
 void assertValidRfConfig(const RfConfig& conf);
 
 std::ostream& operator<<(std::ostream& os, const RfConfig& conf);
+std::ostream& operator<<(std::ostream& os, const RxStreamingConfig& conf);
 }  // namespace bi

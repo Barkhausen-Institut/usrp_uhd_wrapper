@@ -2,7 +2,7 @@
 
 from typing import List
 from dataclasses import dataclass, field
-from dataclasses_json import dataclass_json
+from dataclasses_json import DataClassJsonMixin
 
 import numpy as np
 
@@ -13,9 +13,8 @@ from .serialization import (
 )
 
 
-@dataclass_json
 @dataclass
-class RfConfig:
+class RfConfig(DataClassJsonMixin):
     """Describes the RF configuration of the USRP. In particular, carrier
     frequency, sampling rate, TX/RX gains are contained in this structure.
     Moreover, the stream to antenna mapping is described in the elements
@@ -58,9 +57,11 @@ class RfConfig:
 
 
 @dataclass
-class RxStreamingConfig:
+class RxStreamingConfig(DataClassJsonMixin):
     receiveTimeOffset: float = 0.0
-    noSamples: int = 0
+    numSamples: int = 0
+    numRepetitions: int = 1
+    repetitionPeriod: int = 0
     antennaPort: str = ""
 
 
@@ -110,7 +111,7 @@ class TxStreamingConfig:
         default_factory=lambda: [MimoSignal(signals=[])]
     )
 
-    repetitions: int = 1
+    numRepetitions: int = 1
     """
     Determines how often the signal should be repeated before exiting. If
     not equal 1, the signal length must be aligned to the word size. Otherwise

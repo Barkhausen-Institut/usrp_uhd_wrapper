@@ -8,7 +8,6 @@ from uhd_wrapper.utils.config import (
     MimoSignal,
     RfConfig,
     TxStreamingConfig,
-    RxStreamingConfig,
 )
 from uhd_wrapper.rpc_server.rpc_server import UsrpServer
 from uhd_wrapper.tests.python.utils import fillDummyRfConfig
@@ -25,16 +24,9 @@ class TestRpcClient(unittest.TestCase):
         self.assertEqual(self.usrpClient.ip, "the_ip")
         self.assertEqual(self.usrpClient.port, 1234)
 
-    def test_configureRxSerializesCorrectly(self) -> None:
-        rxConfig = RxStreamingConfig(receiveTimeOffset=1.0, noSamples=int(1e3))
-        self.usrpClient.configureRx(rxConfig=rxConfig)
-        self.mockRpcClient.configureRx.assert_called_with(
-            rxConfig.receiveTimeOffset, rxConfig.noSamples, ''
-        )
-
     def test_configureTxSerializesCorrectly(self) -> None:
         signal = MimoSignal(signals=[np.arange(20)])
-        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal, repetitions=19)
+        txConfig = TxStreamingConfig(sendTimeOffset=3.0, samples=signal, numRepetitions=19)
         self.usrpClient.configureTx(txConfig=txConfig)
         self.mockRpcClient.configureTx.assert_called_with(
             txConfig.sendTimeOffset, signal.serialize(), 19

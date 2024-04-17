@@ -106,22 +106,30 @@ PYBIND11_MODULE(usrp_pybinding, m) {
 
     py::class_<bi::RxStreamingConfig>(m, "RxStreamingConfig")
         .def(py::init())
-        .def(py::init<const unsigned int, const double, const std::string&>(),
-             py::arg("noSamples"),
+        .def(py::init<const unsigned int, const double, const std::string&,
+             const unsigned int, const unsigned int>(),
+             py::arg("numSamples"),
              py::arg("receiveTimeOffset"),
-             py::arg("antennaPort") = "")
-        .def_readwrite("noSamples", &bi::RxStreamingConfig::noSamples)
+             py::arg("antennaPort") = "",
+             py::arg("numRepetitions") = 1,
+             py::arg("repetitionPeriod") = 0)
+        .def_readwrite("numSamples", &bi::RxStreamingConfig::numSamples)
+        .def_readwrite("antennaPort", &bi::RxStreamingConfig::antennaPort)
+        .def_readwrite("numRepetitions", &bi::RxStreamingConfig::numRepetitions)
+        .def_readwrite("repetitionPeriod", &bi::RxStreamingConfig::repetitionPeriod)
         .def_readwrite("receiveTimeOffset",
                        &bi::RxStreamingConfig::receiveTimeOffset)
-        .def(py::self == py::self);
+        .def(py::self == py::self)
+        ;
+
 
     py::class_<bi::TxStreamingConfig>(m, "TxStreamingConfig")
         .def(py::init())
         .def(py::init<const bi::MimoSignal&, const double, const int>(),
-             py::arg("samples"), py::arg("sendTimeOffset"), py::arg("repetitions"))
+             py::arg("samples"), py::arg("sendTimeOffset"), py::arg("numRepetitions"))
         .def_readwrite("samples", &bi::TxStreamingConfig::samples)
         .def_readwrite("sendTimeOffset", &bi::TxStreamingConfig::sendTimeOffset)
-        .def_readwrite("repetitions", &bi::TxStreamingConfig::repetitions)
+        .def_readwrite("numRepetitions", &bi::TxStreamingConfig::numRepetitions)
         .def(py::self == py::self);
 
     py::class_<bi::UsrpInterface>(m, "Usrp")

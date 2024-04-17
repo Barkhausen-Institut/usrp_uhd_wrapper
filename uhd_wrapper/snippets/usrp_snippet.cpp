@@ -31,7 +31,7 @@ int main() {
     txStreamingConfig.sendTimeOffset = 1.5f;
 
     bi::RxStreamingConfig rxStreamingConfig;
-    rxStreamingConfig.noSamples = NO_RX_SAMPLES;
+    rxStreamingConfig.numSamples = NO_RX_SAMPLES;
     rxStreamingConfig.receiveTimeOffset = 1.5f;
 
     usrpPtr->setRfConfig(rfConfig);

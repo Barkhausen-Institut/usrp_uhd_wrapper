@@ -15,18 +15,18 @@ class TestTxStreamingConfig(unittest.TestCase):
         nt.assert_array_equal(dut.samples, [np.array([5, 9])])
         self.assertIs(type(dut.samples), list)
         self.assertEqual(dut.sendTimeOffset, 8)
-        self.assertEqual(dut.repetitions, 15)
+        self.assertEqual(dut.numRepetitions, 15)
 
     def test_canSetFieldsAfterConstruction(self) -> None:
         signals = [np.array([8, 3]), np.array([9, 7])]
         dut = binding.TxStreamingConfig()
         dut.samples = signals
         dut.sendTimeOffset = 42
-        dut.repetitions = 16
+        dut.numRepetitions = 16
 
         self.assertEqual(dut.sendTimeOffset, 42)
         nt.assert_array_equal(dut.samples, signals)
-        self.assertEqual(dut.repetitions, 16)
+        self.assertEqual(dut.numRepetitions, 16)
 
     def test_inCppConstructedVersionMatchesLocallyConstructedVersion(self) -> None:
         signals = [np.array([8, 3]), np.array([9, 7])]
@@ -37,20 +37,26 @@ class TestTxStreamingConfig(unittest.TestCase):
 class TestRxStreamingConfig(unittest.TestCase):
     def test_construction(self) -> None:
         binding.RxStreamingConfig()
-        binding.RxStreamingConfig(receiveTimeOffset=5, noSamples=42)
+        binding.RxStreamingConfig(receiveTimeOffset=5, numSamples=42)
 
     def test_holdsCorrectValues(self) -> None:
-        dut = binding.RxStreamingConfig(receiveTimeOffset=5, noSamples=42)
+        dut = binding.RxStreamingConfig(receiveTimeOffset=5, numSamples=42)
         self.assertEqual(dut.receiveTimeOffset, 5)
-        self.assertEqual(dut.noSamples, 42)
+        self.assertEqual(dut.numSamples, 42)
 
     def test_canSetFieldsAfterConstruction(self) -> None:
         dut = binding.RxStreamingConfig()
         dut.receiveTimeOffset = 5
-        dut.noSamples = 42
+        dut.numSamples = 42
+        dut.antennaPort = "RX2"
+        dut.repetitionPeriod = 7
+        dut.numRepetitions = 18
 
         self.assertEqual(dut.receiveTimeOffset, 5)
-        self.assertEqual(dut.noSamples, 42)
+        self.assertEqual(dut.numSamples, 42)
+        self.assertEqual(dut.repetitionPeriod, 7)
+        self.assertEqual(dut.numRepetitions, 18)
+        self.assertEqual(dut.antennaPort, "RX2")
 
 
 class TestMimoSignal(unittest.TestCase):

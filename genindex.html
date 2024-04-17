@@ -76,7 +76,6 @@
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
- | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
@@ -256,26 +255,6 @@
   </ul></td>
 </tr></table>
 
-<h2 id="F">F</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.from_dict">from_dict() (uhd_wrapper.utils.config.RfConfig class method)</a>
-
-      <ul>
-        <li><a href="usrp_client.html#usrp_client.RfConfig.from_dict">(usrp_client.RfConfig class method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.from_json">from_json() (uhd_wrapper.utils.config.RfConfig class method)</a>
-
-      <ul>
-        <li><a href="usrp_client.html#usrp_client.RfConfig.from_json">(usrp_client.RfConfig class method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
@@ -396,18 +375,28 @@
         <li><a href="usrp_client.html#usrp_client.RfConfig.noRxStreams">(usrp_client.RfConfig attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig.noSamples">noSamples (uhd_wrapper.utils.config.RxStreamingConfig attribute)</a>
-
-      <ul>
-        <li><a href="usrp_client.html#usrp_client.RxStreamingConfig.noSamples">(usrp_client.RxStreamingConfig attribute)</a>
-</li>
-      </ul></li>
       <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.noTxStreams">noTxStreams (uhd_wrapper.utils.config.RfConfig attribute)</a>
 
       <ul>
         <li><a href="usrp_client.html#usrp_client.RfConfig.noTxStreams">(usrp_client.RfConfig attribute)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig.numRepetitions">numRepetitions (uhd_wrapper.utils.config.RxStreamingConfig attribute)</a>
+
+      <ul>
+        <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.TxStreamingConfig.numRepetitions">(uhd_wrapper.utils.config.TxStreamingConfig attribute)</a>
+</li>
+        <li><a href="usrp_client.html#usrp_client.RxStreamingConfig.numRepetitions">(usrp_client.RxStreamingConfig attribute)</a>
+</li>
+        <li><a href="usrp_client.html#usrp_client.TxStreamingConfig.numRepetitions">(usrp_client.TxStreamingConfig attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig.numSamples">numSamples (uhd_wrapper.utils.config.RxStreamingConfig attribute)</a>
+
+      <ul>
+        <li><a href="usrp_client.html#usrp_client.RxStreamingConfig.numSamples">(usrp_client.RxStreamingConfig attribute)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -436,10 +425,10 @@
       </ul></li>
       <li><a href="usrp_client.html#usrp_client.errors.RemoteUsrpError">RemoteUsrpError</a>
 </li>
-      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.TxStreamingConfig.repetitions">repetitions (uhd_wrapper.utils.config.TxStreamingConfig attribute)</a>
+      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RxStreamingConfig.repetitionPeriod">repetitionPeriod (uhd_wrapper.utils.config.RxStreamingConfig attribute)</a>
 
       <ul>
-        <li><a href="usrp_client.html#usrp_client.TxStreamingConfig.repetitions">(usrp_client.TxStreamingConfig attribute)</a>
+        <li><a href="usrp_client.html#usrp_client.RxStreamingConfig.repetitionPeriod">(usrp_client.RxStreamingConfig attribute)</a>
 </li>
       </ul></li>
       <li><a href="usrp_client.html#usrp_client.system.TimedFlag.reset">reset() (usrp_client.system.TimedFlag method)</a>
@@ -514,12 +503,6 @@
         <li><a href="usrp_client.html#usrp_client.TxStreamingConfig.samples">(usrp_client.TxStreamingConfig attribute)</a>
 </li>
       </ul></li>
-      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.schema">schema() (uhd_wrapper.utils.config.RfConfig class method)</a>
-
-      <ul>
-        <li><a href="usrp_client.html#usrp_client.RfConfig.schema">(usrp_client.RfConfig class method)</a>
-</li>
-      </ul></li>
       <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.TxStreamingConfig.sendTimeOffset">sendTimeOffset (uhd_wrapper.utils.config.TxStreamingConfig attribute)</a>
 
       <ul>
@@ -542,14 +525,14 @@
 </li>
       <li><a href="usrp_client.html#usrp_client.system.TimedFlag.set">set() (usrp_client.system.TimedFlag method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.MimoSignal.signals">signals (uhd_wrapper.utils.config.MimoSignal attribute)</a>
 
       <ul>
         <li><a href="usrp_client.html#usrp_client.MimoSignal.signals">(usrp_client.MimoSignal attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="usrp_client.html#usrp_client.System.syncAttempts">syncAttempts (usrp_client.System attribute)</a>
 
       <ul>
@@ -600,18 +583,6 @@
       </ul></li>
       <li><a href="usrp_client.html#usrp_client.system.TimedFlag">TimedFlag (class in usrp_client.system)</a>
 </li>
-      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.to_dict">to_dict() (uhd_wrapper.utils.config.RfConfig method)</a>
-
-      <ul>
-        <li><a href="usrp_client.html#usrp_client.RfConfig.to_dict">(usrp_client.RfConfig method)</a>
-</li>
-      </ul></li>
-      <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.to_json">to_json() (uhd_wrapper.utils.config.RfConfig method)</a>
-
-      <ul>
-        <li><a href="usrp_client.html#usrp_client.RfConfig.to_json">(usrp_client.RfConfig method)</a>
-</li>
-      </ul></li>
       <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.txAnalogFilterBw">txAnalogFilterBw (uhd_wrapper.utils.config.RfConfig attribute)</a>
 
       <ul>
@@ -624,14 +595,14 @@
         <li><a href="usrp_client.html#usrp_client.RfConfig.txAntennaMapping">(usrp_client.RfConfig attribute)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.txCarrierFrequency">txCarrierFrequency (uhd_wrapper.utils.config.RfConfig attribute)</a>
 
       <ul>
         <li><a href="usrp_client.html#usrp_client.RfConfig.txCarrierFrequency">(usrp_client.RfConfig attribute)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.txContainsClippedValue">txContainsClippedValue() (in module uhd_wrapper.utils.config)</a>
 </li>
       <li><a href="uhd_wrapper.utils.html#uhd_wrapper.utils.config.RfConfig.txGain">txGain (uhd_wrapper.utils.config.RfConfig attribute)</a>

@@ -35,8 +35,8 @@ public:
     void upload(const MimoSignal& txSignal);
 
     void connectForStreaming(size_t numTxStreams, size_t numRxStreams);
-    void transmit(double streamTime, size_t numTxSamples);
-    void receive(double streamTime, size_t numRxSamples);
+    void transmit(double streamTime, size_t numTxSamples, double signalDuration);
+    void receive(double streamTime, size_t numRxSamples, double signalDuration);
 
     uhd::rx_streamer::sptr connectForDownload(size_t numRxStreams);
     MimoSignal download(size_t numRxSamples);

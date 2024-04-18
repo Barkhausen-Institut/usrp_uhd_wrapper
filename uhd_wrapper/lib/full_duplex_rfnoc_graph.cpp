@@ -155,7 +155,7 @@ void RfNocFullDuplexGraph::connectForStreaming(size_t numTxStreams, size_t numRx
     // _showRfNoCConnections(graph_);
 }
 
-void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
+void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples, double signalDuration) {
     uhd::stream_cmd_t txStreamCmd(uhd::stream_cmd_t::STREAM_MODE_NUM_SAMPS_AND_DONE);
     txStreamCmd.num_samps = numTxSamples;
     txStreamCmd.stream_now = false;
@@ -172,13 +172,14 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
         }
     }
 
+    double timeout = streamTime - getCurrentFpgaTime() + signalDuration;
+    std::this_thread::sleep_for(std::chrono::duration<double>(timeout));
+
     uhd::async_metadata_t asyncMd;
-    double timeout = streamTime - getCurrentFpgaTime() + 0.1;
     uhd::async_metadata_t::event_code_t lastEventCode = uhd::async_metadata_t::EVENT_CODE_BURST_ACK;
-    while (replayCtrl_->get_play_async_metadata(asyncMd, timeout)) {
+    while (replayCtrl_->get_play_async_metadata(asyncMd, 0.02)) {
         if (asyncMd.event_code != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
             lastEventCode = asyncMd.event_code;
-        timeout = 0.02;
     }
     if (lastEventCode != uhd::async_metadata_t::EVENT_CODE_BURST_ACK)
         throw UsrpException("Error occured at data replaying with event code: "
@@ -191,7 +192,7 @@ void RfNocFullDuplexGraph::transmit(double streamTime, size_t numTxSamples) {
     }
 }
 
-void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
+void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples, double signalDuration) {
     if (numRxSamples == 0)
         return;
 
@@ -218,12 +219,13 @@ void RfNocFullDuplexGraph::receive(double streamTime, size_t numRxSamples) {
         }
     }
 
+    double timeout = streamTime - getCurrentFpgaTime() + signalDuration;
+    std::this_thread::sleep_for(std::chrono::duration<double>(timeout));
+
     uhd::rx_metadata_t asyncMd;
-    double timeout = streamTime - getCurrentFpgaTime() + 0.1;
-    while (replayCtrl_->get_record_async_metadata(asyncMd, timeout)) {
+    while (replayCtrl_->get_record_async_metadata(asyncMd, 0.02)) {
         if (asyncMd.error_code != uhd::rx_metadata_t::ERROR_CODE_NONE)
             throw UsrpException("Error at recording: " + asyncMd.strerror());
-        timeout = 0.02;
     }
 
     std::lock_guard<std::recursive_mutex> lock(fpgaAccessMutex_);

@@ -97,7 +97,9 @@ void Usrp::performStreaming(double baseTime) {
                 replayConfig_->configTransmit(numTxSamples);
                 // Configure the radio to transmit these samples with N repetitions.
                 // The replay block will wrap around
-                fdGraph_->transmit(streamTime, numTxSamples * config.numRepetitions);
+                size_t totalSamples = numTxSamples * config.numRepetitions;
+                fdGraph_->transmit(streamTime, totalSamples,
+                                   rfConfig_->getTxSignalDuration(totalSamples));
             }
         }
         catch(std::exception& e) {
@@ -125,7 +127,8 @@ void Usrp::performStreaming(double baseTime) {
                 // equal to the amount of baseband samples. Hence, no scaling is
                 // needed.
                 size_t totalRxSamples = config.totalWordAlignedSamples();
-                fdGraph_->receive(streamTime, totalRxSamples*rxDecimFactor);
+                fdGraph_->receive(streamTime, totalRxSamples*rxDecimFactor,
+                                  rfConfig_->getRxSignalDuration(totalRxSamples));
             }
         }
         catch(std::exception& e) {

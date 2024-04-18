@@ -105,6 +105,14 @@ double RFConfiguration::getRxSamplingRate() const {
     return rfConfig_.rxSamplingRate;
 }
 
+double RFConfiguration::getTxSignalDuration(size_t numSamples) const {
+    return numSamples / getTxSamplingRate();
+}
+
+double RFConfiguration::getRxSignalDuration(size_t numSamples) const {
+    return numSamples / getRxSamplingRate();
+}
+
 int RFConfiguration::getRxDecimationRatio() const {
     if (supportsDecimation())
         return ddcControl1_->get_property<int>("decim", 0);

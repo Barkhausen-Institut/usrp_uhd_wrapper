@@ -48,7 +48,7 @@ bool RfNocBlocks::supportsDecimation() const {
 }
 
 size_t RfNocBlocks::getNumAntennas() const {
-    return 1; //radioCtrl1_->get_num_input_ports() + radioCtrl2_->get_num_input_ports();
+    return radioCtrl1_->get_num_input_ports() + radioCtrl2_->get_num_input_ports();
 }
 
 RfNocBlocks::RadioChannelPair RfNocBlocks::getRadioChannelPair(int antenna) {

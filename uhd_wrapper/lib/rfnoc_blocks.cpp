@@ -48,6 +48,10 @@ bool RfNocBlocks::supportsDecimation() const {
 }
 
 size_t RfNocBlocks::getNumAntennas() const {
+    if (graph_->get_mb_controller()->get_mboard_name() == "x440") {
+        UHD_LOG_WARNING("Wrapper", "FPGA Image contains multiple replay blocks. Only 1 antenna possible");
+        return 1;
+    }
     return radioCtrl1_->get_num_input_ports() + radioCtrl2_->get_num_input_ports();
 }
 
